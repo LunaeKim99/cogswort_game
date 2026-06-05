@@ -13,7 +13,7 @@
 | Desktop | Mobile |
 |---------|--------|
 | ← → / A D — Move | Left / Right buttons (bottom-left) |
-| ↑ / W / Space — Jump | Jump button (bottom-right) |
+| ↑ / W / Space — Jump (press again mid-air for double jump) | Jump button (bottom-right) |
 | Stomp enemies from above | *(same mechanic)* |
 
 ### Scoring
@@ -65,7 +65,7 @@ Serve the `game/` directory and open the root URL.
 - **15 levels** (3 districts × 5 levels) — Bellows District (Easy), Clockwork Quarter (Medium), The Core (Hard)
 - **Procedural pixel art** — all sprites, backgrounds, and UI generated at runtime (zero external images)
 - **Steampunk mechanical theme** — brass, copper, gears, rivets, pistons, steam pipes, glowing amber eyes
-- **Smooth platforming** — coyote time, jump buffering, variable jump height
+- **Smooth platforming** — coyote time, jump buffering, variable jump height, **double jump**
 - **Responsive controls** — keyboard (desktop) + touch buttons (mobile) in one build
 - **Juice & polish** — screen shake, particle bursts, floating score text, interactive buttons, slow-mo death
 - **Audio** — jump, collect, stomp, hurt, win sound effects + background music

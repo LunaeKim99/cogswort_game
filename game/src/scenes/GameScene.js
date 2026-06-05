@@ -118,6 +118,7 @@ class GameScene extends Phaser.Scene {
         this._coyoteTimeMs = 100;   // ms after leaving ground where jump still works
         this._jumpBufferMs = 180;   // ms to buffer a jump input before landing
         this._isJumping = false;
+        this._jumpCount = 0;           // Double jump counter
 
         // ── Combo tracker ──
         this._comboCount = 0;
@@ -829,11 +830,12 @@ class GameScene extends Phaser.Scene {
         if (this.player.isDead) return;
         if (this._isPaused) return;
 
-        // ── Track ground state for coyote time ──
+        // ── Track ground state for coyote time & double jump ──
         const onGround = this.player.body.blocked.down;
         if (onGround) {
             this._lastGroundedTime = time;
             this._isJumping = false;
+            this._jumpCount = 0; // Reset double jump
         }
 
         // ── Gather input from all sources ──
@@ -853,13 +855,21 @@ class GameScene extends Phaser.Scene {
         // ── Coyote time: allow jumping shortly after leaving a platform ──
         const hasCoyoteTime = (time - this._lastGroundedTime) < this._coyoteTimeMs;
 
-        // ── Execute jump ──
+        // ── Execute jump (first & double) ──
         const canJump = (onGround || hasCoyoteTime) && hasBufferedJump;
+        const canDoubleJump = !onGround && !hasCoyoteTime && this._jumpCount < 2 && jumpJustDown;
+
         if (canJump) {
             this.player.body.setVelocityY(PLAYER_JUMP);
             this._jumpBufferTime = 0; // Consume buffer
             this._lastGroundedTime = 0; // Prevent re-trigger
             this._isJumping = true;
+            this._jumpCount = 1;
+            try { this.sound.play('sfx-jump'); } catch(e) {}
+        } else if (canDoubleJump) {
+            this.player.body.setVelocityY(PLAYER_DOUBLE_JUMP);
+            this._isJumping = true;
+            this._jumpCount = 2;
             try { this.sound.play('sfx-jump'); } catch(e) {}
         }
 

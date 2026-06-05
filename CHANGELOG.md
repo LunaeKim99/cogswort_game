@@ -35,6 +35,8 @@ All notable changes to Cogsworth: Last Wind are documented here.
 - **Enemy system**: refactored into PatrolDrone and Walker classes with shared enemy utilities
 - **Obstacle system**: expanded from single saw type to Obstacle (BuriedSaw, SurpriseSaw, SpikeTrap, legacy saw)
 - Entity creation in GameScene now switches on `type` field for enemy and obstacle spawning
+- **Player jump shortened**: PLAYER_JUMP reduced from -580 to -480 (shorter hop)
+- **Double jump added**: press jump again mid-air for a second, shorter jump (-400 velocity)
 
 ### Changed
 - **Moving platform texture alignment**: tilePosition now uses world-aligned left edge (`x - width/2`) instead of raw world center (`x`), matching static ground tiles so brick patterns stay visually consistent
