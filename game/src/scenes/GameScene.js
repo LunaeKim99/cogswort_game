@@ -260,9 +260,6 @@ class GameScene extends Phaser.Scene {
 
         // Escape key to pause
         this.input.keyboard.on('keydown-ESC', () => this._togglePause());
-
-        // Pause menu container (hidden initially)
-        this.pauseContainer = this.add.container(0, 0).setDepth(950).setVisible(false);
     }
 
     _togglePause() {
@@ -288,13 +285,14 @@ class GameScene extends Phaser.Scene {
     _showPauseMenu() {
         const cx = GAME_WIDTH / 2;
         const cy = GAME_HEIGHT / 2;
+        const B = 900; // base depth — buttons go above this
 
-        // Dim overlay
+        // Dim overlay (NOT interactive — won't block buttons below)
         this.pauseOverlay = this.add.rectangle(cx, cy, GAME_WIDTH, GAME_HEIGHT, 0x000000, 0.7)
-            .setScrollFactor(0).setDepth(900).setAlpha(0);
+            .setScrollFactor(0).setDepth(B).setAlpha(0);
 
         // Decorative border frame
-        const frame = this.add.graphics().setDepth(911).setAlpha(0);
+        const frame = this.add.graphics().setDepth(B + 11).setAlpha(0);
         frame.lineStyle(2, 0xFFD700, 0.3);
         frame.strokeRoundedRect(cx - 140, cy - 140, 280, 280, 10);
         frame.lineStyle(1, 0xFFD700, 0.15);
@@ -308,13 +306,13 @@ class GameScene extends Phaser.Scene {
 
         // Panel background
         const panel = this.add.rectangle(cx, cy, 260, 250, 0x1a1a2e, 0.95)
-            .setStrokeStyle(2, 0xFFD700).setDepth(910).setAlpha(0);
+            .setStrokeStyle(2, 0xFFD700).setDepth(B + 10).setAlpha(0);
 
         // Title
         const title = this.add.text(cx, cy - 95, '— PAUSED —', {
             fontSize: '26px', fontFamily: 'monospace', color: '#FFD700', fontStyle: 'bold',
             stroke: '#000000', strokeThickness: 3
-        }).setOrigin(0.5).setDepth(920).setAlpha(0);
+        }).setOrigin(0.5).setDepth(B + 20).setAlpha(0);
 
         // Level info at bottom of panel
         const lvl = levels[this.currentLevel];
@@ -323,23 +321,30 @@ class GameScene extends Phaser.Scene {
         const levelInfo = this.add.text(cx, cy + 100, levelInfoStr, {
             fontSize: '10px', fontFamily: 'monospace', color: '#888888',
             stroke: '#000000', strokeThickness: 1
-        }).setOrigin(0.5).setDepth(920).setAlpha(0);
+        }).setOrigin(0.5).setDepth(B + 20).setAlpha(0);
 
         // Separator line
-        const sep = this.add.graphics().setDepth(920).setAlpha(0);
+        const sep = this.add.graphics().setDepth(B + 20).setAlpha(0);
         sep.lineStyle(1, 0xFFD700, 0.2);
         sep.lineBetween(cx - 80, cy - 60, cx + 80, cy - 60);
 
         // Resume button
         const resumeBtn = this._makePauseButton(cx, cy - 25, '▶  RESUME', () => this._togglePause());
+        resumeBtn.bg.setDepth(B + 30);
+        resumeBtn.label.setDepth(B + 31);
+
+        // Restart button
         const restartBtn = this._makePauseButton(cx, cy + 35, '↻  RESTART', () => {
             this._isPaused = false;
             this.physics.world.resume();
             this.tweens.resumeAll();
-            // Stop HUDScene so GameScene.create() can launch it fresh
             this.scene.stop('HUDScene');
             this.scene.restart({ level: this.currentLevel, score: this.score, lives: this.lives });
         });
+        restartBtn.bg.setDepth(B + 30);
+        restartBtn.label.setDepth(B + 31);
+
+        // Main Menu button
         const menuBtn = this._makePauseButton(cx, cy + 95, '☰  MAIN MENU', () => {
             this._isPaused = false;
             this.physics.world.resume();
@@ -347,6 +352,8 @@ class GameScene extends Phaser.Scene {
             this.scene.stop('HUDScene');
             this.scene.start('MainMenuScene');
         });
+        menuBtn.bg.setDepth(B + 30);
+        menuBtn.label.setDepth(B + 31);
 
         // Pop-in animation
         this.tweens.add({ targets: this.pauseOverlay, alpha: 1, duration: 150 });
@@ -356,15 +363,18 @@ class GameScene extends Phaser.Scene {
         this.tweens.add({ targets: levelInfo, alpha: 1, duration: 300, delay: 250 });
         this.tweens.add({ targets: frame, alpha: 1, duration: 200, delay: 50 });
 
-        this.pauseContainer.add([this.pauseOverlay, frame, panel, title, sep,
-            levelInfo, resumeBtn.bg, resumeBtn.label,
-            restartBtn.bg, restartBtn.label, menuBtn.bg, menuBtn.label]);
-        this.pauseContainer.setVisible(true);
+        // Keep references for cleanup
+        this._pauseElements = [this.pauseOverlay, frame, panel, title, sep, levelInfo,
+            resumeBtn.bg, resumeBtn.label,
+            restartBtn.bg, restartBtn.label,
+            menuBtn.bg, menuBtn.label];
     }
 
     _hidePauseMenu() {
-        this.pauseContainer.removeAll(true);
-        this.pauseContainer.setVisible(false);
+        if (this._pauseElements) {
+            this._pauseElements.forEach(el => { if (el) el.destroy(); });
+            this._pauseElements = null;
+        }
     }
 
     _makePauseButton(x, y, text, callback) {

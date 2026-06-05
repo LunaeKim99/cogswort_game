@@ -41,7 +41,8 @@ All notable changes to Cogsworth: Last Wind are documented here.
 - **Obstacle system**: expanded from single saw type to Obstacle (BuriedSaw, SurpriseSaw, SpikeTrap, legacy saw)
 - Entity creation in GameScene now switches on `type` field for enemy and obstacle spawning
 - **Player jump shortened**: PLAYER_JUMP reduced from -580 to -480 (shorter hop)
-- **Pause menu fix**: _showPauseMenu() called before tweens.pauseAll() so fade-in animations play correctly
+- **Pause menu fix 1**: _showPauseMenu() called before tweens.pauseAll() so fade-in animations play correctly
+- **Pause menu fix 2**: removed container (depth mismatch caused buttons to be behind overlay), buttons now at depth 930 above overlay's 900 — restart & main menu buttons work reliably
 - **Drone laser cone fix**: cone origin set to top-center (0.5, 0), positioned at drone bottom (y+14) so it extends downward without overlapping drone sprite
 - **Drone laser hitbox fix**: damage zone starts from drone bottom (y+14) instead of drone center, matching the visual beam
 - **SpikeTrap redesign**: new wide serrated texture (48×32, 5 steel teeth on iron base plate), emerges from behind platform (depth -5 → +5), fully hidden when retracted
