@@ -78,8 +78,16 @@ class GameScene extends Phaser.Scene {
         // Player-obstacle overlap (instant damage, no stomp)
         this.physics.add.overlap(this.player, this.obstacles, this._handleObstacleHit, null, this);
 
-        // Player-gate overlap (only triggers if gate is active)
+        // Player-gate overlap (gate always active)
         this.physics.add.overlap(this.player, this.gate, this._handleGateReached, null, this);
+
+        // Gate always open from start — no coin requirement
+        this.gate.setTexture('gate-open');
+        this.gateLabel.setText('EXIT →').setColor('#FFD700').setAlpha(1);
+        this.gateHint.setText('OPEN').setColor('#44FF88');
+
+        // Track level start time (for star rating)
+        this._levelStartTime = this.time.now;
 
         // Setup keyboard input
         this.cursors = this.input.keyboard.createCursorKeys();
@@ -110,7 +118,7 @@ class GameScene extends Phaser.Scene {
         // State flags
         this._gameOverTriggered = false;
         this._levelCompleteTriggered = false;
-        this._gateActive = false;
+        this._gateActive = true;
         this._isPaused = false;
 
         // Platformer feel improvements
@@ -721,11 +729,6 @@ class GameScene extends Phaser.Scene {
         // ── Visual polish: coin collect effects ──
         this._showFloatingText(coin.x, coin.y, '+10', '#00FF88');
         this._emitParticles(coin.x, coin.y, 0x00FF88, 6);
-
-        // Check win condition: all coins collected → activate gate
-        if (this.coins.countActive() === 0) {
-            this._activateGate();
-        }
     }
 
     // ── Hurt player ──
@@ -813,6 +816,11 @@ class GameScene extends Phaser.Scene {
         this.time.delayedCall(1000, () => {
             this.scene.stop('HUDScene');
 
+            // Calculate star rating
+            const coinsCollected = this.totalCoins - this.coins.countActive();
+            const elapsed = (this.time.now - this._levelStartTime) / 1000;
+            const starResult = this._calculateStars(coinsCollected, elapsed);
+
             // Check if there are more levels
             if (nextLevel < levels.length) {
                 // Go to level complete screen
@@ -821,7 +829,8 @@ class GameScene extends Phaser.Scene {
                     level: this.currentLevel,
                     nextLevel: nextLevel,
                     lives: this.lives,
-                    saveSlot: this.saveSlot
+                    saveSlot: this.saveSlot,
+                    stars: starResult
                 });
             } else {
                 // All levels complete - WIN!
@@ -832,6 +841,47 @@ class GameScene extends Phaser.Scene {
                 });
             }
         });
+    }
+
+    // ── Star rating calculation (lives, coins, time) ──
+    _calculateStars(coinsCollected, timeSeconds) {
+        const levelData = levels[this.currentLevel];
+        const totalCoins = levelData.coins.length;
+
+        // Determine district for time thresholds
+        const district = this.currentLevel < 5 ? 0 : this.currentLevel < 10 ? 1 : 2;
+
+        // 1) Lives (0–1 point): 3 lives → 1.0, 2 → 0.6, 1 → 0.2
+        const livesPoints = this.lives === 3 ? 1.0 : this.lives === 2 ? 0.6 : 0.2;
+
+        // 2) Coins (0–1 point): ratio directly
+        const coinPct = totalCoins > 0 ? coinsCollected / totalCoins : 1;
+        const coinPoints = coinPct >= 1.0 ? 1.0 : coinPct >= 0.5 ? 0.6 : 0.2;
+
+        // 3) Time (0–1 point): thresholds differ by district
+        const timeThresholds = [
+            { fast: 20, good: 35, ok: 60 },    // Bellows (Easy)
+            { fast: 30, good: 50, ok: 80 },     // Clockwork (Medium)
+            { fast: 40, good: 65, ok: 100 }     // The Core (Hard)
+        ];
+        const t = timeThresholds[district];
+        let timePoints = timeSeconds <= t.fast ? 1.0
+            : timeSeconds <= t.good ? 0.6
+            : timeSeconds <= t.ok ? 0.2 : 0;
+
+        const total = livesPoints + coinPoints + timePoints;
+
+        let stars;
+        if (total >= 2.4) stars = 3;
+        else if (total >= 1.2) stars = 2;
+        else stars = 1;
+
+        return {
+            stars,
+            coinsCollected,
+            totalCoins,
+            timeSeconds: Math.floor(timeSeconds)
+        };
     }
 
     // ── Main update loop ──

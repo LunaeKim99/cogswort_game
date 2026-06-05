@@ -45,6 +45,9 @@ All notable changes to Cogsworth: Last Wind are documented here.
 - **Drone laser cone fix**: cone origin set to top-center (0.5, 0), positioned at drone bottom (y+14) so it extends downward without overlapping drone sprite
 - **Drone laser hitbox fix**: damage zone starts from drone bottom (y+14) instead of drone center, matching the visual beam
 - **SpikeTrap redesign**: new wide serrated texture (48×32, 5 steel teeth on iron base plate), emerges from behind platform (depth -5 → +5), fully hidden when retracted
+- **Gate always open**: coin collection no longer required — player can enter the gate immediately to clear the level
+- **Star rating system**: 1–3 stars per level based on remaining lives, coin percentage, and clear time (with district-specific time thresholds)
+- **LevelCompleteScene redesigned**: shows ⭐ star icons (animated pop-in) + stats panel (coins X/Y, time MM:SS, hearts, score)
 
 ### Changed
 - **Moving platform texture alignment**: tilePosition now uses world-aligned left edge (`x - width/2`) instead of raw world center (`x`), matching static ground tiles so brick patterns stay visually consistent
