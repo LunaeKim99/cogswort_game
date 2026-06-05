@@ -21,3 +21,39 @@ const ENEMY_DEATH_DELAY = 600; // ms
 // Touch controls
 const BTN_ALPHA = 0.5;
 const BTN_SIZE = 64;
+
+// ── Design / HUD Constants ──
+const HUD = {
+    PANEL_ALPHA: 0.35,
+    PANEL_COLOR: 0x000000,
+    CORNER_RADIUS: 6,
+    HEART_SIZE: 22,
+    HEART_SPACING: 30,
+    HEART_OFFSET_X: 14,
+    HEART_OFFSET_Y: 48,      // below safe top zone
+    SCORE_OFFSET_X: 16,
+    SCORE_OFFSET_Y: 48,
+    LEVEL_OFFSET_Y: 12,
+    COIN_OFFSET_Y: 68,
+    PROGRESS_BAR_Y: 82,
+    PROGRESS_BAR_W: 160,
+    PROGRESS_BAR_H: 4,
+    FONT_FAMILY: 'monospace',
+    FONT_TITLE: '18px',
+    FONT_SCORE: '20px',
+    FONT_COIN: '13px',
+    FONT_LEVEL: '14px'
+};
+
+// ── Spectacle / Polish Constants ──
+const SPECTACLE = {
+    SCORE_POP_SCALE: 1.3,
+    SCORE_POP_DURATION: 200,
+    HEART_PULSE_SCALE: 1.15,
+    HEART_PULSE_DURATION: 400,
+    COIN_ICON_SIZE: 12,
+    INTRO_BANNER_DURATION: 2000,
+    INTRO_BANNER_HOLD: 800,
+    COMBO_MAX_BREAK_TIME: 2000,  // ms before combo resets
+    VIGNETTE_ALPHA: 0.25
+};

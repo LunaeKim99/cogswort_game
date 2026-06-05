@@ -116,11 +116,87 @@ class GameScene extends Phaser.Scene {
         this._jumpBufferMs = 180;   // ms to buffer a jump input before landing
         this._isJumping = false;
 
+        // ── Combo tracker ──
+        this._comboCount = 0;
+        this._lastStompTime = 0;
+
         // ── Visual polish: player entrance animation ──
         this._doEntranceAnimation();
 
+        // ── Level intro banner ──
+        this._showLevelIntro();
+
         // ── Pause system ──
         this._setupPause();
+    }
+
+    // ── Level intro banner ──
+    _showLevelIntro() {
+        const levelNum = this.currentLevel + 1;
+        const levelName = levels[this.currentLevel].name;
+
+        // Dark overlay
+        const overlay = this.add.rectangle(GAME_WIDTH / 2, GAME_HEIGHT / 2, GAME_WIDTH, GAME_HEIGHT, 0x000000, 0.6)
+            .setScrollFactor(0).setDepth(800);
+
+        // Big level number
+        const numText = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2 - 30, 'LEVEL ' + levelNum, {
+            fontFamily: 'monospace',
+            fontSize: '48px',
+            color: '#FFD700',
+            fontStyle: 'bold',
+            stroke: '#000000',
+            strokeThickness: 6
+        }).setOrigin(0.5).setScrollFactor(0).setDepth(810).setScale(0).setAlpha(0);
+
+        // Level name subtitle
+        const nameText = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2 + 30, levelName, {
+            fontFamily: 'monospace',
+            fontSize: '18px',
+            color: '#ffffff',
+            stroke: '#000000',
+            strokeThickness: 4
+        }).setOrigin(0.5).setScrollFactor(0).setDepth(810).setAlpha(0);
+
+        // Decorative separator line
+        const sep = this.add.graphics().setScrollFactor(0).setDepth(810);
+        sep.lineStyle(2, 0xFFD700, 0.5);
+        sep.lineBetween(GAME_WIDTH / 2 - 120, GAME_HEIGHT / 2 + 55, GAME_WIDTH / 2 + 120, GAME_HEIGHT / 2 + 55);
+
+        // Animate in
+        this.tweens.add({
+            targets: numText,
+            scale: 1,
+            alpha: 1,
+            duration: 500,
+            ease: 'Back.easeOut'
+        });
+
+        this.tweens.add({
+            targets: nameText,
+            alpha: 1,
+            y: GAME_HEIGHT / 2 + 26,
+            duration: 600,
+            delay: 300,
+            ease: 'Quad.easeOut'
+        });
+
+        // Hold then fade out
+        this.time.delayedCall(SPECTACLE.INTRO_BANNER_DURATION, () => {
+            this.tweens.add({
+                targets: [numText, nameText, overlay, sep],
+                alpha: 0,
+                scale: numText._scaleX || 1,
+                duration: 400,
+                ease: 'Quad.easeOut',
+                onComplete: () => {
+                    numText.destroy();
+                    nameText.destroy();
+                    overlay.destroy();
+                    sep.destroy();
+                }
+            });
+        });
     }
 
     // ── Pause System ──
@@ -132,6 +208,17 @@ class GameScene extends Phaser.Scene {
             .setDepth(900);
 
         this.pauseBtn.on('pointerdown', () => this._togglePause());
+
+        // Subtle idle pulse on pause button
+        this.tweens.add({
+            targets: this.pauseBtn,
+            scaleX: 1.08,
+            scaleY: 1.08,
+            duration: 1200,
+            yoyo: true,
+            repeat: -1,
+            ease: 'Sine.easeInOut'
+        });
 
         // Escape key to pause
         this.input.keyboard.on('keydown-ESC', () => this._togglePause());
@@ -149,11 +236,13 @@ class GameScene extends Phaser.Scene {
             this.physics.world.pause();
             this.tweens.pauseAll();
             this.scene.pause('HUDScene');
+            this.pauseBtn.setVisible(false);
             this._showPauseMenu();
         } else {
             this.physics.world.resume();
             this.tweens.resumeAll();
             this.scene.resume('HUDScene');
+            this.pauseBtn.setVisible(true);
             this._hidePauseMenu();
         }
     }
@@ -164,27 +253,53 @@ class GameScene extends Phaser.Scene {
 
         // Dim overlay
         this.pauseOverlay = this.add.rectangle(cx, cy, GAME_WIDTH, GAME_HEIGHT, 0x000000, 0.7)
-            .setScrollFactor(0).setDepth(900);
+            .setScrollFactor(0).setDepth(900).setAlpha(0);
+
+        // Decorative border frame
+        const frame = this.add.graphics().setDepth(911).setAlpha(0);
+        frame.lineStyle(2, 0xFFD700, 0.3);
+        frame.strokeRoundedRect(cx - 140, cy - 140, 280, 280, 10);
+        frame.lineStyle(1, 0xFFD700, 0.15);
+        frame.strokeRoundedRect(cx - 134, cy - 134, 268, 268, 8);
+
+        // Corner decorations (small gears)
+        this._drawMiniGear(frame, cx - 130, cy - 130, 8, 6, 0xFFD700, 0.4);
+        this._drawMiniGear(frame, cx + 130, cy - 130, 8, 6, 0xFFD700, 0.4);
+        this._drawMiniGear(frame, cx - 130, cy + 130, 8, 6, 0xFFD700, 0.4);
+        this._drawMiniGear(frame, cx + 130, cy + 130, 8, 6, 0xFFD700, 0.4);
 
         // Panel background
-        const panel = this.add.rectangle(cx, cy, 260, 260, 0x1a1a2e, 0.95)
-            .setStrokeStyle(2, 0xFFD700).setDepth(910);
+        const panel = this.add.rectangle(cx, cy, 260, 250, 0x1a1a2e, 0.95)
+            .setStrokeStyle(2, 0xFFD700).setDepth(910).setAlpha(0);
 
         // Title
-        const title = this.add.text(cx, cy - 100, 'PAUSED', {
-            fontSize: '28px', fontFamily: 'monospace', color: '#FFD700', fontStyle: 'bold'
-        }).setOrigin(0.5).setDepth(920);
+        const title = this.add.text(cx, cy - 95, '— PAUSED —', {
+            fontSize: '26px', fontFamily: 'monospace', color: '#FFD700', fontStyle: 'bold',
+            stroke: '#000000', strokeThickness: 3
+        }).setOrigin(0.5).setDepth(920).setAlpha(0);
+
+        // Level info at bottom of panel
+        const levelNum = this.currentLevel + 1;
+        const levelInfo = this.add.text(cx, cy + 100, 'LEVEL ' + levelNum + ': ' + levels[this.currentLevel].name, {
+            fontSize: '10px', fontFamily: 'monospace', color: '#888888',
+            stroke: '#000000', strokeThickness: 1
+        }).setOrigin(0.5).setDepth(920).setAlpha(0);
+
+        // Separator line
+        const sep = this.add.graphics().setDepth(920).setAlpha(0);
+        sep.lineStyle(1, 0xFFD700, 0.2);
+        sep.lineBetween(cx - 80, cy - 60, cx + 80, cy - 60);
 
         // Resume button
-        const resumeBtn = this._makePauseButton(cx, cy - 30, '▶  RESUME', () => this._togglePause());
-        const restartBtn = this._makePauseButton(cx, cy + 40, '↻  RESTART', () => {
+        const resumeBtn = this._makePauseButton(cx, cy - 25, '▶  RESUME', () => this._togglePause());
+        const restartBtn = this._makePauseButton(cx, cy + 35, '↻  RESTART', () => {
             this._isPaused = false;
             this.physics.world.resume();
             this.tweens.resumeAll();
             this.scene.resume('HUDScene');
             this.scene.restart({ level: this.currentLevel, score: this.score, lives: this.lives });
         });
-        const menuBtn = this._makePauseButton(cx, cy + 110, '☰  MAIN MENU', () => {
+        const menuBtn = this._makePauseButton(cx, cy + 95, '☰  MAIN MENU', () => {
             this._isPaused = false;
             this.physics.world.resume();
             this.tweens.resumeAll();
@@ -193,7 +308,16 @@ class GameScene extends Phaser.Scene {
             this.scene.start('MainMenuScene');
         });
 
-        this.pauseContainer.add([this.pauseOverlay, panel, title, resumeBtn.bg, resumeBtn.label,
+        // Pop-in animation
+        this.tweens.add({ targets: this.pauseOverlay, alpha: 1, duration: 150 });
+        this.tweens.add({ targets: panel, alpha: 1, scale: 1, duration: 200, ease: 'Back.easeOut' });
+        this.tweens.add({ targets: title, alpha: 1, y: title.y + 5, duration: 250, delay: 100 });
+        this.tweens.add({ targets: sep, alpha: 1, duration: 200, delay: 150 });
+        this.tweens.add({ targets: levelInfo, alpha: 1, duration: 300, delay: 250 });
+        this.tweens.add({ targets: frame, alpha: 1, duration: 200, delay: 50 });
+
+        this.pauseContainer.add([this.pauseOverlay, frame, panel, title, sep,
+            levelInfo, resumeBtn.bg, resumeBtn.label,
             restartBtn.bg, restartBtn.label, menuBtn.bg, menuBtn.label]);
         this.pauseContainer.setVisible(true);
     }
@@ -228,6 +352,22 @@ class GameScene extends Phaser.Scene {
         });
         bg.on('pointerup', () => callback());
         return { bg, label };
+    }
+
+    // ── Draw small gear for decorations ──
+    _drawMiniGear(g, cx, cy, radius, teeth, color, alpha) {
+        g.fillStyle(color, alpha||0.5);
+        g.fillCircle(cx, cy, radius);
+        const tw = radius * 0.35, th = radius * 0.25;
+        const step = (Math.PI * 2) / teeth;
+        for (let i = 0; i < teeth; i++) {
+            const angle = i * step - Math.PI / 2;
+            const tx = cx + Math.cos(angle) * radius;
+            const ty = cy + Math.sin(angle) * radius;
+            g.fillRect(tx - tw / 2, ty - th / 2, tw, th);
+        }
+        g.fillStyle(0x000000, 0.3);
+        g.fillCircle(cx, cy, radius * 0.4);
     }
 
     // ── Visual polish: entrance animation ──
@@ -452,6 +592,40 @@ class GameScene extends Phaser.Scene {
 
             // Play sound
             try { this.sound.play('sfx-stomp'); } catch(e) {}
+
+            // ── Stomp combo ──
+            const now = this.time.now;
+            if (now - this._lastStompTime < SPECTACLE.COMBO_MAX_BREAK_TIME) {
+                this._comboCount++;
+            } else {
+                this._comboCount = 1;
+            }
+            this._lastStompTime = now;
+
+            if (this._comboCount >= 2) {
+                // Show combo text
+                const comboLabel = this.add.text(enemy.x, enemy.y - 50, this._comboCount + 'x COMBO!', {
+                    fontFamily: 'monospace',
+                    fontSize: '22px',
+                    color: '#FF6600',
+                    fontStyle: 'bold',
+                    stroke: '#000000',
+                    strokeThickness: 4
+                }).setOrigin(0.5);
+
+                this.tweens.add({
+                    targets: comboLabel,
+                    y: comboLabel.y - 40,
+                    scale: 1.3,
+                    alpha: 0,
+                    duration: 900,
+                    ease: 'Quad.easeOut',
+                    onComplete: () => comboLabel.destroy()
+                });
+
+                // Bigger screen shake for combos
+                this.cameras.main.shake(150, 0.015);
+            }
 
             // ── Visual polish: stomp effects ──
             this.cameras.main.shake(100, 0.008);
