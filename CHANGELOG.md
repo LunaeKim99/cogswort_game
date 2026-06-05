@@ -21,6 +21,8 @@ All notable changes to Cogsworth: Last Wind are documented here.
 - Interactive buttons with hover/press animations (main menu, game over)
 
 ### Changed
+- **Moving platform texture alignment**: tilePosition now uses world-aligned left edge (`x - width/2`) instead of raw world center (`x`), matching static ground tiles so brick patterns stay visually consistent
+- **Game over delay reduced**: transition to death menu shortened from ~1500ms to ~500ms real-time (slow-mo 400→150 game-ms; transition timer 1500→150 game-ms, both fire at same tick so death menu appears right after hit-stop)
 - `PLAYER_JUMP` increased from -500 to -580 (higher jumps)
 - Variable jump height reduced from 50% cut to 30% cut, threshold raised to -200
 - Coyote time increased from 80ms to 100ms
@@ -32,6 +34,8 @@ All notable changes to Cogsworth: Last Wind are documented here.
 - Level completion now requires reaching the exit gate (not automatic on last coin)
 
 ### Fixed
+- Moving platform texture appearing misaligned/weird in Level 2 — absolute world coordinate wrapping (tilePositionX = x) caused visual offset vs static ground tiles
+- Slow-mo (`timeScale = 0.3`) was making game-over delayedCalls take 3× longer, defeating the 1500→500 reduction
 - Coins in Level 2 that were floating in mid-air between platforms (repositioned to nearest platform)
 - Coin score loop exploit (overlap triggering multiple times during collect animation)
 - Coin physics body not properly disabling gravity when added to group

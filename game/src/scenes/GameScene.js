@@ -712,14 +712,16 @@ class GameScene extends Phaser.Scene {
         this.player.setTexture('player-hurt');
 
         // ── Visual polish: dramatic death ──
-        this.cameras.main.flash(300, 255, 0, 0);
-        this.cameras.main.shake(400, 0.02);
-        this._emitParticles(this.player.x, this.player.y, 0xFF4444, 20);
-        // Brief slow-mo for dramatic effect
+        this.cameras.main.flash(250, 255, 0, 0);
+        this.cameras.main.shake(300, 0.015);
+        this._emitParticles(this.player.x, this.player.y, 0xFF4444, 16);
+        // Brief hit-stop for impact feel (doesn't affect timer)
         this.time.timeScale = 0.3;
-        this.time.delayedCall(400, () => { this.time.timeScale = 1; });
+        this.time.delayedCall(150, () => { this.time.timeScale = 1; });
 
-        this.time.delayedCall(1500, () => {
+        // Transition to GameOverScene after ~500ms real-time
+        // (150 game-ms at 0.3x timeScale).
+        this.time.delayedCall(150, () => {
             this.scene.stop('HUDScene');
             this.scene.start('GameOverScene', {
                 score: this.score,

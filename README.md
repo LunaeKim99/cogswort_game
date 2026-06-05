@@ -28,6 +28,8 @@ You have **3 lives** per run. Touch an enemy from the side or fall into a gap an
 - **Exit gates** — collect all gears to unlock, then reach the gate to clear the level
 - **Moving platforms** — ride platforms that patrol left/right or up/down
 - **Saw blades** — spinning hazards that patrol and damage on contact (no stomp)
+- **Snappier death** — game-over menu now appears in ~0.5s (was ~1.5s)
+- **Texture fix** — moving platform bricks now align with static ground tiles
 
 ---
 

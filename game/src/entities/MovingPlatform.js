@@ -25,6 +25,11 @@ class MovingPlatform extends Phaser.GameObjects.TileSprite {
         this.minY = config.patrolUp    !== undefined ? config.patrolUp    : y;
         this.maxY = config.patrolDown  !== undefined ? config.patrolDown  : y;
 
+        // Align texture with world coordinates so moving platforms visually
+        // match static ground tiles (static ground uses tilePositionX = 0).
+        this.tilePositionX = x - w / 2;   // left edge in world coords
+        this.tilePositionY = y - 16;      // top edge in world coords (height=32)
+
         // Start moving
         this.body.setVelocity(
             this.axis === 'x' ? this.speed : 0,
@@ -33,8 +38,16 @@ class MovingPlatform extends Phaser.GameObjects.TileSprite {
     }
 
     update() {
-        // Scroll texture as we move (gives a natural rolling look)
-        this.tilePositionX = this.x;
+        // Scroll texture relative to world position (avoids wrapping
+        // artifacts from using large absolute coords like this.x = 2300+)
+        if (this.axis === 'x') {
+            // Horizontal: scroll texture as platform moves sideways
+            this.tilePositionX = this.x - this.pWidth / 2;
+        } else {
+            // Vertical: scroll texture as platform moves up/down
+            // Keep horizontal tile fixed at initial world position
+            this.tilePositionY = this.y - 16;   // top edge in world coords
+        }
 
         // Reverse direction at patrol bounds
         if (this.axis === 'x') {
@@ -44,7 +57,6 @@ class MovingPlatform extends Phaser.GameObjects.TileSprite {
                 this.body.setVelocityX(this.speed);
             }
         } else {
-            this.tilePositionY = this.y;
             if (this.y >= this.maxY) {
                 this.body.setVelocityY(-this.speed);
             } else if (this.y <= this.minY) {
