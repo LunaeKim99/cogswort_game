@@ -8,6 +8,7 @@ class HUDScene extends Phaser.Scene {
         this.score = data.score || 0;
         this.lives = data.lives || 3;
         this.levelName = data.levelName || '';
+        this.totalCoins = data.totalCoins || 0;
     }
 
     create() {
@@ -45,7 +46,6 @@ class HUDScene extends Phaser.Scene {
         this.levelText.setDepth(200);
 
         // Coin counter (below level name)
-        this.totalCoins = data.totalCoins || 0;
         this.coinText = this.add.text(GAME_WIDTH / 2, 42, 'GEARS: 0/' + this.totalCoins, {
             fontFamily: 'monospace',
             fontSize: '12px',
