@@ -44,6 +44,19 @@ class HUDScene extends Phaser.Scene {
         this.levelText.setScrollFactor(0);
         this.levelText.setDepth(200);
 
+        // Coin counter (below level name)
+        this.totalCoins = data.totalCoins || 0;
+        this.coinText = this.add.text(GAME_WIDTH / 2, 42, 'GEARS: 0/' + this.totalCoins, {
+            fontFamily: 'monospace',
+            fontSize: '12px',
+            color: '#FFD700',
+            stroke: '#000000',
+            strokeThickness: 2
+        });
+        this.coinText.setOrigin(0.5, 0);
+        this.coinText.setScrollFactor(0);
+        this.coinText.setDepth(200);
+
         // Listen for events from GameScene
         const gameScene = this.scene.get('GameScene');
         gameScene.events.on('updateScore', (score) => {
@@ -54,6 +67,10 @@ class HUDScene extends Phaser.Scene {
         gameScene.events.on('updateLives', (lives) => {
             this.lives = lives;
             this._updateHearts(lives);
+        });
+
+        gameScene.events.on('updateCoins', ({ collected, total }) => {
+            this.coinText.setText('GEARS: ' + collected + '/' + total);
         });
     }
 

@@ -43,6 +43,7 @@ class GameScene extends Phaser.Scene {
         // Create coins (disable gravity so they stay in place)
         this.coins = this.physics.add.group({ allowGravity: false });
         this._createCoins(levelData);
+        this.totalCoins = levelData.coins.length;
 
         // Create exit gate
         this._createGate(levelData);
@@ -93,7 +94,13 @@ class GameScene extends Phaser.Scene {
         this.scene.launch('HUDScene', {
             score: this.score,
             lives: this.lives,
-            levelName: levelData.name
+            levelName: levelData.name,
+            totalCoins: this.totalCoins
+        });
+        // Send initial coin count
+        this.events.emit('updateCoins', {
+            collected: 0,
+            total: this.totalCoins
         });
 
         // State flags
@@ -461,8 +468,12 @@ class GameScene extends Phaser.Scene {
         coin.collect();
         this.score += COIN_SCORE;
 
-        // Update HUD
+        // Update HUD: score
         this.events.emit('updateScore', this.score);
+
+        // Update HUD: coin counter
+        const collected = this.totalCoins - this.coins.countActive();
+        this.events.emit('updateCoins', { collected, total: this.totalCoins });
 
         // ── Visual polish: coin collect effects ──
         this._showFloatingText(coin.x, coin.y, '+10', '#00FF88');

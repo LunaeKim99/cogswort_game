@@ -28,6 +28,8 @@ class Coin extends Phaser.Physics.Arcade.Sprite {
 
         // Disable physics immediately to prevent re-triggering
         this.body.enable = false;
+        // Mark inactive so countActive() doesn't count us anymore
+        this.active = false;
 
         // Play sound
         try { this.scene.sound.play('sfx-coin'); } catch(e) {}
