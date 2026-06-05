@@ -449,15 +449,38 @@ class BootScene extends Phaser.Scene {
         g.generateTexture('saw-blade', 28, 28);
         g.destroy();
 
-        // SPIKE (static hazard, 20x24)
+        // SPIKE TRAP (48x32) — wide serrated trap plate
         g = this.add.graphics();
-        g.fillStyle(0xCC3333);
-        g.fillTriangle(10, 0, 0, 24, 20, 24);
-        g.fillStyle(0xFF5555);
-        g.fillTriangle(10, 4, 4, 24, 16, 24);
-        g.fillStyle(0xAA2222);
-        g.fillRect(0, 22, 20, 2);
-        g.generateTexture('spike', 20, 24);
+        // Base plate (iron)
+        g.fillStyle(0x555555);
+        g.fillRect(0, 24, 48, 8);
+        g.fillStyle(0x666666);
+        g.fillRect(0, 25, 48, 3);
+        g.fillStyle(0x444444);
+        g.fillRect(0, 29, 48, 3);
+        // Rivets on base
+        g.fillStyle(0x888888);
+        g.fillRect(4,  26, 2, 2);
+        g.fillRect(22, 26, 2, 2);
+        g.fillRect(42, 26, 2, 2);
+        // Serrated spikes (5 teeth)
+        const spikeColors = [0xCC3333, 0xBB4444, 0xCC3333, 0xBB4444, 0xCC3333];
+        for (let i = 0; i < 5; i++) {
+            const sx = 2 + i * 10; // 2, 12, 22, 32, 42
+            g.fillStyle(spikeColors[i]);
+            g.fillTriangle(sx + 5, 0, sx, 24, sx + 10, 24);
+            g.fillStyle(0xFF6666, 0.4);
+            g.fillTriangle(sx + 5, 2, sx + 2, 24, sx + 8, 24);
+            // Serrated edge: small zigzag on left side
+            g.fillStyle(0xAA2222);
+            g.fillTriangle(sx, 18, sx - 1, 22, sx + 2, 22);
+            g.fillTriangle(sx, 12, sx - 1, 16, sx + 2, 16);
+            g.fillTriangle(sx, 6,  sx - 1, 10, sx + 2, 10);
+        }
+        // Highlight line on spike tips
+        g.fillStyle(0xFFAAAA, 0.3);
+        g.fillRect(0, 0, 48, 1);
+        g.generateTexture('spike-trap', 48, 32);
         g.destroy();
     }
 

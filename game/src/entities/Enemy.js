@@ -69,10 +69,11 @@ class PatrolDrone extends Phaser.Physics.Arcade.Sprite {
         return dx < this._detectRadiusX && dy > 0 && dy < this._scanRange;
     }
 
-    // ── Draw sensor cone visual ──
+    // ── Draw sensor cone visual (below drone, pointing down) ──
     _showSensorCone() {
         if (this._sensorCone) return;
-        this._sensorCone = this.scene.add.image(this.x, this.y + 10, 'laser-cone')
+        this._sensorCone = this.scene.add.image(this.x, this.y + 14, 'laser-cone')
+            .setOrigin(0.5, 0)  // top-center: cone extends downward from drone bottom
             .setAlpha(0.4)
             .setScale(1, this._scanRange / 12)
             .setDepth(5);
@@ -167,13 +168,14 @@ class PatrolDrone extends Phaser.Physics.Arcade.Sprite {
     _checkLaserHit(player) {
         if (!this._isLaserActive() || !player || !player.body || player.isInvincible || player.isDead) return false;
 
-        // Laser hitbox: thin vertical column below drone
+        // Laser hitbox: thin vertical column from drone bottom to ground
         const laserX = this.x;
         const halfW = 6; // half width of laser hitbox
+        const droneBottom = this.y + 14; // bottom of 28px drone sprite
         const px = player.x;
         const py = player.y + player.body.height / 2;
 
-        return px > laserX - halfW && px < laserX + halfW && py > this.y && py < 418;
+        return px > laserX - halfW && px < laserX + halfW && py > droneBottom && py < 418;
     }
 
     // ── Stomp ──
@@ -214,10 +216,10 @@ class PatrolDrone extends Phaser.Physics.Arcade.Sprite {
         }
         this.setVelocityX(50 * this.direction);
 
-        // ── Sensor cone follow body ──
+        // ── Sensor cone follow body (extends downward from drone bottom) ──
         if (this._sensorCone) {
             this._sensorCone.x = this.x;
-            this._sensorCone.y = this.y + 10;
+            this._sensorCone.y = this.y + 14;
         }
 
         // ── Laser state machine ──

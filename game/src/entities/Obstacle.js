@@ -284,11 +284,11 @@ class SurpriseSaw extends Phaser.Physics.Arcade.Sprite {
 }
 
 // ────────────────────────────────────────────────────────────
-// SpikeTrap - Periodic retracting/extending spike
+// SpikeTrap - Periodic retracting/extending serrated spike
 // ────────────────────────────────────────────────────────────
 class SpikeTrap extends Phaser.Physics.Arcade.Sprite {
     constructor(scene, x, y, config) {
-        super(scene, x, y, 'spike');
+        super(scene, x, y, 'spike-trap');
 
         scene.add.existing(this);
         scene.physics.add.existing(this);
@@ -296,25 +296,43 @@ class SpikeTrap extends Phaser.Physics.Arcade.Sprite {
         this.body.setAllowGravity(false);
         this.body.setImmovable(true);
 
-        // Config
-        this._extendDelay = config.extendDelay || 1500;   // time retracted before extending
-        this._retractDelay = config.retractDelay || 2000;  // time extended before retracting
-        this._isInverted = config.inverted || false;       // if on ceiling, inverted
+        // Bottom-center anchor: base plate sits at the surface, spikes extend upward
+        this.setOrigin(0.5, 1);
 
-        // For ground spikes: retracted = below surface, extended = visible
-        // For ceiling spikes (below floating platform): retracted = above surface
-        this._surfaceY = y;                  // the surface it sits on
-        this._extendedY = this._isInverted ? y - 20 : y;      // visible position
-        this._retractedY = this._isInverted ? y + 12 : y + 14; // hidden position
+        // Config
+        this._extendDelay = config.extendDelay || 1500;
+        this._retractDelay = config.retractDelay || 2000;
+        this._isInverted = config.inverted || false;
+
+        // Positioning:
+        // - Ground spike (y ~ GROUND_Y - 12 = 406): retracted fully behind ground tile
+        // - Inverted / floating: retracted above/below surface
+        const groundSurface = GROUND_Y - TILE_SIZE; // 386
+        const isOnGround = Math.abs(y - (GROUND_Y - 12)) < 10;
+
+        if (isOnGround) {
+            // Ground spike: base plate sits at ground surface when extended
+            // hidden one tile below when retracted
+            this._extendedY = groundSurface;       // 386, spikes emerge above surface
+            this._retractedY = GROUND_Y + 4;       // 422, fully behind ground tile
+        } else {
+            this._extendedY = y;
+            this._retractedY = this._isInverted ? y - 24 : y + 24;
+        }
+
+        // Hitbox: damage zone is a wide rectangle at the surface
+        // We'll resize the physics body for the active spike area
+        this.body.setSize(40, 20);
+        this.body.setOffset(4, 12); // center the hitbox
 
         // State
         this._extended = false;
         this._stateTimer = 0;
         this._ready = false;
 
-        // Start retracted
+        // Start retracted — hidden behind platform via depth (not just transparent)
         this.y = this._retractedY;
-        this.setAlpha(0.3);
+        this.setDepth(-5);  // behind platforms (depth 0) when retracted
         this.body.enable = false;
 
         // Initial delay before first extension
@@ -330,35 +348,35 @@ class SpikeTrap extends Phaser.Physics.Arcade.Sprite {
         const now = this.scene.time.now;
 
         if (!this._extended) {
-            // Currently retracted
+            // Currently retracted — waiting to extend
             if (now - this._stateTimer >= this._extendDelay) {
-                // Extend!
+                // Extend upward from platform!
                 this._extended = true;
                 this.body.enable = true;
-                this.setAlpha(1);
+                this.setDepth(5);  // above platforms when extended
 
                 this.scene.tweens.add({
                     targets: this,
                     y: this._extendedY,
-                    duration: 150,
-                    ease: 'Quad.easeOut',
+                    duration: 180,
+                    ease: 'Back.easeOut',
                     onComplete: () => {
                         this._stateTimer = this.scene.time.now;
                     }
                 });
             }
         } else {
-            // Currently extended
+            // Currently extended — waiting to retract
             if (now - this._stateTimer >= this._retractDelay) {
-                // Retract!
+                // Retract back into platform
                 this._extended = false;
                 this.body.enable = false;
-                this.setAlpha(0.3);
+                this.setDepth(-5);  // behind platforms when retracted
 
                 this.scene.tweens.add({
                     targets: this,
                     y: this._retractedY,
-                    duration: 200,
+                    duration: 250,
                     ease: 'Quad.easeIn',
                     onComplete: () => {
                         this._stateTimer = this.scene.time.now;
