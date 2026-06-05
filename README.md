@@ -25,11 +25,16 @@
 You have **3 lives** per run. Touch an enemy from the side or fall into a gap and you lose one. Lose all three — game over.
 
 ### New in the latest version
+- **15 levels** across 3 districts (was 3) — 5 levels per district with progressive difficulty
+- **PatrolDrone** — airborne enemy with laser cone attack; stompable from above
+- **Walker** — ground patrol mechanical automaton (humanoid steampunk robot)
+- **BuriedSaw** — saw blade that springs up when you get close
+- **SurpriseSaw** — saw that emerges from the void and patrols
+- **SpikeTrap** — floor spikes that extend/retract on a timer
+- **Level banners** — shows district + sub-level name at start
+- **Pause menu (ESC)** — shows district and level info
 - **Exit gates** — collect all gears to unlock, then reach the gate to clear the level
 - **Moving platforms** — ride platforms that patrol left/right or up/down
-- **Saw blades** — spinning hazards that patrol and damage on contact (no stomp)
-- **Snappier death** — game-over menu now appears in ~0.5s (was ~1.5s)
-- **Texture fix** — moving platform bricks now align with static ground tiles
 
 ---
 
@@ -57,12 +62,12 @@ Serve the `game/` directory and open the root URL.
 
 ## 🕹️ Game Features
 
-- **3 levels** with progressive difficulty (4800px → 5600px → 6400px)
+- **15 levels** (3 districts × 5 levels) — Bellows District (Easy), Clockwork Quarter (Medium), The Core (Hard)
 - **Procedural pixel art** — all sprites, backgrounds, and UI generated at runtime (zero external images)
-- **Steampunk theme** — gears, goggles, brick platforms, glowing factory backgrounds
+- **Steampunk mechanical theme** — brass, copper, gears, rivets, pistons, steam pipes, glowing amber eyes
 - **Smooth platforming** — coyote time, jump buffering, variable jump height
 - **Responsive controls** — keyboard (desktop) + touch buttons (mobile) in one build
-- **Juice & polish** — screen shake, particle bursts, floating score text, interactive buttons
+- **Juice & polish** — screen shake, particle bursts, floating score text, interactive buttons, slow-mo death
 - **Audio** — jump, collect, stomp, hurt, win sound effects + background music
 - **Mobile-ready** — scales to any screen, touch-friendly, ready for Android APK via Capacitor
 
@@ -81,13 +86,12 @@ game/
 │   ├── constants.js         # Game constants (physics, gameplay)
 │   ├── main.js              # Game initialization
 │   ├── data/
-│   │   └── levels.js        # Level definitions (3 levels)
-│   ├── entities/
+│   │   └── levels.js        # Level definitions (15 levels, 3 districts)
 │   │   ├── Player.js        # Player class
-│   │   ├── Enemy.js         # Enemy patrol class
+│   │   ├── Enemy.js         # PatrolDrone (airborne+lazer) & Walker (ground mech)
 │   │   ├── Coin.js          # Collectible coin class
 │   │   ├── MovingPlatform.js # Moving platform class
-│   │   └── Obstacle.js      # Saw blade / spike hazard
+│   │   └── Obstacle.js      # BuriedSaw, SurpriseSaw, SpikeTrap, legacy saw
 │   ├── ui/
 │   │   └── TouchControls.js # Virtual buttons for mobile
 │   └── scenes/
@@ -124,11 +128,23 @@ Then in Android Studio: **Run** (or Build → APK).
 
 ## 📜 Level Design
 
-| Level | Name | Width | Difficulty | Features |
-|-------|------|:-----:|:----------:|----------|
-| 1 | Bellows District | 4800px | Easy | Wide platforms, basic enemies, intro to stomp |
-| 2 | Clockwork Quarter | 5600px | Medium | More gaps, moving platform, saw blade |
-| 3 | The Core | 6400px | Hard | Narrow platforms, 3 moving platforms, 3 saw blades |
+| Level | District - Name | Width | Difficulty | New Features |
+|-------|-----------------|:-----:|:----------:|--------------|
+| 1 | Bellows District - Tutorial | 2400px | Easy | Basic enemies, stomp intro |
+| 2 | Bellows District - The Smelting Floors | 2800px | Easy | PatrolDrone, moving platform |
+| 3 | Bellows District - Conveyor Crossings | 3200px | Easy | Walker, BuriedSaw |
+| 4 | Bellows District - Pipeworks | 3600px | Medium | SurpriseSaw, more gaps |
+| 5 | Bellows District - The Great Furnace | 4000px | Medium | SpikeTrap, mixed enemies |
+| 6 | Clockwork Quarter - Tutorial | 3200px | Medium | Moving platforms, airborne hazards |
+| 7 | Clockwork Quarter - Gear Assembly | 3600px | Medium | Dense enemy patrols |
+| 8 | Clockwork Quarter - Pendulum Pass | 4000px | Medium | Vertical moving platforms |
+| 9 | Clockwork Quarter - Regulator Room | 4400px | Hard | Spike timing puzzles |
+| 10 | Clockwork Quarter - The Mainspring | 4800px | Hard | All enemy types |
+| 11 | The Core - Tutorial | 4000px | Hard | Tight platforms, surprise saws |
+| 12 | The Core - Pressure Valve | 4400px | Hard | Fast drones, spike corridors |
+| 13 | The Core - Boiler Room | 4800px | Hard | Dense obstacles, mixed enemies |
+| 14 | The Core - Governor's Chamber | 5600px | Hard | Precision platforming |
+| 15 | The Core - The Heart of Cogsworth | 6400px | Very Hard | All hazards maxed |
 
 ---
 

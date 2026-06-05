@@ -7,6 +7,15 @@ All notable changes to Cogsworth: Last Wind are documented here.
 ## [Unreleased]
 
 ### Added
+- **15 levels** (was 3) across 3 districts — Bellows District (Easy, Lv1–5), Clockwork Quarter (Medium, Lv6–10), The Core (Hard, Lv11–15)
+- **PatrolDrone** — airborne enemy with laser attack (IDLE → WARNING → FIRING → COOLDOWN states)
+- **Walker** — ground patrol enemy, humanoid steampunk mechanical automaton
+- **BuriedSaw** — half-buried saw blade that pops up when player approaches
+- **SurpriseSaw** — patrolling saw that emerges from the void when player nears
+- **SpikeTrap** — periodic spike that extends/retracts on delay; damages only when extended
+- Level intro banner showing district name + sub-level name
+- Pause menu (ESC) displaying district and level info
+- Level Complete screen with district progress (District Level X/5, Overall X/15)
 - Moving platforms (horizontal & vertical patrol) — Level 2 & 3
 - Saw blade obstacles (spinning hazards, damage on contact) — Level 2 & 3
 - Spike static hazard texture (future use)
@@ -19,6 +28,13 @@ All notable changes to Cogsworth: Last Wind are documented here.
 - Player trail particles (while moving)
 - Slow-motion death effect (time scale 0.3 on game over)
 - Interactive buttons with hover/press animations (main menu, game over)
+
+### Changed
+- **Walker redesign**: humanoid steampunk mechanical automaton — brass dome head with ventilator jaw, brass goggles with amber eyes, copper torso with chest gear, steam pipe, pincer claws, piston legs, metal boots (zero skin/cloth)
+- **Drone redesign**: pure steampunk mechanical drone — brass propeller, copper dome body, central gear with amber eye, steam pipes, steam vent, rivets (replaced sci-fi blue body + red glow)
+- **Enemy system**: refactored into PatrolDrone and Walker classes with shared enemy utilities
+- **Obstacle system**: expanded from single saw type to Obstacle (BuriedSaw, SurpriseSaw, SpikeTrap, legacy saw)
+- Entity creation in GameScene now switches on `type` field for enemy and obstacle spawning
 
 ### Changed
 - **Moving platform texture alignment**: tilePosition now uses world-aligned left edge (`x - width/2`) instead of raw world center (`x`), matching static ground tiles so brick patterns stay visually consistent
