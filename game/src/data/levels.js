@@ -32,7 +32,9 @@ const levels = [
             { x: 4000,  y: 290, width: 128, height: GROUND_H }
         ],
         enemies: [
-            { x: 600,   patrolLeft: 480,  patrolRight: 880 },
+            { x: 250,   patrolLeft: 180,  patrolRight: 400  },
+            { x: 600,   patrolLeft: 480,  patrolRight: 880  },
+            { x: 900,   patrolLeft: 830,  patrolRight: 1020 },
             { x: 1500,  patrolLeft: 1350, patrolRight: 1700 },
             { x: 2800,  patrolLeft: 2600, patrolRight: 3000 },
             { x: 4000,  patrolLeft: 3800, patrolRight: 4200 }

@@ -12,6 +12,8 @@ class Enemy extends Phaser.Physics.Arcade.Sprite {
         this.isDead = false;
         this.deathTimer = 0;
 
+        this.setScale(1.35); // bigger visual for readability
+        this.setDepth(10);    // above platforms
         this.body.setSize(24, 24);
         this.body.setCollideWorldBounds(true);
         this.body.setVelocityX(60);
