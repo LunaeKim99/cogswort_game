@@ -20,6 +20,7 @@ class BootScene extends Phaser.Scene {
         this.generatePauseButtonTexture();
         this.generateGateTextures();
         this.generateObstacleTextures();
+        this.generateNewEntityTextures();
         this.generateGroundTile();
         this.generateBackgroundTextures();
 
@@ -457,6 +458,125 @@ class BootScene extends Phaser.Scene {
         g.fillStyle(0xAA2222);
         g.fillRect(0, 22, 20, 2);
         g.generateTexture('spike', 20, 24);
+        g.destroy();
+    }
+
+    // ── NEW ENTITY textures (walker, laser beam) ──
+    generateNewEntityTextures() {
+        this._generateWalkerTextures();
+        this._generateLaserTexture();
+    }
+
+    _generateWalkerTextures() {
+        // WALKER WALK (28x28) — ground patrol robot with legs
+        let g = this.add.graphics();
+        // Antenna
+        g.fillStyle(0x888888);
+        g.fillRect(13, 1, 2, 5);
+        g.fillStyle(0xFFD700);
+        g.fillCircle(14, 1, 2);
+        // Body
+        g.fillStyle(0x555555);
+        g.fillRect(6,  6,  16, 14);
+        g.fillStyle(0x444444);
+        g.fillRect(6,  9,  16, 1);
+        g.fillRect(6,  13, 16, 1);
+        // Side panels
+        g.fillStyle(0x666666);
+        g.fillRect(4,  8,  2,  6);
+        g.fillRect(22, 8,  2,  6);
+        // Eye
+        g.fillStyle(0xFF0000);
+        g.fillCircle(14, 11, 3);
+        g.fillStyle(0xFF4444);
+        g.fillCircle(14, 11, 2);
+        g.fillStyle(0xFF8888);
+        g.fillCircle(14, 11, 1);
+        // Tracks / wheels
+        g.fillStyle(0x333333);
+        g.fillRect(7,  20, 14, 4);
+        g.fillStyle(0x555555);
+        g.fillCircle(9,  22, 3);
+        g.fillCircle(19, 22, 3);
+        // Tread marks
+        g.fillStyle(0x666666);
+        g.fillRect(8,  21, 2, 2);
+        g.fillRect(12, 21, 2, 2);
+        g.fillRect(16, 21, 2, 2);
+        // Rivets
+        g.fillStyle(0x999999);
+        g.fillRect(8,  7,  1,  1);
+        g.fillRect(19, 7,  1,  1);
+        g.fillRect(8,  15, 1,  1);
+        g.fillRect(19, 15, 1,  1);
+        g.generateTexture('walker-walk', 28, 28);
+        g.destroy();
+
+        // WALKER DEATH
+        g = this.add.graphics();
+        g.fillStyle(0x888888);
+        g.fillRect(13, 1, 2, 5);
+        g.fillStyle(0x555555);
+        g.fillRect(6,  6,  16, 14);
+        g.fillStyle(0x444444);
+        g.fillRect(6,  9,  16, 1);
+        g.fillRect(6,  13, 16, 1);
+        g.fillStyle(0x666666);
+        g.fillRect(4,  8,  2,  6);
+        g.fillRect(22, 8,  2,  6);
+        g.fillStyle(0x333333);
+        g.fillRect(7,  20, 14, 4);
+        g.fillStyle(0x555555);
+        g.fillCircle(9,  22, 3);
+        g.fillCircle(19, 22, 3);
+        // X eyes
+        g.lineStyle(2, 0xFF0000);
+        g.beginPath();
+        g.moveTo(11, 9); g.lineTo(17, 13);
+        g.moveTo(17, 9); g.lineTo(11, 13);
+        g.strokePath();
+        // Dark overlay
+        g.fillStyle(0x000000, 0.4);
+        g.fillRect(0, 0, 28, 28);
+        g.generateTexture('walker-death', 28, 28);
+        g.destroy();
+    }
+
+    _generateLaserTexture() {
+        // Laser beam (8x80) — vertical glowing beam
+        let g = this.add.graphics();
+        // Core beam
+        g.fillStyle(0xFF4444, 0.9);
+        g.fillRect(2, 0, 4, 80);
+        // Inner glow (white)
+        g.fillStyle(0xFFFFFF, 0.6);
+        g.fillRect(3, 0, 2, 80);
+        // Outer glow (red, wide)
+        g.fillStyle(0xFF0000, 0.15);
+        g.fillRect(0, 0, 8, 80);
+        g.generateTexture('laser-beam', 8, 80);
+        g.destroy();
+
+        // Laser glow ring / sensor cone (16x12) — small radar pulse
+        g = this.add.graphics();
+        g.fillStyle(0xFF0000, 0.3);
+        g.fillTriangle(8, 0, 0, 12, 16, 12);
+        g.fillStyle(0xFF4444, 0.2);
+        g.fillTriangle(8, 2, 2, 12, 14, 12);
+        g.fillStyle(0xFF8888, 0.1);
+        g.fillTriangle(8, 4, 4, 12, 12, 12);
+        g.generateTexture('laser-cone', 16, 12);
+        g.destroy();
+
+        // Laser warning marker (8x8) — pulsing red dot
+        g = this.add.graphics();
+        g.fillStyle(0xFF0000, 0.8);
+        g.fillCircle(4, 4, 4);
+        g.fillStyle(0xFF6666, 0.6);
+        g.fillCircle(4, 4, 2);
+        g.fillStyle(0xFFFFFF, 0.4);
+        g.fillCircle(4, 4, 1);
+        g.generateTexture('laser-warning', 8, 8);
         g.destroy();
     }
 

@@ -1,5 +1,20 @@
-// Enemy entity class - steampunk patrol drone
-class Enemy extends Phaser.Physics.Arcade.Sprite {
+// Enemy entity classes
+// ============================================================
+// PatrolDrone - airborne drone with laser scanner
+// Walker - ground patrol robot
+
+// ── Laser State Constants ──
+const DRONE_STATE = {
+    IDLE:     'idle',
+    WARNING:  'warning',   // player detected, about to fire
+    FIRING:   'firing',    // laser active
+    COOLDOWN: 'cooldown'
+};
+
+// ────────────────────────────────────────────────────────────
+// PatrolDrone - Airborne patrol with laser sensor
+// ────────────────────────────────────────────────────────────
+class PatrolDrone extends Phaser.Physics.Arcade.Sprite {
     constructor(scene, x, y, patrolLeft, patrolRight) {
         super(scene, x, y, 'enemy-walk');
 
@@ -8,14 +23,297 @@ class Enemy extends Phaser.Physics.Arcade.Sprite {
 
         this.patrolLeft = patrolLeft;
         this.patrolRight = patrolRight;
-        this.direction = 1; // 1 = right, -1 = left
+        this.direction = 1;
+        this.isDead = false;
+        this.deathTimer = 0;
+        this._droneY = y;  // base Y for bobbing
+
+        // Airborne: no gravity
+        this.body.setAllowGravity(false);
+        this.body.setCollideWorldBounds(true);
+        this.body.setSize(24, 24);
+        this.setScale(1.35);
+        this.setDepth(10);
+        this.body.setVelocityX(50); // slightly slower than walker
+
+        // ── Laser state machine ──
+        this._state = DRONE_STATE.IDLE;
+        this._stateTimer = 0;
+        this._laserBeam = null;       // visual beam sprite
+        this._warningDot = null;      // ground warning indicator
+        this._sensorCone = null;      // visual cone
+
+        // Laser config
+        this._warningDuration = 600;    // ms from warning to fire
+        this._fireDuration = 600;       // ms laser stays active
+        this._cooldownDuration = 2000;  // ms before can detect again
+        this._scanRange = 120;          // how far down the sensor reaches
+        this._detectRadiusX = 60;       // horizontal detection width
+
+        // ── Bobbing animation ──
+        scene.tweens.add({
+            targets: this,
+            y: y - 4,
+            duration: 1200 + Math.random() * 400,
+            yoyo: true,
+            repeat: -1,
+            ease: 'Sine.easeInOut'
+        });
+    }
+
+    // ── Check if player is in sensor range ──
+    _isPlayerInSensor(player) {
+        if (!player || !player.body || this.isDead) return false;
+        const dx = Math.abs(player.x - this.x);
+        const dy = (player.y + player.body.height / 2) - this.y;
+        return dx < this._detectRadiusX && dy > 0 && dy < this._scanRange;
+    }
+
+    // ── Draw sensor cone visual ──
+    _showSensorCone() {
+        if (this._sensorCone) return;
+        this._sensorCone = this.scene.add.image(this.x, this.y + 10, 'laser-cone')
+            .setAlpha(0.4)
+            .setScale(1, this._scanRange / 12)
+            .setDepth(5);
+    }
+    _hideSensorCone() {
+        if (this._sensorCone) {
+            this._sensorCone.destroy();
+            this._sensorCone = null;
+        }
+    }
+
+    // ── Show warning dot on ground ──
+    _showWarning(player) {
+        if (!this._warningDot) {
+            // Find ground Y below drone
+            const groundY = 418; // GROUND_Y from levels.js
+            this._warningDot = this.scene.add.image(this.x, groundY, 'laser-warning')
+                .setDepth(15).setAlpha(0);
+
+            // Pulsing animation
+            this.scene.tweens.add({
+                targets: this._warningDot,
+                scaleX: 1.8,
+                scaleY: 1.8,
+                alpha: 0.8,
+                duration: this._warningDuration / 3,
+                yoyo: true,
+                repeat: 1,
+                ease: 'Sine.easeInOut'
+            });
+        }
+        // Follow player X
+        if (this._warningDot) {
+            this._warningDot.x = player.x;
+        }
+    }
+
+    _hideWarning() {
+        if (this._warningDot) {
+            this._warningDot.destroy();
+            this._warningDot = null;
+        }
+    }
+
+    // ── Fire laser beam ──
+    _fireLaser() {
+        const groundY = 418;
+        const beamY = this.y + 14;
+        const beamH = groundY - beamY;
+
+        // Create laser beam sprite
+        this._laserBeam = this.scene.add.image(this.x, beamY + beamH / 2, 'laser-beam')
+            .setDisplaySize(8, beamH)
+            .setOrigin(0.5, 0.5)
+            .setAlpha(0)
+            .setDepth(15);
+
+        // Flash in
+        this.scene.tweens.add({
+            targets: this._laserBeam,
+            alpha: 1,
+            duration: 80,
+            ease: 'Quad.easeIn'
+        });
+
+        // Screen shake
+        this.scene.cameras.main.shake(80, 0.003);
+
+        // Brief hold then fade
+        this.scene.time.delayedCall(this._fireDuration - 100, () => {
+            if (this._laserBeam) {
+                this.scene.tweens.add({
+                    targets: this._laserBeam,
+                    alpha: 0,
+                    duration: 100,
+                    onComplete: () => {
+                        if (this._laserBeam) {
+                            this._laserBeam.destroy();
+                            this._laserBeam = null;
+                        }
+                    }
+                });
+            }
+        });
+    }
+
+    _isLaserActive() {
+        return this._state === DRONE_STATE.FIRING && this._laserBeam && this._laserBeam.active && this._laserBeam.alpha > 0.5;
+    }
+
+    // ── Check laser hit on player ──
+    _checkLaserHit(player) {
+        if (!this._isLaserActive() || !player || !player.body || player.isInvincible || player.isDead) return false;
+
+        // Laser hitbox: thin vertical column below drone
+        const laserX = this.x;
+        const halfW = 6; // half width of laser hitbox
+        const px = player.x;
+        const py = player.y + player.body.height / 2;
+
+        return px > laserX - halfW && px < laserX + halfW && py > this.y && py < 418;
+    }
+
+    // ── Stomp ──
+    stomp() {
+        if (this.isDead) return;
+        this.isDead = true;
+        this.body.enable = false;
+        this.setTexture('enemy-death');
+
+        // Clean up laser visuals
+        this._hideSensorCone();
+        this._hideWarning();
+        if (this._laserBeam) {
+            this._laserBeam.destroy();
+            this._laserBeam = null;
+        }
+        // Stop bobbing tween
+        this.scene.tweens.killTweensOf(this);
+    }
+
+    // ── Update ──
+    update(time, delta, player) {
+        if (this.isDead) {
+            this.deathTimer += delta;
+            if (this.deathTimer >= ENEMY_DEATH_DELAY) {
+                this.destroy();
+            }
+            return;
+        }
+
+        // ── Patrol movement ──
+        if (this.x >= this.patrolRight) {
+            this.direction = -1;
+            this.setFlipX(true);
+        } else if (this.x <= this.patrolLeft) {
+            this.direction = 1;
+            this.setFlipX(false);
+        }
+        this.setVelocityX(50 * this.direction);
+
+        // ── Sensor cone follow body ──
+        if (this._sensorCone) {
+            this._sensorCone.x = this.x;
+            this._sensorCone.y = this.y + 10;
+        }
+
+        // ── Laser state machine ──
+        const now = this.scene.time.now;
+
+        switch (this._state) {
+            case DRONE_STATE.IDLE:
+                this._hideSensorCone();
+                if (player && this._isPlayerInSensor(player)) {
+                    // Player detected → enter warning state
+                    this._state = DRONE_STATE.WARNING;
+                    this._stateTimer = now;
+                    this._showSensorCone();
+                    this._showWarning(player);
+                }
+                break;
+
+            case DRONE_STATE.WARNING:
+                // Update warning dot position
+                if (player) this._showWarning(player);
+                // Keep sensor cone visible
+                this._showSensorCone();
+
+                if (!player || !this._isPlayerInSensor(player)) {
+                    // Player left sensor → abort
+                    this._state = DRONE_STATE.IDLE;
+                    this._hideSensorCone();
+                    this._hideWarning();
+                } else if (now - this._stateTimer >= this._warningDuration) {
+                    // Warning time elapsed → FIRE!
+                    this._state = DRONE_STATE.FIRING;
+                    this._stateTimer = now;
+                    this._hideWarning();
+                    this._fireLaser();
+                }
+                break;
+
+            case DRONE_STATE.FIRING:
+                if (now - this._stateTimer >= this._fireDuration) {
+                    // Laser done → cooldown
+                    this._state = DRONE_STATE.COOLDOWN;
+                    this._stateTimer = now;
+                    this._hideSensorCone();
+                }
+                break;
+
+            case DRONE_STATE.COOLDOWN:
+                if (now - this._stateTimer >= this._cooldownDuration) {
+                    this._state = DRONE_STATE.IDLE;
+                    this._stateTimer = 0;
+                }
+                break;
+        }
+
+        // ── Laser hit check (done in update for responsiveness) ──
+        if (this._isLaserActive() && player) {
+            const wasHit = this._checkLaserHit(player);
+            // The actual damage is handled by GameScene via overlap, but we 
+            // emit a signal or the GameScene checks _isLaserActive
+        }
+    }
+
+    // ── Cleanup on destroy ──
+    destroy(fromScene) {
+        this._hideSensorCone();
+        this._hideWarning();
+        if (this._laserBeam) {
+            this._laserBeam.destroy();
+            this._laserBeam = null;
+        }
+        this.scene.tweens.killTweensOf(this);
+        super.destroy(fromScene);
+    }
+}
+
+// ────────────────────────────────────────────────────────────
+// Walker - Ground patrol robot
+// ────────────────────────────────────────────────────────────
+class Walker extends Phaser.Physics.Arcade.Sprite {
+    constructor(scene, x, y, patrolLeft, patrolRight) {
+        super(scene, x, y, 'walker-walk');
+
+        scene.add.existing(this);
+        scene.physics.add.existing(this);
+
+        this.patrolLeft = patrolLeft;
+        this.patrolRight = patrolRight;
+        this.direction = 1;
         this.isDead = false;
         this.deathTimer = 0;
 
-        this.setScale(1.35); // bigger visual for readability
-        this.setDepth(10);    // above platforms
-        this.body.setSize(24, 24);
+        // Ground-based: gravity affects it
         this.body.setCollideWorldBounds(true);
+        this.body.setSize(24, 24);
+        this.setScale(1.35);
+        this.setDepth(10);
         this.body.setVelocityX(60);
     }
 
@@ -38,13 +336,11 @@ class Enemy extends Phaser.Physics.Arcade.Sprite {
         }
 
         this.setVelocityX(60 * this.direction);
-        this.setTexture('enemy-walk');
     }
 
-    // Called when player stomps this enemy
     stomp() {
         this.isDead = true;
         this.body.enable = false;
-        this.setTexture('enemy-death');
+        this.setTexture('walker-death');
     }
 }

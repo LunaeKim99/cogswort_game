@@ -35,10 +35,27 @@ class LevelCompleteScene extends Phaser.Scene {
             targets: completeText, scale: 1, duration: 600, ease: 'Back.easeOut'
         });
 
-        // Level name
-        const levelNames = ['Bellows District', 'Clockwork Quarter', 'The Core'];
-        this.add.text(400, 160, levelNames[this.level] + ' - CLEARED', {
+        // Level info
+        const lvl = levels[this.level];
+        const district = lvl ? lvl.district : ('Level ' + (this.level + 1));
+        const subName = lvl ? lvl.subName : '';
+        const districtLevel = lvl ? lvl.districtLevel : (this.level + 1);
+        const globalLevel = this.level + 1;
+        const totalLevels = levels.length;
+
+        // District + level number
+        this.add.text(400, 140, district, {
+            fontSize: '14px', fontFamily: 'monospace', color: '#FFD700'
+        }).setOrigin(0.5);
+
+        // Sub-level name
+        this.add.text(400, 165, subName + ' — CLEARED', {
             fontSize: '18px', fontFamily: 'monospace', color: '#88FF88'
+        }).setOrigin(0.5);
+
+        // Progress indicator
+        this.add.text(400, 190, 'DISTRICT LEVEL ' + districtLevel + '/5  •  OVERALL ' + globalLevel + '/' + totalLevels, {
+            fontSize: '11px', fontFamily: 'monospace', color: '#AAAAAA'
         }).setOrigin(0.5);
 
         // Score

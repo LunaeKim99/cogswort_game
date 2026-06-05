@@ -135,17 +135,30 @@ class GameScene extends Phaser.Scene {
 
     // ── Level intro banner ──
     _showLevelIntro() {
+        const levelInfo = levels[this.currentLevel];
+        const district = levelInfo.district || '';
+        const subName = levelInfo.subName || '';
+        const districtLevel = levelInfo.districtLevel || (this.currentLevel + 1);
         const levelNum = this.currentLevel + 1;
-        const levelName = levels[this.currentLevel].name;
 
         // Dark overlay
         const overlay = this.add.rectangle(GAME_WIDTH / 2, GAME_HEIGHT / 2, GAME_WIDTH, GAME_HEIGHT, 0x000000, 0.6)
             .setScrollFactor(0).setDepth(800);
 
-        // Big level number
-        const numText = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2 - 30, 'LEVEL ' + levelNum, {
+        // District name
+        const districtText = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2 - 55, district, {
             fontFamily: 'monospace',
-            fontSize: '48px',
+            fontSize: '16px',
+            color: '#FFD700',
+            fontStyle: 'bold',
+            stroke: '#000000',
+            strokeThickness: 3
+        }).setOrigin(0.5).setScrollFactor(0).setDepth(810).setAlpha(0);
+
+        // Big level number
+        const numText = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2 - 20, district + ' — LEVEL ' + districtLevel, {
+            fontFamily: 'monospace',
+            fontSize: '32px',
             color: '#FFD700',
             fontStyle: 'bold',
             stroke: '#000000',
@@ -153,9 +166,9 @@ class GameScene extends Phaser.Scene {
         }).setOrigin(0.5).setScrollFactor(0).setDepth(810).setScale(0).setAlpha(0);
 
         // Level name subtitle
-        const nameText = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2 + 30, levelName, {
+        const nameText = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2 + 35, subName, {
             fontFamily: 'monospace',
-            fontSize: '18px',
+            fontSize: '20px',
             color: '#ffffff',
             stroke: '#000000',
             strokeThickness: 4
@@ -167,6 +180,14 @@ class GameScene extends Phaser.Scene {
         sep.lineBetween(GAME_WIDTH / 2 - 120, GAME_HEIGHT / 2 + 55, GAME_WIDTH / 2 + 120, GAME_HEIGHT / 2 + 55);
 
         // Animate in
+        this.tweens.add({
+            targets: districtText,
+            alpha: 1,
+            y: GAME_HEIGHT / 2 - 60,
+            duration: 400,
+            ease: 'Quad.easeOut'
+        });
+
         this.tweens.add({
             targets: numText,
             scale: 1,
@@ -187,12 +208,13 @@ class GameScene extends Phaser.Scene {
         // Hold then fade out
         this.time.delayedCall(SPECTACLE.INTRO_BANNER_DURATION, () => {
             this.tweens.add({
-                targets: [numText, nameText, overlay, sep],
+                targets: [districtText, numText, nameText, overlay, sep],
                 alpha: 0,
                 scale: numText._scaleX || 1,
                 duration: 400,
                 ease: 'Quad.easeOut',
                 onComplete: () => {
+                    districtText.destroy();
                     numText.destroy();
                     nameText.destroy();
                     overlay.destroy();
@@ -282,8 +304,10 @@ class GameScene extends Phaser.Scene {
         }).setOrigin(0.5).setDepth(920).setAlpha(0);
 
         // Level info at bottom of panel
+        const lvl = levels[this.currentLevel];
         const levelNum = this.currentLevel + 1;
-        const levelInfo = this.add.text(cx, cy + 100, 'LEVEL ' + levelNum + ': ' + levels[this.currentLevel].name, {
+        const levelInfoStr = lvl ? (lvl.district + ' • Lv.' + lvl.districtLevel + ' — ' + lvl.subName) : ('LEVEL ' + levelNum);
+        const levelInfo = this.add.text(cx, cy + 100, levelInfoStr, {
             fontSize: '10px', fontFamily: 'monospace', color: '#888888',
             stroke: '#000000', strokeThickness: 1
         }).setOrigin(0.5).setDepth(920).setAlpha(0);
@@ -472,8 +496,13 @@ class GameScene extends Phaser.Scene {
     // ── Enemies ──
     _createEnemies(levelData) {
         levelData.enemies.forEach(e => {
-            const enemy = new Enemy(this, e.x, e.y, e.patrolLeft, e.patrolRight);
-            this.enemies.add(enemy);
+            let enemy;
+            if (e.type === 'walker' || !e.type) {
+                enemy = new Walker(this, e.x, e.y, e.patrolLeft, e.patrolRight);
+            } else if (e.type === 'drone') {
+                enemy = new PatrolDrone(this, e.x, e.y, e.patrolLeft, e.patrolRight);
+            }
+            if (enemy) this.enemies.add(enemy);
         });
     }
 
@@ -494,19 +523,49 @@ class GameScene extends Phaser.Scene {
         });
     }
 
-    // ── Obstacles (saw blades, spikes) ──
+    // ── Obstacles (saw blades, spikes, traps) ──
     _createObstacles(levelData) {
         if (!levelData.obstacles) return;
         levelData.obstacles.forEach(cfg => {
-            const obs = new Obstacle(this, cfg.x, cfg.y, cfg);
-            this.obstacles.add(obs);
+            let obs;
+            const type = cfg.type || 'saw';
+            switch (type) {
+                case 'buried-saw':
+                    obs = new BuriedSaw(this, cfg.x, cfg.y, cfg);
+                    break;
+                case 'surprise-saw':
+                    obs = new SurpriseSaw(this, cfg.x, cfg.y, cfg);
+                    break;
+                case 'spike-trap':
+                    obs = new SpikeTrap(this, cfg.x, cfg.y, cfg);
+                    break;
+                case 'saw':
+                default:
+                    obs = new Obstacle(this, cfg.x, cfg.y, cfg);
+                    break;
+            }
+            if (obs) this.obstacles.add(obs);
         });
     }
 
     // ── Obstacle hit handler ──
     _handleObstacleHit(player, obstacle) {
         if (player.isInvincible || player.isDead) return;
+        // Spike trap: only damage when extended
+        if (obstacle.isExtended && !obstacle.isExtended()) return;
         this._hurtPlayer();
+    }
+
+    // ── Drone laser damage check ──
+    _checkDroneLasers() {
+        if (this.player.isInvincible || this.player.isDead) return;
+        this.enemies.children.iterate(enemy => {
+            if (enemy && enemy.active && !enemy.isDead && enemy._isLaserActive) {
+                if (enemy._checkLaserHit(this.player)) {
+                    this._hurtPlayer();
+                }
+            }
+        });
     }
 
     // ── Exit Gate ──
@@ -844,21 +903,24 @@ class GameScene extends Phaser.Scene {
             }
         }
 
-        // ── Update enemies ──
+        // ── Update enemies (pass player for drone laser detection) ──
         this.enemies.children.iterate(enemy => {
             if (enemy && enemy.active) {
-                enemy.update(time, delta);
+                enemy.update(time, delta, this.player);
             }
         });
+
+        // ── Check drone laser damage ──
+        this._checkDroneLasers();
 
         // ── Update moving platforms ──
         this.movingPlatforms.forEach(mp => {
             if (mp && mp.active) mp.update();
         });
 
-        // ── Update obstacles ──
+        // ── Update obstacles (pass player for proximity-sensing types) ──
         this.obstacles.children.iterate(obs => {
-            if (obs && obs.active) obs.update();
+            if (obs && obs.active) obs.update(this.player);
         });
 
         // ── Check fall death ──
