@@ -32,12 +32,17 @@ const levels = [
             { x: 4000,  y: 290, width: 128, height: GROUND_H }
         ],
         enemies: [
-            { x: 250,   patrolLeft: 180,  patrolRight: 400  },
-            { x: 600,   patrolLeft: 480,  patrolRight: 880  },
-            { x: 900,   patrolLeft: 830,  patrolRight: 1020 },
-            { x: 1500,  patrolLeft: 1350, patrolRight: 1700 },
-            { x: 2800,  patrolLeft: 2600, patrolRight: 3000 },
-            { x: 4000,  patrolLeft: 3800, patrolRight: 4200 }
+            // Ground 1 (0-960)
+            { x: 250,  y: 404, patrolLeft: 180,  patrolRight: 400  },
+            { x: 600,  y: 404, patrolLeft: 480,  patrolRight: 880  },
+            // Ground 1 edge (max x:960) — patrol dalam batas platform
+            { x: 900,  y: 404, patrolLeft: 830,  patrolRight: 940  },
+            // Ground 2 (1056-1856)
+            { x: 1500, y: 404, patrolLeft: 1350, patrolRight: 1700 },
+            // Ground 4 (2656-3616) — patrolLeft di atas x:2656
+            { x: 2800, y: 404, patrolLeft: 2690, patrolRight: 3000 },
+            // Ground 5 (3680-4800)
+            { x: 4000, y: 404, patrolLeft: 3800, patrolRight: 4200 }
         ],
         coins: [
             { x: 200,  y: 386 },
@@ -87,12 +92,18 @@ const levels = [
             { x: 4500,  y: 290, width: 96,  height: GROUND_H }
         ],
         enemies: [
-            { x: 500,   patrolLeft: 300,  patrolRight: 700  },
-            { x: 1100,  patrolLeft: 950,  patrolRight: 1300 },
-            { x: 1800,  patrolLeft: 1650, patrolRight: 2000 },
-            { x: 2500,  patrolLeft: 2350, patrolRight: 2750 },
-            { x: 3200,  patrolLeft: 3000, patrolRight: 3500 },
-            { x: 4200,  patrolLeft: 4000, patrolRight: 4500 }
+            // Ground 1 (0-800)
+            { x: 500,  y: 404, patrolLeft: 300,  patrolRight: 700  },
+            // Ground 2 (928-1472)
+            { x: 1100, y: 404, patrolLeft: 950,  patrolRight: 1300 },
+            // Ground 3 (1568-2208)
+            { x: 1800, y: 404, patrolLeft: 1650, patrolRight: 2000 },
+            // Ground 4 (2368-2848) — patrolLeft ≥ 2368
+            { x: 2500, y: 404, patrolLeft: 2390, patrolRight: 2750 },
+            // Ground 5 (2976-3680)
+            { x: 3200, y: 404, patrolLeft: 3000, patrolRight: 3500 },
+            // Ground 6 (3776-4320) — patrolRight ≤ 4320
+            { x: 4200, y: 404, patrolLeft: 4000, patrolRight: 4300 }
         ],
         movingPlatforms: [
             // Horizontal: nyebrang gap lebar (ground 2208-2368 = 160px gap)
@@ -167,14 +178,22 @@ const levels = [
             { x: 5400,  y: 300, width: 64,  height: GROUND_H }
         ],
         enemies: [
-            { x: 400,   patrolLeft: 200,  patrolRight: 600  },
-            { x: 900,   patrolLeft: 750,  patrolRight: 1050 },
-            { x: 1500,  patrolLeft: 1350, patrolRight: 1700 },
-            { x: 2100,  patrolLeft: 1950, patrolRight: 2300 },
-            { x: 2700,  patrolLeft: 2500, patrolRight: 2900 },
-            { x: 3300,  patrolLeft: 3100, patrolRight: 3500 },
-            { x: 3900,  patrolLeft: 3700, patrolRight: 4200 },
-            { x: 5000,  patrolLeft: 4800, patrolRight: 5300 }
+            // Ground 1 (0-640)
+            { x: 400,  y: 404, patrolLeft: 200,  patrolRight: 600  },
+            // Ground 2 (800-1184)
+            { x: 900,  y: 404, patrolLeft: 750,  patrolRight: 1050 },
+            // Ground 3 (1376-1856)
+            { x: 1500, y: 404, patrolLeft: 1350, patrolRight: 1700 },
+            // Ground 4 (1984-2304)
+            { x: 2100, y: 404, patrolLeft: 1950, patrolRight: 2250 },
+            // Ground 5 (2496-2976)
+            { x: 2700, y: 404, patrolLeft: 2500, patrolRight: 2900 },
+            // Ground 6 (3136-3520)
+            { x: 3300, y: 404, patrolLeft: 3100, patrolRight: 3500 },
+            // Ground 7 (3712-4192) — patrolRight ≤ 4192
+            { x: 3900, y: 404, patrolLeft: 3700, patrolRight: 4170 },
+            // Ground 9 (4864-5504)
+            { x: 5000, y: 404, patrolLeft: 4800, patrolRight: 5300 }
         ],
         movingPlatforms: [
             // Horizontal: nyebrang floating platform gap 1500-1800
