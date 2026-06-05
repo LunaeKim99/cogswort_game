@@ -142,33 +142,11 @@ class HUDScene extends Phaser.Scene {
 
         // ── Screen vignette overlay (dark edges for atmosphere) ──
         const vignette = this.add.graphics().setScrollFactor(0).setDepth(300);
-        // Top edge
-        vignette.fillStyle(0x000000, 0.15);
-        vignette.fillRect(0, 0, W, 30);
-        // Bottom edge
-        vignette.fillRect(0, H - 30, W, 30);
-        // Left edge
-        vignette.fillRect(0, 0, 20, H);
-        // Right edge
-        vignette.fillRect(W - 20, 0, 20, H);
-        // Corner darkening
-        vignette.fillStyle(0x000000, 0.3);
-        const cR = 50;
-        for (let cx = 0; cx < cR; cx++) {
-            for (let cy = 0; cy < cR; cy++) {
-                const dist = Math.sqrt(cx * cx + cy * cy);
-                if (dist < cR) {
-                    const a = 0.08 * (1 - dist / cR);
-                    if (a > 0.01) {
-                        vignette.fillStyle(0x000000, a);
-                        vignette.fillRect(cx, cy, 1, 1);
-                        vignette.fillRect(W - cx - 1, cy, 1, 1);
-                        vignette.fillRect(cx, H - cy - 1, 1, 1);
-                        vignette.fillRect(W - cx - 1, H - cy - 1, 1, 1);
-                    }
-                }
-            }
-        }
+        vignette.fillStyle(0x000000, 0.2);
+        vignette.fillRect(0, 0, W, 20);             // top
+        vignette.fillRect(0, H - 15, W, 15);         // bottom
+        vignette.fillRect(0, 0, 12, H);              // left
+        vignette.fillRect(W - 12, 0, 12, H);          // right
     }
 
     // ── Progress bar update ──

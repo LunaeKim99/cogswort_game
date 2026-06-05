@@ -90,17 +90,20 @@ class GameScene extends Phaser.Scene {
         // Setup touch controls
         this.touchControls = new TouchControls(this);
 
-        // Launch HUD scene
+        // Launch HUD scene (ensure it's stopped first for clean re-launch)
+        this.scene.stop('HUDScene');
         this.scene.launch('HUDScene', {
             score: this.score,
             lives: this.lives,
             levelName: levelData.name,
             totalCoins: this.totalCoins
         });
-        // Send initial coin count
-        this.events.emit('updateCoins', {
-            collected: 0,
-            total: this.totalCoins
+        // Send initial coin count (delayed to ensure HUDScene is listening)
+        this.time.delayedCall(50, () => {
+            this.events.emit('updateCoins', {
+                collected: 0,
+                total: this.totalCoins
+            });
         });
 
         // State flags
@@ -296,14 +299,14 @@ class GameScene extends Phaser.Scene {
             this._isPaused = false;
             this.physics.world.resume();
             this.tweens.resumeAll();
-            this.scene.resume('HUDScene');
+            // Stop HUDScene so GameScene.create() can launch it fresh
+            this.scene.stop('HUDScene');
             this.scene.restart({ level: this.currentLevel, score: this.score, lives: this.lives });
         });
         const menuBtn = this._makePauseButton(cx, cy + 95, '☰  MAIN MENU', () => {
             this._isPaused = false;
             this.physics.world.resume();
             this.tweens.resumeAll();
-            this.scene.resume('HUDScene');
             this.scene.stop('HUDScene');
             this.scene.start('MainMenuScene');
         });
