@@ -179,21 +179,21 @@ const levels = [
         ],
         enemies: [
             // Ground 1 (0-640)
-            { x: 400,  y: 404, patrolLeft: 200,  patrolRight: 600  },
+            { x: 400,  y: 404, patrolLeft: 220,  patrolRight: 600  },
             // Ground 2 (800-1184)
-            { x: 900,  y: 404, patrolLeft: 750,  patrolRight: 1050 },
+            { x: 900,  y: 404, patrolLeft: 820,  patrolRight: 1050 },
             // Ground 3 (1376-1856)
-            { x: 1500, y: 404, patrolLeft: 1350, patrolRight: 1700 },
+            { x: 1500, y: 404, patrolLeft: 1400, patrolRight: 1700 },
             // Ground 4 (1984-2304)
-            { x: 2100, y: 404, patrolLeft: 1950, patrolRight: 2250 },
+            { x: 2100, y: 404, patrolLeft: 2000, patrolRight: 2250 },
             // Ground 5 (2496-2976)
-            { x: 2700, y: 404, patrolLeft: 2500, patrolRight: 2900 },
+            { x: 2700, y: 404, patrolLeft: 2520, patrolRight: 2900 },
             // Ground 6 (3136-3520)
-            { x: 3300, y: 404, patrolLeft: 3100, patrolRight: 3500 },
-            // Ground 7 (3712-4192) — patrolRight ≤ 4192
-            { x: 3900, y: 404, patrolLeft: 3700, patrolRight: 4170 },
+            { x: 3300, y: 404, patrolLeft: 3150, patrolRight: 3480 },
+            // Ground 7 (3712-4192)
+            { x: 3900, y: 404, patrolLeft: 3730, patrolRight: 4170 },
             // Ground 9 (4864-5504)
-            { x: 5000, y: 404, patrolLeft: 4800, patrolRight: 5300 }
+            { x: 5000, y: 404, patrolLeft: 4880, patrolRight: 5300 }
         ],
         movingPlatforms: [
             // Horizontal: nyebrang floating platform gap 1500-1800
