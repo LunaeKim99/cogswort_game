@@ -37,10 +37,10 @@ You have **3 lives** per run. Touch an enemy from the side or fall into a gap an
 
 **Option 1 — Python (recommended)**
 ```bash
-cd "W:\Matery\G-Tech\Cogsworth Last Wind"
+cd "W:\Matery\G-Tech\Cogsworth Last Wind\game"
 python -m http.server 8080
 ```
-Then open **http://localhost:8080/game/**
+Then open **http://localhost:8080/**
 
 **Option 2 — Node.js**
 ```bash
@@ -49,7 +49,7 @@ npx serve .
 ```
 
 **Option 3 — Any static server**
-Serve the root directory and access `/game/`.
+Serve the `game/` directory and open the root URL.
 
 ---
 

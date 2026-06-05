@@ -4,10 +4,10 @@
 
 ### Option 1: Python (recommended)
 ```bash
-cd W:\Matery\G-Tech\Cogsworth Last Wind
+cd W:\Matery\G-Tech\Cogsworth Last Wind\game
 python -m http.server 8080
 ```
-Then open `http://localhost:8080/game/` in your browser.
+Then open `http://localhost:8080/` in your browser.
 
 ### Option 2: Node.js
 ```bash
@@ -17,7 +17,7 @@ npx serve .
 Then open the URL shown in terminal.
 
 ### Option 3: Any static server
-Serve the root directory (`W:\Matery\G-Tech\Cogsworth Last Wind`) and access `/game/`.
+Simply serve the `game/` directory and open the root URL.
 
 ## Controls
 

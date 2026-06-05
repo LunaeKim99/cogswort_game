@@ -63,13 +63,13 @@ class PreloadScene extends Phaser.Scene {
         });
 
         // Queue audio assets
-        this.load.audio('sfx-coin',   '../assets/sounds/coin.wav');
-        this.load.audio('sfx-jump',   '../assets/sounds/jump.wav');
-        this.load.audio('sfx-hurt',   '../assets/sounds/hurt.wav');
-        this.load.audio('sfx-stomp',  '../assets/sounds/explosion.wav');
-        this.load.audio('sfx-win',    '../assets/sounds/power_up.wav');
-        this.load.audio('sfx-tap',    '../assets/sounds/tap.wav');
-        this.load.audio('bgm-main',   '../assets/music/time_for_adventure.mp3');
+        this.load.audio('sfx-coin',   'assets/sounds/coin.wav');
+        this.load.audio('sfx-jump',   'assets/sounds/jump.wav');
+        this.load.audio('sfx-hurt',   'assets/sounds/hurt.wav');
+        this.load.audio('sfx-stomp',  'assets/sounds/explosion.wav');
+        this.load.audio('sfx-win',    'assets/sounds/power_up.wav');
+        this.load.audio('sfx-tap',    'assets/sounds/tap.wav');
+        this.load.audio('bgm-main',   'assets/music/time_for_adventure.mp3');
 
         // Progress handling
         this.load.on('progress', (value) => {
