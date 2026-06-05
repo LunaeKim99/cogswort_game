@@ -107,7 +107,7 @@ const levels = [
         ],
         movingPlatforms: [
             // Horizontal: nyebrang gap lebar (ground 2208-2368 = 160px gap)
-            { x: 2300,  y: 340, width: 96,  patrolLeft: 2220, patrolRight: 2500, speed: 55 },
+            { x: 2310,  y: 340, width: 96,  patrolLeft: 2270, patrolRight: 2360, speed: 50 },
             // Vertical: naik ke floating platform atas (coin x:2600, y:268)
             { x: 2620,  y: 340, width: 64,  axis: 'y',  patrolUp: 240, patrolDown: 380, speed: 40 },
             // Vertical: naik ke coin x:4100, y:218 (tembok tinggi)
@@ -125,8 +125,8 @@ const levels = [
             { x: 1760, y: 258 },   // on floating platform at x:1700
             // Coin di atas moving platform horizontal
             { x: 2300, y: 308 },   // on moving platform (y:340 - 32)
-            { x: 2200, y: 208 },
-            { x: 2600, y: 268 },
+            { x: 2140, y: 206 },   // di atas floating platform x:2100
+            { x: 2600, y: 220 },   // di atas vertical platform #2 saat peak (top=224)
             // Coin di atas moving platform vertikal
             { x: 2620, y: 208 },   // saat platform di puncak (240-32)
             { x: 3200, y: 238 },
