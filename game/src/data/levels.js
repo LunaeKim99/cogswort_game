@@ -93,7 +93,12 @@ const levels = [
             { x: 4200,  patrolLeft: 4000, patrolRight: 4500 }
         ],
         movingPlatforms: [
-            { x: 2000,  y: 320, width: 96,  patrolLeft: 1900, patrolRight: 2200, speed: 50 }
+            // Horizontal: nyebrang gap lebar (ground 2208-2368 = 160px gap)
+            { x: 2300,  y: 340, width: 96,  patrolLeft: 2220, patrolRight: 2500, speed: 55 },
+            // Vertical: naik ke floating platform atas (coin x:2600, y:268)
+            { x: 2620,  y: 340, width: 64,  axis: 'y',  patrolUp: 240, patrolDown: 380, speed: 40 },
+            // Vertical: naik ke coin x:4100, y:218 (tembok tinggi)
+            { x: 4080,  y: 340, width: 64,  axis: 'y',  patrolUp: 210, patrolDown: 380, speed: 45 }
         ],
         obstacles: [
             { x: 3400,  y: 290, axis: 'x', patrolLeft: 3300, patrolRight: 3550, speed: 70 }
@@ -105,10 +110,14 @@ const levels = [
             { x: 1100, y: 298 },   // on ground section starting at x:928
             { x: 1300, y: 386 },
             { x: 1760, y: 258 },   // on floating platform at x:1700
+            // Coin di atas moving platform horizontal
+            { x: 2300, y: 308 },   // on moving platform (y:340 - 32)
             { x: 2200, y: 208 },
             { x: 2600, y: 268 },
+            // Coin di atas moving platform vertikal
+            { x: 2620, y: 208 },   // saat platform di puncak (240-32)
             { x: 3200, y: 238 },
-            { x: 3800, y: 386 },   // on ground section at x:3776
+            { x: 3800, y: 386 },
             { x: 4100, y: 218 },
             { x: 4700, y: 386 }
         ],
@@ -166,9 +175,18 @@ const levels = [
             { x: 5000,  patrolLeft: 4800, patrolRight: 5300 }
         ],
         movingPlatforms: [
+            // Horizontal: nyebrang floating platform gap 1500-1800
             { x: 1600,  y: 280, width: 80,  patrolLeft: 1500, patrolRight: 1800, speed: 55 },
+            // Horizontal: nyebrang gap di area tengah
             { x: 3500,  y: 260, width: 80,  patrolLeft: 3400, patrolRight: 3700, speed: 60 },
-            { x: 5200,  y: 300, width: 64,  axis: 'y',  patrolUp: 220, patrolDown: 340, speed: 45 }
+            // Vertical: naik tembok tinggi ke floating x:2900, y:300
+            { x: 2880,  y: 340, width: 64,  axis: 'y',  patrolUp: 220, patrolDown: 380, speed: 40 },
+            // Vertical: naik ke coin atas x:4000, y:218
+            { x: 3980,  y: 340, width: 64,  axis: 'y',  patrolUp: 210, patrolDown: 380, speed: 45 },
+            // Horizontal: nyebrang gap terakhir (5504-5664)
+            { x: 5580,  y: 310, width: 96,  patrolLeft: 5480, patrolRight: 5800, speed: 50 },
+            // Vertical: naik tembok tertinggi menjelang gate
+            { x: 6000,  y: 340, width: 64,  axis: 'y',  patrolUp: 200, patrolDown: 380, speed: 55 }
         ],
         obstacles: [
             { x: 1000,  y: 280, axis: 'x', patrolLeft: 900,  patrolRight: 1200, speed: 75 },
@@ -182,14 +200,26 @@ const levels = [
             { x: 900,  y: 278 },
             { x: 1200, y: 218 },
             { x: 1500, y: 268 },
+            // Coin di atas moving platform horizontal x:1600
+            { x: 1600, y: 248 },
             { x: 1800, y: 208 },
+            // Coin di atas moving platform vertikal x:2880
+            { x: 2880, y: 188 },   // puncak 220-32
             { x: 2100, y: 278 },
             { x: 2500, y: 228 },
             { x: 2900, y: 268 },
+            // Coin di atas moving platform horizontal x:3500
+            { x: 3500, y: 228 },
             { x: 3300, y: 208 },
             { x: 3700, y: 386 },
+            // Coin di atas moving platform vertikal x:3980
+            { x: 3980, y: 178 },   // puncak 210-32
             { x: 4000, y: 218 },
             { x: 4500, y: 386 },
+            // Coin di atas moving platform horizontal x:5580
+            { x: 5580, y: 278 },
+            // Coin di atas moving platform vertikal terakhir x:6000
+            { x: 6000, y: 168 },   // puncak 200-32
             { x: 5100, y: 228 }
         ],
         background: 'bg-level3',
