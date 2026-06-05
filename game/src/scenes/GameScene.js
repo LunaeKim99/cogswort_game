@@ -512,25 +512,27 @@ class GameScene extends Phaser.Scene {
     // ── Exit Gate ──
     _createGate(levelData) {
         const gx = levelData.gateX || levelData.width - 80;
-        const gy = GROUND_Y - 32;  // sits on top of ground
+        const gy = GROUND_Y;  // bottom of gate at ground level
 
         // Gate sprite (starts closed/locked)
         this.gate = this.physics.add.sprite(gx, gy, 'gate-closed');
-        this.gate.setOrigin(0.5, 1);  // bottom of sprite at gy
+        this.gate.setOrigin(0.5, 1);  // bottom of sprite at ground level
         this.gate.body.setAllowGravity(false);
         this.gate.body.setImmovable(true);
 
-        // "EXIT" label below gate
-        this.gateLabel = this.add.text(gx, gy + 4, 'EXIT', {
+        // "EXIT" label above the gate arch (bottom-anchored so text grows up)
+        this.gateLabel = this.add.text(gx, gy - 64 - 2, 'EXIT', {
             fontSize: '10px', fontFamily: 'monospace', color: '#666666',
             fontStyle: 'bold'
-        }).setOrigin(0.5, 0).setAlpha(0.6);
+        }).setOrigin(0.5, 1).setAlpha(0.6);
+        // Bottom at y=352, text extends upward ~340–352. Gate top=354. 2px gap.
 
-        // "Collect all coins to open gate" hint
-        this.gateHint = this.add.text(gx, gy + 16, 'LOCKED', {
+        // "Collect all coins to open gate" hint above EXIT
+        this.gateHint = this.add.text(gx, gy - 64 - 2 - 10 - 4, 'LOCKED', {
             fontSize: '8px', fontFamily: 'monospace', color: '#FF4444',
             fontStyle: 'bold'
-        }).setOrigin(0.5, 0);
+        }).setOrigin(0.5, 1);
+        // Bottom at y=338, text extends upward ~330–338. EXIT top≈340. 2px gap.
     }
 
     // ── Gate reached ──
