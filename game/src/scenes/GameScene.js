@@ -8,6 +8,7 @@ class GameScene extends Phaser.Scene {
         this.currentLevel = data.level || 0;
         this.score = data.score || 0;
         this.lives = data.lives !== undefined ? data.lives : INITIAL_LIVES;
+        this.saveSlot = data.saveSlot !== undefined ? data.saveSlot : null;
     }
 
     create() {
@@ -132,6 +133,9 @@ class GameScene extends Phaser.Scene {
 
         // ── Pause system ──
         this._setupPause();
+
+        // ── Autosave — save progress on level start ──
+        SaveManager.autosave(this.saveSlot, this.currentLevel, this.score, this.lives);
     }
 
     // ── Level intro banner ──
@@ -259,11 +263,11 @@ class GameScene extends Phaser.Scene {
         this._isPaused = !this._isPaused;
 
         if (this._isPaused) {
+            this._showPauseMenu();
             this.physics.world.pause();
             this.tweens.pauseAll();
             this.scene.pause('HUDScene');
             this.pauseBtn.setVisible(false);
-            this._showPauseMenu();
         } else {
             this.physics.world.resume();
             this.tweens.resumeAll();
@@ -802,24 +806,29 @@ class GameScene extends Phaser.Scene {
         // Play win sound
         try { this.sound.play('sfx-win'); } catch(e) {}
 
+        // Autosave — unlock next level
+        const nextLevel = this.currentLevel + 1;
+        SaveManager.autosave(this.saveSlot, nextLevel, this.score, this.lives);
+
         this.time.delayedCall(1000, () => {
             this.scene.stop('HUDScene');
 
             // Check if there are more levels
-            const nextLevel = this.currentLevel + 1;
             if (nextLevel < levels.length) {
                 // Go to level complete screen
                 this.scene.start('LevelCompleteScene', {
                     score: this.score,
                     level: this.currentLevel,
                     nextLevel: nextLevel,
-                    lives: this.lives
+                    lives: this.lives,
+                    saveSlot: this.saveSlot
                 });
             } else {
                 // All levels complete - WIN!
                 this.scene.start('WinScene', {
                     score: this.score,
-                    level: this.currentLevel
+                    level: this.currentLevel,
+                    saveSlot: this.saveSlot
                 });
             }
         });

@@ -7,6 +7,11 @@ All notable changes to Cogsworth: Last Wind are documented here.
 ## [Unreleased]
 
 ### Added
+- **Save system** — 5 save slots with autosave on level start & level complete (localStorage)
+- **Mode select menu** — New Game, Load Game, Level Select after clicking PLAY
+- **Slot select screen** — pick or delete save slots (5 slots, shows district/score/progress/date)
+- **Level select screen** — pick any unlocked level grouped by district with lock/unlock visuals
+- **Double jump** — press jump again mid-air for a second, shorter jump (-400 velocity)
 - **15 levels** (was 3) across 3 districts — Bellows District (Easy, Lv1–5), Clockwork Quarter (Medium, Lv6–10), The Core (Hard, Lv11–15)
 - **PatrolDrone** — airborne enemy with laser attack (IDLE → WARNING → FIRING → COOLDOWN states)
 - **Walker** — ground patrol enemy, humanoid steampunk mechanical automaton
@@ -36,7 +41,7 @@ All notable changes to Cogsworth: Last Wind are documented here.
 - **Obstacle system**: expanded from single saw type to Obstacle (BuriedSaw, SurpriseSaw, SpikeTrap, legacy saw)
 - Entity creation in GameScene now switches on `type` field for enemy and obstacle spawning
 - **Player jump shortened**: PLAYER_JUMP reduced from -580 to -480 (shorter hop)
-- **Double jump added**: press jump again mid-air for a second, shorter jump (-400 velocity)
+- **Pause menu fix**: _showPauseMenu() called before tweens.pauseAll() so fade-in animations play correctly
 
 ### Changed
 - **Moving platform texture alignment**: tilePosition now uses world-aligned left edge (`x - width/2`) instead of raw world center (`x`), matching static ground tiles so brick patterns stay visually consistent

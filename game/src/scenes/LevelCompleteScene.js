@@ -9,6 +9,7 @@ class LevelCompleteScene extends Phaser.Scene {
         this.level = data.level || 0;
         this.nextLevel = data.nextLevel || 0;
         this.lives = data.lives || 3;
+        this.saveSlot = data.saveSlot !== undefined ? data.saveSlot : null;
     }
 
     create() {
@@ -84,7 +85,8 @@ class LevelCompleteScene extends Phaser.Scene {
                 this.scene.start('GameScene', {
                     level: this.nextLevel,
                     score: this.score,
-                    lives: this.lives
+                    lives: this.lives,
+                    saveSlot: this.saveSlot
                 });
             });
         };

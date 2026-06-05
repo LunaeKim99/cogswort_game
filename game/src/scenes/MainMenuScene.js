@@ -89,19 +89,19 @@ class MainMenuScene extends Phaser.Scene {
             return { bg, label };
         };
 
-        // Start button
-        const startGame = () => {
+        // Start button → ModeSelectScene
+        const openModes = () => {
             try { this.sound.play('sfx-tap'); } catch(e) {}
             this.cameras.main.fadeOut(500, 0, 0, 0);
             this.cameras.main.once('camerafadeoutcomplete', () => {
-                this.scene.start('GameScene', { level: 0, score: 0, lives: INITIAL_LIVES });
+                this.scene.start('ModeSelectScene');
             });
         };
-        makeButton(400, 260, '▶  START GAME', startGame);
+        makeButton(400, 260, '▶  PLAY', openModes);
 
         // Keyboard shortcuts
-        this.input.keyboard.on('keydown-SPACE', startGame);
-        this.input.keyboard.on('keydown-ENTER', startGame);
+        this.input.keyboard.on('keydown-SPACE', openModes);
+        this.input.keyboard.on('keydown-ENTER', openModes);
 
         // Controls info
         this.add.text(400, 320, 'ARROW KEYS / WASD - MOVE & JUMP', {
