@@ -461,84 +461,197 @@ class BootScene extends Phaser.Scene {
         g.destroy();
     }
 
-    // ── NEW ENTITY textures (walker, laser beam) ──
+    // ── NEW ENTITY textures (drone, walker, laser beam) ──
     generateNewEntityTextures() {
+        this._generateDroneTexture();
         this._generateWalkerTextures();
         this._generateLaserTexture();
     }
 
-    _generateWalkerTextures() {
-        // WALKER WALK (28x28) — ground patrol robot with legs
+    _generateDroneTexture() {
+        // DRONE (28x28) — flying scanner drone with sensor ring
         let g = this.add.graphics();
-        // Antenna
+        // Antenna / sensor mast
         g.fillStyle(0x888888);
-        g.fillRect(13, 1, 2, 5);
+        g.fillRect(13, 0, 2, 6);
+        // Sensor disc (top)
         g.fillStyle(0xFFD700);
-        g.fillCircle(14, 1, 2);
-        // Body
-        g.fillStyle(0x555555);
-        g.fillRect(6,  6,  16, 14);
-        g.fillStyle(0x444444);
-        g.fillRect(6,  9,  16, 1);
-        g.fillRect(6,  13, 16, 1);
-        // Side panels
+        g.fillCircle(14, 2, 4);
+        g.fillStyle(0xFFAA00);
+        g.fillCircle(14, 2, 2);
+        g.fillStyle(0xFFFFFF);
+        g.fillCircle(14, 2, 1);
+        // Rotor disc
         g.fillStyle(0x666666);
-        g.fillRect(4,  8,  2,  6);
-        g.fillRect(22, 8,  2,  6);
-        // Eye
+        g.fillRect(4,  4,  20, 3);
+        g.fillStyle(0x888888);
+        g.fillRect(6,  5,  16, 1);
+        // Body (angular, disc-like)
+        g.fillStyle(0x444466);
+        g.fillRect(5,  7,  18, 14);
+        g.fillStyle(0x555577);
+        g.fillRect(7,  8,  14, 12);
+        // Sensor ring (glowing)
+        g.lineStyle(2, 0xFF4444);
+        g.strokeCircle(14, 14, 6);
+        g.lineStyle(1, 0xFF8888);
+        g.strokeCircle(14, 14, 7);
+        // Central eye
         g.fillStyle(0xFF0000);
-        g.fillCircle(14, 11, 3);
+        g.fillCircle(14, 14, 4);
         g.fillStyle(0xFF4444);
-        g.fillCircle(14, 11, 2);
+        g.fillCircle(14, 14, 2);
         g.fillStyle(0xFF8888);
-        g.fillCircle(14, 11, 1);
-        // Tracks / wheels
-        g.fillStyle(0x333333);
-        g.fillRect(7,  20, 14, 4);
-        g.fillStyle(0x555555);
-        g.fillCircle(9,  22, 3);
-        g.fillCircle(19, 22, 3);
-        // Tread marks
+        g.fillCircle(14, 14, 1);
+        // Thruster glow (bottom)
+        g.fillStyle(0xFF6600, 0.6);
+        g.fillRect(10, 22, 8, 3);
+        g.fillStyle(0xFFAA00, 0.3);
+        g.fillRect(8,  23, 12, 2);
+        // Side fins
+        g.fillStyle(0x555577);
+        g.fillRect(2,  10, 3,  6);
+        g.fillRect(23, 10, 3,  6);
+        g.generateTexture('drone', 28, 28);
+        g.destroy();
+
+        // DRONE DEATH (X eye, dark)
+        g = this.add.graphics();
+        g.fillStyle(0x888888);
+        g.fillRect(13, 0, 2, 6);
         g.fillStyle(0x666666);
-        g.fillRect(8,  21, 2, 2);
-        g.fillRect(12, 21, 2, 2);
-        g.fillRect(16, 21, 2, 2);
-        // Rivets
+        g.fillRect(4,  4,  20, 3);
+        g.fillStyle(0x444466);
+        g.fillRect(5,  7,  18, 14);
+        g.fillStyle(0x555577);
+        g.fillRect(7,  8,  14, 12);
+        g.lineStyle(2, 0x660000);
+        g.strokeCircle(14, 14, 6);
+        g.fillStyle(0x333333);
+        g.fillCircle(14, 14, 4);
+        // X eye
+        g.lineStyle(2, 0xFF0000);
+        g.beginPath();
+        g.moveTo(11, 11); g.lineTo(17, 17);
+        g.moveTo(17, 11); g.lineTo(11, 17);
+        g.strokePath();
+        g.fillStyle(0x000000, 0.4);
+        g.fillRect(0, 0, 28, 28);
+        g.generateTexture('drone-death', 28, 28);
+        g.destroy();
+    }
+
+    _generateWalkerTextures() {
+        // WALKER WALK (32x32) — humanoid steampunk robot
+        let g = this.add.graphics();
+        // ── Hat ──
+        g.fillStyle(0x3E2723);
+        g.fillRect(8,  0,  16, 4);
+        g.fillRect(6,  3,  20, 2);
+        // ── Head ──
+        g.fillStyle(0xFFDBB4);  // skin tone face
+        g.fillCircle(16, 9, 6);
+        // Goggles
+        g.fillStyle(0xFFD700);
+        g.fillCircle(12, 8, 3);
+        g.fillCircle(20, 8, 3);
+        g.fillStyle(0x87CEEB);
+        g.fillCircle(12, 8, 2);
+        g.fillCircle(20, 8, 2);
+        g.fillStyle(0x3E2723);
+        g.fillRect(10, 7, 12, 1);
+        // Eyes (angry red)
+        g.fillStyle(0xFF0000);
+        g.fillRect(11, 7, 1, 1);
+        g.fillRect(19, 7, 1, 1);
+        // ── Scarf ──
+        g.fillStyle(0xCC3333);
+        g.fillRect(8,  11, 16, 2);
+        g.fillRect(22, 12, 3, 4);
+        // ── Body / Torso ──
+        g.fillStyle(0x5C4033);
+        g.fillRect(8,  13, 16, 10);
+        // Belt
+        g.fillStyle(0x654321);
+        g.fillRect(8,  19, 16, 2);
+        g.fillStyle(0xFFD700);
+        g.fillRect(14, 19, 4, 2);
+        // Coat
+        g.fillStyle(0x4A3E2E);
+        g.fillRect(6,  13, 2,  8);
+        g.fillRect(24, 13, 2,  8);
+        // ── Arms ──
+        g.fillStyle(0x5C4033);
+        g.fillRect(4,  13, 2,  8);
+        g.fillRect(26, 13, 2,  8);
+        // Hands
+        g.fillStyle(0xFFDBB4);
+        g.fillRect(4,  19, 2, 3);
+        g.fillRect(26, 19, 2, 3);
+        // ── Legs ──
+        g.fillStyle(0x3E2723);
+        g.fillRect(10, 23, 4, 6);
+        g.fillRect(18, 23, 4, 6);
+        // Boots
+        g.fillStyle(0x654321);
+        g.fillRect(9,  27, 6, 4);
+        g.fillRect(17, 27, 6, 4);
+        // ── Gear decoration ──
+        g.fillStyle(0xFFD700, 0.3);
+        g.fillCircle(16, 16, 3);
+        g.fillStyle(0xFFD700, 0.5);
+        g.fillCircle(16, 16, 1);
+        // Rivets on coat
         g.fillStyle(0x999999);
-        g.fillRect(8,  7,  1,  1);
-        g.fillRect(19, 7,  1,  1);
-        g.fillRect(8,  15, 1,  1);
-        g.fillRect(19, 15, 1,  1);
-        g.generateTexture('walker-walk', 28, 28);
+        g.fillRect(8,  15, 1, 1);
+        g.fillRect(23, 15, 1, 1);
+        g.generateTexture('walker-walk', 32, 32);
         g.destroy();
 
         // WALKER DEATH
         g = this.add.graphics();
+        g.fillStyle(0x3E2723);
+        g.fillRect(8,  0,  16, 4);
+        g.fillRect(6,  3,  20, 2);
+        g.fillStyle(0xCC9988);
+        g.fillCircle(16, 9, 6);
         g.fillStyle(0x888888);
-        g.fillRect(13, 1, 2, 5);
-        g.fillStyle(0x555555);
-        g.fillRect(6,  6,  16, 14);
-        g.fillStyle(0x444444);
-        g.fillRect(6,  9,  16, 1);
-        g.fillRect(6,  13, 16, 1);
+        g.fillCircle(12, 8, 3);
+        g.fillCircle(20, 8, 3);
         g.fillStyle(0x666666);
-        g.fillRect(4,  8,  2,  6);
-        g.fillRect(22, 8,  2,  6);
-        g.fillStyle(0x333333);
-        g.fillRect(7,  20, 14, 4);
-        g.fillStyle(0x555555);
-        g.fillCircle(9,  22, 3);
-        g.fillCircle(19, 22, 3);
+        g.fillCircle(12, 8, 2);
+        g.fillCircle(20, 8, 2);
+        g.fillStyle(0x3E2723);
+        g.fillRect(10, 7, 12, 1);
         // X eyes
         g.lineStyle(2, 0xFF0000);
         g.beginPath();
-        g.moveTo(11, 9); g.lineTo(17, 13);
-        g.moveTo(17, 9); g.lineTo(11, 13);
+        g.moveTo(11, 6);  g.lineTo(17, 10);
+        g.moveTo(17, 6);  g.lineTo(11, 10);
         g.strokePath();
+        g.fillStyle(0xCC3333);
+        g.fillRect(8,  11, 16, 2);
+        g.fillRect(22, 12, 3, 4);
+        g.fillStyle(0x5C4033);
+        g.fillRect(8,  13, 16, 10);
+        g.fillStyle(0x654321);
+        g.fillRect(8,  19, 16, 2);
+        g.fillStyle(0x4A3E2E);
+        g.fillRect(6,  13, 2,  8);
+        g.fillRect(24, 13, 2,  8);
+        g.fillStyle(0x5C4033);
+        g.fillRect(4,  13, 2,  8);
+        g.fillRect(26, 13, 2,  8);
+        g.fillStyle(0x3E2723);
+        g.fillRect(10, 23, 4, 6);
+        g.fillRect(18, 23, 4, 6);
+        g.fillStyle(0x654321);
+        g.fillRect(9,  27, 6, 4);
+        g.fillRect(17, 27, 6, 4);
         // Dark overlay
         g.fillStyle(0x000000, 0.4);
-        g.fillRect(0, 0, 28, 28);
-        g.generateTexture('walker-death', 28, 28);
+        g.fillRect(0, 0, 32, 32);
+        g.generateTexture('walker-death', 32, 32);
         g.destroy();
     }
 

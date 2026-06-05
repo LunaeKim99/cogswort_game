@@ -16,7 +16,7 @@ const DRONE_STATE = {
 // ────────────────────────────────────────────────────────────
 class PatrolDrone extends Phaser.Physics.Arcade.Sprite {
     constructor(scene, x, y, patrolLeft, patrolRight) {
-        super(scene, x, y, 'enemy-walk');
+        super(scene, x, y, 'drone');
 
         scene.add.existing(this);
         scene.physics.add.existing(this);
@@ -181,7 +181,7 @@ class PatrolDrone extends Phaser.Physics.Arcade.Sprite {
         if (this.isDead) return;
         this.isDead = true;
         this.body.enable = false;
-        this.setTexture('enemy-death');
+        this.setTexture('drone-death');
 
         // Clean up laser visuals
         this._hideSensorCone();
