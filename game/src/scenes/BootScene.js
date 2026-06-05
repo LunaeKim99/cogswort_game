@@ -17,6 +17,7 @@ class BootScene extends Phaser.Scene {
         this.generateHeartTextures();
         this.generateParticleTexture();
         this.generateButtonTextures();
+        this.generatePauseButtonTexture();
         this.generateGateTextures();
         this.generateObstacleTextures();
         this.generateGroundTile();
@@ -320,6 +321,29 @@ class BootScene extends Phaser.Scene {
         g.fillTriangle(17, 42, 47, 42, 32, 20);
         g.generateTexture('btn-jump', 64, 64);
         g.destroy();
+    }
+
+    // ── PAUSE BUTTON texture (32x32) ──
+    generatePauseButtonTexture() {
+        const g = this.add.graphics();
+        // Circle bg
+        g.fillStyle(0x000000, 0.4);
+        g.fillCircle(16, 16, 14);
+        g.lineStyle(2, 0xFFFFFF, 0.7);
+        g.strokeCircle(16, 16, 14);
+        // Two bars (pause icon)
+        g.fillStyle(0xFFFFFF, 0.9);
+        g.fillRect(10, 8,  4, 16);
+        g.fillRect(18, 8,  4, 16);
+        g.generateTexture('btn-pause', 32, 32);
+        g.destroy();
+
+        // RESUME / PLAY icon (triangle)
+        const g2 = this.add.graphics();
+        g2.fillStyle(0xFFFFFF, 0.9);
+        g2.fillTriangle(10, 8,  10, 24,  26, 16);
+        g2.generateTexture('icon-play', 32, 32);
+        g2.destroy();
     }
 
     // ── GATE textures (48x64) ──

@@ -100,6 +100,7 @@ class GameScene extends Phaser.Scene {
         this._gameOverTriggered = false;
         this._levelCompleteTriggered = false;
         this._gateActive = false;
+        this._isPaused = false;
 
         // Platformer feel improvements
         this._lastGroundedTime = 0;
@@ -110,6 +111,116 @@ class GameScene extends Phaser.Scene {
 
         // ── Visual polish: player entrance animation ──
         this._doEntranceAnimation();
+
+        // ── Pause system ──
+        this._setupPause();
+    }
+
+    // ── Pause System ──
+    _setupPause() {
+        // Pause button (top-right corner)
+        this.pauseBtn = this.add.image(GAME_WIDTH - 24, 24, 'btn-pause')
+            .setInteractive({ useHandCursor: true })
+            .setScrollFactor(0)
+            .setDepth(900);
+
+        this.pauseBtn.on('pointerdown', () => this._togglePause());
+
+        // Escape key to pause
+        this.input.keyboard.on('keydown-ESC', () => this._togglePause());
+
+        // Pause menu container (hidden initially)
+        this.pauseContainer = this.add.container(0, 0).setDepth(950).setVisible(false);
+    }
+
+    _togglePause() {
+        if (this._gameOverTriggered || this._levelCompleteTriggered) return;
+
+        this._isPaused = !this._isPaused;
+
+        if (this._isPaused) {
+            this.physics.world.pause();
+            this.tweens.pauseAll();
+            this.scene.pause('HUDScene');
+            this._showPauseMenu();
+        } else {
+            this.physics.world.resume();
+            this.tweens.resumeAll();
+            this.scene.resume('HUDScene');
+            this._hidePauseMenu();
+        }
+    }
+
+    _showPauseMenu() {
+        const cx = GAME_WIDTH / 2;
+        const cy = GAME_HEIGHT / 2;
+
+        // Dim overlay
+        this.pauseOverlay = this.add.rectangle(cx, cy, GAME_WIDTH, GAME_HEIGHT, 0x000000, 0.7)
+            .setScrollFactor(0).setDepth(900);
+
+        // Panel background
+        const panel = this.add.rectangle(cx, cy, 260, 260, 0x1a1a2e, 0.95)
+            .setStrokeStyle(2, 0xFFD700).setDepth(910);
+
+        // Title
+        const title = this.add.text(cx, cy - 100, 'PAUSED', {
+            fontSize: '28px', fontFamily: 'monospace', color: '#FFD700', fontStyle: 'bold'
+        }).setOrigin(0.5).setDepth(920);
+
+        // Resume button
+        const resumeBtn = this._makePauseButton(cx, cy - 30, '▶  RESUME', () => this._togglePause());
+        const restartBtn = this._makePauseButton(cx, cy + 40, '↻  RESTART', () => {
+            this._isPaused = false;
+            this.physics.world.resume();
+            this.tweens.resumeAll();
+            this.scene.resume('HUDScene');
+            this.scene.restart({ level: this.currentLevel, score: this.score, lives: this.lives });
+        });
+        const menuBtn = this._makePauseButton(cx, cy + 110, '☰  MAIN MENU', () => {
+            this._isPaused = false;
+            this.physics.world.resume();
+            this.tweens.resumeAll();
+            this.scene.resume('HUDScene');
+            this.scene.stop('HUDScene');
+            this.scene.start('MainMenuScene');
+        });
+
+        this.pauseContainer.add([this.pauseOverlay, panel, title, resumeBtn.bg, resumeBtn.label,
+            restartBtn.bg, restartBtn.label, menuBtn.bg, menuBtn.label]);
+        this.pauseContainer.setVisible(true);
+    }
+
+    _hidePauseMenu() {
+        this.pauseContainer.removeAll(true);
+        this.pauseContainer.setVisible(false);
+    }
+
+    _makePauseButton(x, y, text, callback) {
+        const bg = this.add.rectangle(x, y, 220, 46, 0x444466, 0.9)
+            .setStrokeStyle(2, 0x8888AA)
+            .setInteractive({ useHandCursor: true });
+        const label = this.add.text(x, y, text, {
+            fontSize: '16px', fontFamily: 'monospace', color: '#FFFFFF', fontStyle: 'bold'
+        }).setOrigin(0.5);
+
+        bg.on('pointerover', () => {
+            this.tweens.add({ targets: [bg, label], scaleX: 1.06, scaleY: 1.06, duration: 80 });
+            bg.setFillStyle(0x6666AA);
+            bg.setStrokeStyle(2, 0xFFD700);
+            label.setColor('#FFD700');
+        });
+        bg.on('pointerout', () => {
+            this.tweens.add({ targets: [bg, label], scaleX: 1, scaleY: 1, duration: 80 });
+            bg.setFillStyle(0x444466);
+            bg.setStrokeStyle(2, 0x8888AA);
+            label.setColor('#FFFFFF');
+        });
+        bg.on('pointerdown', () => {
+            this.tweens.add({ targets: [bg, label], scaleX: 0.95, scaleY: 0.95, duration: 40 });
+        });
+        bg.on('pointerup', () => callback());
+        return { bg, label };
     }
 
     // ── Visual polish: entrance animation ──
@@ -465,6 +576,7 @@ class GameScene extends Phaser.Scene {
     // ── Main update loop ──
     update(time, delta) {
         if (this.player.isDead) return;
+        if (this._isPaused) return;
 
         // ── Track ground state for coyote time ──
         const onGround = this.player.body.blocked.down;
