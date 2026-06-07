@@ -23,6 +23,9 @@ class BootScene extends Phaser.Scene {
         this.generateGroundTile();
         this.generateBackgroundTextures();
 
+        // Register animations from procedural frames
+        this.createAnimations();
+
         // Transition after short delay
         this.time.delayedCall(200, () => {
             this.scene.start('PreloadScene');
@@ -46,90 +49,35 @@ class BootScene extends Phaser.Scene {
 
     // ── PLAYER animation textures (32x32 each) ──
     generatePlayerTextures() {
-        // Base character builder
-        const drawChar = (g, armY, legOffset, extra) => {
-            // Boots
-            g.fillStyle(0x654321);
-            g.fillRect(9,  24, 5, 6);
-            g.fillRect(18, 24, 5, 6);
-            // Legs
-            g.fillStyle(0x5C4033);
-            g.fillRect(9,  20, 5, 4 + legOffset);
-            g.fillRect(18, 20, 5, 4 - legOffset);
-            // Body
-            g.fillStyle(0x8B4513);
-            g.fillRect(8,  12, 16, 10);
-            // Belt
-            g.fillStyle(0x654321);
-            g.fillRect(8,  18, 16, 2);
-            g.fillStyle(0xFFD700);
-            g.fillRect(14, 18, 4, 2);
-            // Arms
-            g.fillStyle(0x8B4513);
-            g.fillRect(4,  12 + armY, 4, 10);
-            g.fillRect(24, 12 - armY, 4, 10);
-            // Hands
-            g.fillStyle(0xFFDBB4);
-            g.fillRect(4,  20 + armY, 4, 3);
-            g.fillRect(24, 20 - armY, 4, 3);
-            // Head
-            g.fillStyle(0xFFDBB4);
-            g.fillCircle(16, 8, 6);
-            // Hat
-            g.fillStyle(0x3E2723);
-            g.fillRect(8,  1, 16, 4);
-            g.fillRect(6,  4, 20, 2);
-            // Goggles
-            g.fillStyle(0xFFD700);
-            g.fillCircle(12, 8, 3);
-            g.fillCircle(20, 8, 3);
-            g.fillStyle(0x87CEEB);
-            g.fillCircle(12, 8, 2);
-            g.fillCircle(20, 8, 2);
-            g.fillStyle(0x3E2723);
-            g.fillRect(10, 7, 12, 1);
-            // Scarf
-            g.fillStyle(0xCC3333);
-            g.fillRect(8,  10, 16, 3);
-            g.fillRect(24, 11, 4, 4);
-            // Eyes
-            g.fillStyle(0x000000);
-            g.fillRect(11, 7, 1, 1);
-            g.fillRect(19, 7, 1, 1);
-            // Mouth
-            g.fillStyle(0xCC6666);
-            g.fillRect(14, 11, 4, 1);
-            // Extra features (for hurt state, etc.)
-            if (extra) extra(g);
-        };
+        // Base character builder (now uses _drawChar method)
 
         // IDLE
         let g = this.add.graphics();
-        drawChar(g, 0, 0);
+        this._drawChar(g, 0, 0);
         g.generateTexture('player-idle', 32, 32);
         g.destroy();
 
         // RUN (legs apart, arms swinging)
         g = this.add.graphics();
-        drawChar(g, -1, 2);
+        this._drawChar(g, -1, 2);
         g.generateTexture('player-run', 32, 32);
         g.destroy();
 
         // JUMP (arms up, legs tucked)
         g = this.add.graphics();
-        drawChar(g, -2, -1);
+        this._drawChar(g, -2, -1);
         g.generateTexture('player-jump', 32, 32);
         g.destroy();
 
         // FALL (arms down, legs spread)
         g = this.add.graphics();
-        drawChar(g, 1, 1);
+        this._drawChar(g, 1, 1);
         g.generateTexture('player-fall', 32, 32);
         g.destroy();
 
         // HURT (red-tinted)
         g = this.add.graphics();
-        drawChar(g, 0, 0, (gfx) => {
+        this._drawChar(g, 0, 0, (gfx) => {
             gfx.fillStyle(0xFF0000, 0.3);
             gfx.fillRect(0, 0, 32, 32);
         });
@@ -879,5 +827,435 @@ class BootScene extends Phaser.Scene {
             .forEach(([x,y,ww,bh]) => g.fillRect(x, y, ww, bh));
         g.generateTexture('bg-level3', w, h);
         g.destroy();
+    }
+
+    // ── Character drawing helper (extracted from generatePlayerTextures) ──
+    _drawChar(g, armY, legOffset, extra) {
+        // Boots
+        g.fillStyle(0x654321);
+        g.fillRect(9,  24, 5, 6);
+        g.fillRect(18, 24, 5, 6);
+        // Legs
+        g.fillStyle(0x5C4033);
+        g.fillRect(9,  20, 5, 4 + legOffset);
+        g.fillRect(18, 20, 5, 4 - legOffset);
+        // Body
+        g.fillStyle(0x8B4513);
+        g.fillRect(8,  12, 16, 10);
+        // Belt
+        g.fillStyle(0x654321);
+        g.fillRect(8,  18, 16, 2);
+        g.fillStyle(0xFFD700);
+        g.fillRect(14, 18, 4, 2);
+        // Arms
+        g.fillStyle(0x8B4513);
+        g.fillRect(4,  12 + armY, 4, 10);
+        g.fillRect(24, 12 - armY, 4, 10);
+        // Hands
+        g.fillStyle(0xFFDBB4);
+        g.fillRect(4,  20 + armY, 4, 3);
+        g.fillRect(24, 20 - armY, 4, 3);
+        // Head
+        g.fillStyle(0xFFDBB4);
+        g.fillCircle(16, 8, 6);
+        // Hat
+        g.fillStyle(0x3E2723);
+        g.fillRect(8,  1, 16, 4);
+        g.fillRect(6,  4, 20, 2);
+        // Goggles
+        g.fillStyle(0xFFD700);
+        g.fillCircle(12, 8, 3);
+        g.fillCircle(20, 8, 3);
+        g.fillStyle(0x87CEEB);
+        g.fillCircle(12, 8, 2);
+        g.fillCircle(20, 8, 2);
+        g.fillStyle(0x3E2723);
+        g.fillRect(10, 7, 12, 1);
+        // Scarf
+        g.fillStyle(0xCC3333);
+        g.fillRect(8,  10, 16, 3);
+        g.fillRect(24, 11, 4, 4);
+        // Eyes
+        g.fillStyle(0x000000);
+        g.fillRect(11, 7, 1, 1);
+        g.fillRect(19, 7, 1, 1);
+        // Mouth
+        g.fillStyle(0xCC6666);
+        g.fillRect(14, 11, 4, 1);
+        // Extra features (for hurt state, etc.)
+        if (extra) extra(g);
+    }
+
+    // ── Generate individual frame textures from draw callbacks ──
+    _generateAnimationFrames(baseKey, frameWidth, frameHeight, drawFns) {
+        const frames = [];
+        drawFns.forEach((drawFn, i) => {
+            const g = this.add.graphics();
+            drawFn(g);
+            const key = `${baseKey}-${i}`;
+            g.generateTexture(key, frameWidth, frameHeight);
+            g.destroy();
+            frames.push({ key });
+        });
+        return frames;
+    }
+
+    // ── Safe animation creation (removes existing key first) ──
+    _createAnim(key, config) {
+        if (this.anims.exists(key)) this.anims.remove(key);
+        this.anims.create({ key, ...config });
+    }
+
+    // ── Walker body drawing with per-frame leg/arm offsets ──
+    _drawWalkerBody(g, legLeftDx, legRightDx, armLeftDx, armRightDx) {
+        // ── Head (brass dome) ──
+        g.fillStyle(0xCD7F32);
+        g.fillRect(8,  1,  16, 2);
+        g.fillStyle(0xB87333);
+        g.fillCircle(16, 6, 7);
+        // Head rivets
+        g.fillStyle(0xDDDDDD);
+        g.fillRect(10, 3, 1, 1);
+        g.fillRect(21, 3, 1, 1);
+        g.fillRect(15, 1, 1, 1);
+        // ── Goggles (brass) ──
+        g.fillStyle(0xDAA520);
+        g.fillCircle(12, 7, 3);
+        g.fillCircle(20, 7, 3);
+        g.fillStyle(0x87CEEB);
+        g.fillCircle(12, 7, 2);
+        g.fillCircle(20, 7, 2);
+        g.fillStyle(0x8B6914);
+        g.fillRect(9,  7, 14, 1);
+        // Glowing mechanical eyes
+        g.fillStyle(0xFFAA00);
+        g.fillRect(11, 6, 1, 1);
+        g.fillRect(19, 6, 1, 1);
+        // ── Jaw / ventilator grill ──
+        g.fillStyle(0x8B5A2B);
+        g.fillRect(8,  9,  3, 4);
+        g.fillRect(21, 9,  3, 4);
+        g.fillStyle(0x6B4226);
+        g.fillRect(11, 9,  10, 4);
+        // Vent slots
+        g.fillStyle(0x4A2E1A);
+        g.fillRect(12, 10, 2, 1);
+        g.fillRect(15, 10, 2, 1);
+        g.fillRect(18, 10, 2, 1);
+        g.fillRect(12, 12, 2, 1);
+        g.fillRect(15, 12, 2, 1);
+        g.fillRect(18, 12, 2, 1);
+        // ── Neck / joint ──
+        g.fillStyle(0x888888);
+        g.fillRect(14, 13, 4, 2);
+        g.fillStyle(0x666666);
+        g.fillRect(15, 13, 2, 2);
+        // ── Torso (copper body) ──
+        g.fillStyle(0xA0714B);
+        g.fillRect(6,  15, 20, 12);
+        g.fillStyle(0x8B5A2B);
+        g.fillRect(8,  16, 16, 10);
+        // Chest plate
+        g.fillStyle(0xCD7F32);
+        g.fillRect(10, 17, 12, 4);
+        g.fillStyle(0xB87333);
+        g.fillRect(12, 18, 8, 2);
+        // Chest gear
+        g.fillStyle(0xFFD700);
+        g.fillCircle(16, 21, 3);
+        g.fillStyle(0xB8860B);
+        g.fillCircle(16, 21, 2);
+        g.fillStyle(0x8B6914);
+        g.fillCircle(16, 21, 1);
+        // Gears on left side
+        g.fillStyle(0xCD7F32);
+        g.fillCircle(7, 19, 2);
+        g.fillStyle(0xB87333);
+        g.fillCircle(7, 19, 1);
+        // Steam pipe (right side)
+        g.fillStyle(0x6B4226);
+        g.fillRect(24, 16, 3, 8);
+        g.fillStyle(0x8B5A2B);
+        g.fillRect(25, 16, 1, 8);
+        // ── Arms (mechanical) ──
+        g.fillStyle(0x8B5A2B);
+        g.fillRect(2 + armLeftDx,  16, 4, 3);
+        g.fillRect(26 + armRightDx, 16, 4, 3);
+        // Upper arms
+        g.fillStyle(0xA0714B);
+        g.fillRect(3 + armLeftDx,  19, 2, 5);
+        g.fillRect(27 + armRightDx, 19, 2, 5);
+        // Elbow joints
+        g.fillStyle(0x888888);
+        g.fillCircle(4 + armLeftDx, 24, 2);
+        g.fillCircle(28 + armRightDx, 24, 2);
+        // Forearms
+        g.fillStyle(0x8B5A2B);
+        g.fillRect(2 + armLeftDx,  25, 3, 3);
+        g.fillRect(27 + armRightDx, 25, 3, 3);
+        // Pincer claws
+        g.fillStyle(0x666666);
+        g.fillRect(1 + armLeftDx,  28, 2, 2);
+        g.fillRect(4 + armLeftDx,  28, 2, 2);
+        g.fillRect(26 + armRightDx, 28, 2, 2);
+        g.fillRect(29 + armRightDx, 28, 2, 2);
+        // ── Legs (piston/mechanical) ──
+        g.fillStyle(0x6B4226);
+        g.fillRect(10 + legLeftDx, 27, 4, 2);
+        g.fillRect(18 + legRightDx, 27, 4, 2);
+        // Upper legs
+        g.fillStyle(0x8B5A2B);
+        g.fillRect(9 + legLeftDx,  29, 4, 3);
+        g.fillRect(19 + legRightDx, 29, 4, 3);
+        // Knee joints
+        g.fillStyle(0x888888);
+        g.fillCircle(11 + legLeftDx, 29, 1);
+        g.fillCircle(21 + legRightDx, 29, 1);
+        // Lower legs
+        g.fillStyle(0x6B4226);
+        g.fillRect(9 + legLeftDx,  27, 4, 2);
+        g.fillRect(19 + legRightDx, 27, 4, 2);
+        // Metal boots
+        g.fillStyle(0x4A3E2E);
+        g.fillRect(8 + legLeftDx,  29, 6, 3);
+        g.fillRect(18 + legRightDx, 29, 6, 3);
+        g.fillStyle(0x5D4E37);
+        g.fillRect(9 + legLeftDx,  30, 4, 1);
+        g.fillRect(19 + legRightDx, 30, 4, 1);
+        // ── Body rivets ──
+        g.fillStyle(0xBBBBBB);
+        g.fillRect(8,  17, 1, 1);
+        g.fillRect(23, 17, 1, 1);
+        g.fillRect(8,  24, 1, 1);
+        g.fillRect(23, 24, 1, 1);
+    }
+
+    // ── Drone frame drawing (0=normal, 1=blur prop) ──
+    _drawDroneFrame(g, frameIndex) {
+        // Propeller shaft
+        g.fillStyle(0x888888);
+        g.fillRect(13, 0, 2, 4);
+        // Propeller blades (brass)
+        g.fillStyle(0xCD7F32);
+        g.fillRect(2,  1, 10, 2);
+        g.fillRect(16, 1, 10, 2);
+        g.fillRect(12, 1, 4,  2);
+        // Propeller blur (wider for frame 1)
+        if (frameIndex === 0) {
+            g.fillStyle(0xAA6B2E, 0.4);
+            g.fillRect(1,  1, 26, 2);
+        } else {
+            g.fillStyle(0xAA6B2E, 0.5);
+            g.fillRect(0,  0, 28, 3);
+            g.fillStyle(0xFFFFFF, 0.15);
+            g.fillRect(0,  1, 28, 2);
+        }
+        // Upper dome (brass)
+        g.fillStyle(0xB87333);
+        g.fillRect(5,  4,  18, 4);
+        g.fillStyle(0xCD7F32);
+        g.fillRect(7,  5,  14, 2);
+        // Body casing (copper)
+        g.fillStyle(0x8B5A2B);
+        g.fillRect(4,  8,  20, 12);
+        g.fillStyle(0xA0714B);
+        g.fillRect(6,  9,  16, 10);
+        // Central gear
+        g.fillStyle(0xFFD700);
+        g.fillCircle(14, 14, 4);
+        g.fillStyle(0xB8860B);
+        g.fillCircle(14, 14, 3);
+        // Gear teeth
+        for (let i = 0; i < 6; i++) {
+            const angle = (i / 6) * Math.PI * 2 - Math.PI / 2;
+            const tx = 14 + Math.cos(angle) * 4;
+            const ty = 14 + Math.sin(angle) * 4;
+            g.fillStyle(0xFFD700);
+            g.fillRect(tx - 1, ty - 1, 2, 2);
+        }
+        // Mechanical eye (amber glow)
+        g.fillStyle(0xFFAA00);
+        g.fillCircle(14, 14, 2);
+        g.fillStyle(0xFFDD44);
+        g.fillCircle(14, 14, 1);
+        // Steam pipes (sides)
+        g.fillStyle(0x6B4226);
+        g.fillRect(2,  10, 2, 6);
+        g.fillRect(24, 10, 2, 6);
+        // Pipe rivets
+        g.fillStyle(0x999999);
+        g.fillRect(2, 10, 2, 1);
+        g.fillRect(2, 15, 2, 1);
+        g.fillRect(24,10, 2, 1);
+        g.fillRect(24,15, 2, 1);
+        // Steam vent (bottom)
+        g.fillStyle(0x6B4226);
+        g.fillRect(10, 20, 8, 3);
+        g.fillStyle(0x8B5A2B);
+        g.fillRect(11, 21, 6, 1);
+        // Rivets on body
+        g.fillStyle(0xBBBBBB);
+        g.fillRect(8,  10, 1, 1);
+        g.fillRect(19, 10, 1, 1);
+        g.fillRect(8,  18, 1, 1);
+        g.fillRect(19, 18, 1, 1);
+        // Bottom fin
+        g.fillStyle(0x8B5A2B);
+        g.fillRect(6,  23, 16, 2);
+        g.fillStyle(0xA0714B);
+        g.fillRect(8,  23, 12, 1);
+    }
+
+    // ── Coin frame drawing with rotated notch positions ──
+    _drawCoinFrame(g, angleIndex) {
+        // Outer ring
+        g.fillStyle(0xFFD700);
+        g.fillCircle(8, 8, 7);
+        g.fillStyle(0xDAA520);
+        g.fillCircle(8, 8, 5);
+        // Inner
+        g.fillStyle(0xB8860B);
+        g.fillCircle(8, 8, 4);
+        // Notches (varies per angle to suggest rotation)
+        g.fillStyle(0xFFD700);
+        const notchSets = [
+            // angle 0: cardinal directions
+            [[6,0,4,2],[6,14,4,2],[0,6,2,4],[14,6,2,4],[1,1,2,2],[13,1,2,2],[1,13,2,2],[13,13,2,2]],
+            // angle 1: ~22deg rotated
+            [[5,1,6,1],[5,14,6,1],[1,5,1,6],[14,5,1,6],[0,2,2,2],[14,2,2,2],[0,12,2,2],[14,12,2,2]],
+            // angle 2: ~45deg rotated
+            [[7,0,2,4],[7,12,2,4],[0,7,4,2],[12,7,4,2],[2,2,2,2],[12,2,2,2],[2,12,2,2],[12,12,2,2]],
+            // angle 3: ~67deg rotated
+            [[7,1,6,1],[7,14,6,1],[1,7,1,6],[14,7,1,6],[0,2,2,2],[14,2,2,2],[0,12,2,2],[14,12,2,2]],
+        ];
+        notchSets[angleIndex % 4].forEach(([x,y,w,h]) => g.fillRect(x, y, w, h));
+        // Center hole
+        g.fillStyle(0x1A1A2E);
+        g.fillCircle(8, 8, 2);
+        // Highlight (moves around to suggest rotation)
+        const highlights = [[7,6],[10,6],[9,10],[6,9]];
+        g.fillStyle(0xFFFFAA, 0.4);
+        g.fillCircle(highlights[angleIndex % 4][0], highlights[angleIndex % 4][1], 2);
+    }
+
+    // ── Register all animations ──
+    createAnimations() {
+        // ── Player Animations ──
+        // Idle (2 frames: slight breathing)
+        this._generateAnimationFrames('player-idle-anim', 32, 32, [
+            (g) => this._drawChar(g, 0, 0),
+            (g) => this._drawChar(g, 0, 1),
+        ]);
+        this._createAnim('player-idle-anim', {
+            frames: [
+                { key: 'player-idle-anim-0' },
+                { key: 'player-idle-anim-1' },
+            ],
+            frameRate: 4, repeat: -1
+        });
+
+        // Run (4 frames: walk cycle)
+        this._generateAnimationFrames('player-run-anim', 32, 32, [
+            (g) => this._drawChar(g, -1, 2),
+            (g) => this._drawChar(g, 0, 0),
+            (g) => this._drawChar(g, 1, -2),
+            (g) => this._drawChar(g, 0, 0),
+        ]);
+        this._createAnim('player-run-anim', {
+            frames: [
+                { key: 'player-run-anim-0' },
+                { key: 'player-run-anim-1' },
+                { key: 'player-run-anim-2' },
+                { key: 'player-run-anim-3' },
+            ],
+            frameRate: 8, repeat: -1
+        });
+
+        // Jump (2 frames)
+        this._generateAnimationFrames('player-jump-anim', 32, 32, [
+            (g) => this._drawChar(g, -2, -1),
+            (g) => this._drawChar(g, -1, 0),
+        ]);
+        this._createAnim('player-jump-anim', {
+            frames: [
+                { key: 'player-jump-anim-0' },
+                { key: 'player-jump-anim-1' },
+            ],
+            frameRate: 6, repeat: -1
+        });
+
+        // Fall (1 frame — reuse existing 'player-fall' texture)
+        this._createAnim('player-fall-anim', {
+            frames: [{ key: 'player-fall' }],
+            frameRate: 1, repeat: -1
+        });
+
+        // Hurt (1 frame — reuse existing 'player-hurt' texture)
+        this._createAnim('player-hurt-anim', {
+            frames: [{ key: 'player-hurt' }],
+            frameRate: 1, repeat: -1
+        });
+
+        // ── Walker Animations ──
+        // Walk (4 frames with leg/arm offsets)
+        this._generateAnimationFrames('walker-walk-anim', 32, 32, [
+            (g) => this._drawWalkerBody(g, -1, 1, 1, -1),
+            (g) => this._drawWalkerBody(g, 0, 0, 0, 0),
+            (g) => this._drawWalkerBody(g, 1, -1, -1, 1),
+            (g) => this._drawWalkerBody(g, 0, 0, 0, 0),
+        ]);
+        this._createAnim('walker-walk-anim', {
+            frames: [
+                { key: 'walker-walk-anim-0' },
+                { key: 'walker-walk-anim-1' },
+                { key: 'walker-walk-anim-2' },
+                { key: 'walker-walk-anim-3' },
+            ],
+            frameRate: 6, repeat: -1
+        });
+
+        // Death (1 frame — reuse existing 'walker-death' texture)
+        this._createAnim('walker-death-anim', {
+            frames: [{ key: 'walker-death' }],
+            frameRate: 1, repeat: -1
+        });
+
+        // ── Drone Animations ──
+        // Fly (2 frames: propeller blur variation)
+        this._generateAnimationFrames('drone-fly-anim', 28, 28, [
+            (g) => this._drawDroneFrame(g, 0),
+            (g) => this._drawDroneFrame(g, 1),
+        ]);
+        this._createAnim('drone-fly-anim', {
+            frames: [
+                { key: 'drone-fly-anim-0' },
+                { key: 'drone-fly-anim-1' },
+            ],
+            frameRate: 6, repeat: -1
+        });
+
+        // Death (1 frame — reuse existing 'drone-death' texture)
+        this._createAnim('drone-death-anim', {
+            frames: [{ key: 'drone-death' }],
+            frameRate: 1, repeat: -1
+        });
+
+        // ── Coin Animations ──
+        // Spin (4 frames)
+        this._generateAnimationFrames('coin-spin-anim', 16, 16, [
+            (g) => this._drawCoinFrame(g, 0),
+            (g) => this._drawCoinFrame(g, 1),
+            (g) => this._drawCoinFrame(g, 2),
+            (g) => this._drawCoinFrame(g, 3),
+        ]);
+        this._createAnim('coin-spin-anim', {
+            frames: [
+                { key: 'coin-spin-anim-0' },
+                { key: 'coin-spin-anim-1' },
+                { key: 'coin-spin-anim-2' },
+                { key: 'coin-spin-anim-3' },
+            ],
+            frameRate: 8, repeat: -1
+        });
     }
 }

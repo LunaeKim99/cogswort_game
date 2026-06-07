@@ -183,7 +183,7 @@ class PatrolDrone extends Phaser.Physics.Arcade.Sprite {
         if (this.isDead) return;
         this.isDead = true;
         this.body.enable = false;
-        this.setTexture('drone-death');
+        this.play('drone-death-anim');
 
         // Clean up laser visuals
         this._hideSensorCone();
@@ -205,6 +205,9 @@ class PatrolDrone extends Phaser.Physics.Arcade.Sprite {
             }
             return;
         }
+
+        // ── Animation ──
+        this.play('drone-fly-anim', true);
 
         // ── Patrol movement ──
         if (this.x >= this.patrolRight) {
@@ -328,6 +331,9 @@ class Walker extends Phaser.Physics.Arcade.Sprite {
             return;
         }
 
+        // ── Animation ──
+        this.play('walker-walk-anim', true);
+
         // Patrol logic
         if (this.x >= this.patrolRight) {
             this.direction = -1;
@@ -343,6 +349,6 @@ class Walker extends Phaser.Physics.Arcade.Sprite {
     stomp() {
         this.isDead = true;
         this.body.enable = false;
-        this.setTexture('walker-death');
+        this.play('walker-death-anim');
     }
 }

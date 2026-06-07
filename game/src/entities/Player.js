@@ -24,17 +24,17 @@ class Player extends Phaser.Physics.Arcade.Sprite {
     // Called each frame from GameScene - handles movement there, animation here
     updateAnimation() {
         if (this.isInvincible) {
-            this.setTexture('player-hurt');
+            this.play('player-hurt-anim', true);
         } else if (!this.body.blocked.down) {
             if (this.body.velocity.y < 0) {
-                this.setTexture('player-jump');
+                this.play('player-jump-anim', true);
             } else {
-                this.setTexture('player-fall');
+                this.play('player-fall-anim', true);
             }
         } else if (Math.abs(this.body.velocity.x) > 10) {
-            this.setTexture('player-run');
+            this.play('player-run-anim', true);
         } else {
-            this.setTexture('player-idle');
+            this.play('player-idle-anim', true);
         }
     }
 

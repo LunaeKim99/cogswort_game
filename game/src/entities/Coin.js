@@ -18,6 +18,9 @@ class Coin extends Phaser.Physics.Arcade.Sprite {
             repeat: -1,
             ease: 'Sine.easeInOut'
         });
+
+        // Looping spin animation
+        this.play('coin-spin-anim');
     }
 
     // Called when player collects this coin
