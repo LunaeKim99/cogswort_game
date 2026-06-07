@@ -50,7 +50,6 @@ All notable changes to Cogsworth: Last Wind are documented here.
 - **Star rating system**: 1–3 stars per level based on remaining lives, coin percentage, and clear time (with district-specific time thresholds)
 - **LevelCompleteScene redesigned**: shows ⭐ star icons (animated pop-in) + stats panel (coins X/Y, time MM:SS, hearts, score)
 
-### Changed
 - **Moving platform texture alignment**: tilePosition now uses world-aligned left edge (`x - width/2`) instead of raw world center (`x`), matching static ground tiles so brick patterns stay visually consistent
 - **Game over delay reduced**: transition to death menu shortened from ~1500ms to ~500ms real-time (slow-mo 400→150 game-ms; transition timer 1500→150 game-ms, both fire at same tick so death menu appears right after hit-stop)
 - `PLAYER_JUMP` increased from -500 to -580 (higher jumps)
