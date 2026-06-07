@@ -2,94 +2,135 @@
 
 > 16-bit Steampunk Platformer — Asset Generation Guide for Dreamina AI (Seedream 5.0)
 >
-> **Model**: Seedream 5.0 (Pixel Art mode)
-> **Image size**: Use Dreamina's default output; crop/resize to exact specs later
-> **Style keywords**: `pixel art, game sprite, steampunk, transparent PNG`
-> **Transparency**: Dreamina's pixel art model supports transparent backgrounds natively — no post-processing needed
+> **Model**: Seedream 5.0 (Pixel Art mode) — dreamina.capcut.com
+> **Style**: 16-bit pixel art, steampunk, game sprite
+> **Output**: Native transparent PNG (no post-processing needed)
 
 ---
 
-## 🔰 How to Use
+## 🚀 Quick Start
 
-1. Open **Dreamina (dreamina.capcut.com) → AI Image → Seedream 5.0** model
-2. Paste the prompt below for the asset you need
-3. Generate **4 variations** — pick the best one
-4. Download as **PNG** (transparent background is native)
-5. Import into `assets/images/` and reference in BootScene
-6. **Direction**: All sprites face **right**. The game flips them for left movement — no need to generate mirrored versions.
+1. Generate **player-idle** first (this is your **anchor frame**)
+2. Download → save as `assets/images/player-idle.png`
+3. Use that PNG as **reference image** for all subsequent poses (see Consistency section below)
 
-7. **Save as exact filename**: Rename the downloaded PNG to match the **Texture Key** from the inventory table below. Game auto-detects:
-   - **Single sprites** → `{texture-key}.png` (e.g., `player-idle.png`, `coin.png`)
-   - **Sprite sheets** → Split into frames first, save as `{texture-key}-{n}.png` (e.g., `player-run-anim-0.png`)
-   - **No PNG?** → Game uses procedural fallback automatically — safe to skip any asset
-
-> 💡 Dreamina's Seedream 5.0 has a dedicated pixel art model that understands game sprites, transparency, and pixel-perfect output natively. No need for "no anti-aliasing" or "flat colors" constraints.
-
-> 💡 For animated entities, consider generating a **sprite sheet** from Section 11 instead of individual single-frame prompts — one sprite sheet can provide all animation frames in a single generation. Split the sheet later using Aseprite or a similar editor.
+> **Pro tip**: All sprites face **RIGHT** by default. The game flips them via `setFlipX()` for left movement — never generate left-facing variants.
 
 ---
 
-## 🎨 MASTER PROMPT TEMPLATE
+## 🎯 Style & Consistency
+
+Seedream 5.0 has powerful built-in features for pixel-perfect consistency. Use them.
+
+### Style Anchor
+
+Include these exact keywords in **EVERY prompt** to lock the visual style:
 
 ```
-pixel art [SUBJECT], game sprite, steampunk style,
-[DETAILS], [PALETTE WORDS], transparent PNG
+pixel art, 16-bit, game sprite, steampunk, transparent PNG
 ```
 
-> Keep prompts short and direct — Seedream 5.0 understands pixel art conventions natively.
->
-> 🎯 **Direction**: All character and enemy sprites face **RIGHT** by default. The game engine flips them horizontally for left-facing movement via `setFlipX()`. Do NOT generate left-facing variants.
+### Workflow: Reference Image (Img2Img)
+
+Seedream can use a previously-generated PNG as a reference so the next generation keeps the same character design.
+
+**Step-by-step:**
+1. Generate **player-idle** → download → this is your **anchor**
+2. For each subsequent asset, click **AI Image → Image-to-Image** in Dreamina
+3. Upload the anchor PNG
+4. Set **Strength to ~0.3** (preserves character, allows pose change)
+5. Paste the new pose prompt → generate
+6. The character's face, clothes, colors stay identical
+
+> Recommended generation order — each step uses the previous as reference:
+> ```
+> player-idle → player-run → player-jump → player-hurt
+>        ↓ (each uses idle as reference)
+> walker-walk → walker-death → drone → drone-death
+>        ↓
+> coin → saw-blade → spike-trap → gates
+>        ↓
+> tiles → UI → backgrounds (no reference needed)
+> ```
+
+### Additional Techniques
+
+| Technique | How |
+|-----------|-----|
+| **Multi-Image Fusion** | Upload up to 6 references — 1st = character, 2nd = style, 3rd+ = palette |
+| **Lock Seed** | Note the seed number from a great result → reuse for near-identical frames |
+| **Conversational** | Don't restart — type *"Keep character, change pose to running"* in chat |
+| **Batch Session** | Generate all animation frames in one sitting with the same reference to avoid style drift |
 
 ---
 
-## 📦 ASSET PROMPTS
+## 📋 Asset Inventory
 
-### 1. BACKGROUNDS — Full-Scene (800×450)
+Every texture loaded by the game, with expected filename and size.
 
-Generate as landscape images (no transparency needed for full backgrounds).
+### Single Sprites
+| # | Save As `assets/images/...` | Size | Used For |
+|---|----------------------------|------|----------|
+| 1 | `player-idle.png` | 32×32 | Player standing |
+| 2 | `player-run.png` | 32×32 | Player running |
+| 3 | `player-jump.png` | 32×32 | Player jumping |
+| 4 | `player-fall.png` | 32×32 | Player falling |
+| 5 | `player-hurt.png` | 32×32 | Player damaged |
+| 6 | `walker-walk.png` | 32×32 | Walker automaton patrol |
+| 7 | `walker-death.png` | 32×32 | Walker destroyed |
+| 8 | `drone.png` | 28×28 | PatrolDrone flying |
+| 9 | `drone-death.png` | 28×28 | Drone destroyed |
+| 10 | `laser-beam.png` | 8×80 | Drone laser beam |
+| 11 | `laser-cone.png` | 16×12 | Laser warning cone |
+| 12 | `laser-warning.png` | 8×8 | Laser targeting dot |
+| 13 | `saw-blade.png` | 28×28 | BuriedSaw / SurpriseSaw |
+| 14 | `spike-trap.png` | 48×32 | SpikeTrap obstacle |
+| 15 | `coin.png` | 16×16 | Gear collectible |
+| 16 | `gate-closed.png` | 48×64 | Exit gate locked |
+| 17 | `gate-open.png` | 48×64 | Exit gate active |
+| 18 | `ground-tile.png` | 32×32 | Floor platforms |
+| 19 | `heart-full.png` | 20×20 | HUD health full |
+| 20 | `heart-empty.png` | 20×20 | HUD health empty |
+| 21 | `particle.png` | 4×4 | Dust/steam effects |
+| 22 | `btn-left.png` | 64×64 | Touch left button (mobile) |
+| 23 | `btn-right.png` | 64×64 | Touch right button (mobile) |
+| 24 | `btn-jump.png` | 64×64 | Touch jump button (mobile) |
+| 25 | `btn-pause.png` | 32×32 | Pause button |
+| 26 | `icon-play.png` | 32×32 | Resume icon |
+| 27 | `bg-level1.png` | 800×450 | Background — Bellows District |
+| 28 | `bg-level2.png` | 800×450 | Background — Clockwork Quarter |
+| 29 | `bg-level3.png` | 800×450 | Background — The Core |
+
+### Animation Frame Sets
+Generated by the game procedurally. You can replace them by saving individual frame PNGs.
+| Animation | Frames | Save As |
+|-----------|--------|---------|
+| Player idle | 2 | `player-idle-anim-0.png`, `player-idle-anim-1.png` |
+| Player run | 4 | `player-run-anim-0.png` through `player-run-anim-3.png` |
+| Player jump | 2 | `player-jump-anim-0.png`, `player-jump-anim-1.png` |
+| Walker walk | 4 | `walker-walk-anim-0.png` through `walker-walk-anim-3.png` |
+| Drone fly | 2 | `drone-fly-anim-0.png`, `drone-fly-anim-1.png` |
+| Coin spin | 4 | `coin-spin-anim-0.png` through `coin-spin-anim-3.png` |
+| Player fall | 1 | Uses `player-fall.png` (single frame) |
+| Player hurt | 1 | Uses `player-hurt.png` (single frame) |
+| Walker death | 1 | Uses `walker-death.png` (single frame) |
+| Drone death | 1 | Uses `drone-death.png` (single frame) |
+
+> **No PNG? No problem.** The game auto-generates all textures procedurally as fallback. PNGs are optional upgrades.
 
 ---
 
-#### BG-01: Bellows District (Levels 1-5)
+## 📦 Single-Frame Prompts
 
-```
-pixel art background, Bellows District, night sky with copper-orange
-smog haze, distant factory chimneys, brass pipes and catwalks silhouettes,
-industrial steampunk forge, warm amber and brass, dark navy sky,
-glowing furnace windows, 800x450 game background
-```
-
-> **Save as**: `bg-level1.png` → `assets/images/bg-level1.png`
-
-#### BG-02: Clockwork Quarter (Levels 6-10)
-
-```
-pixel art background, Clockwork Quarter, deep blue-purple twilight sky,
-giant clock tower silhouettes, interlocking gear walls,
-blue glowing energy lines, copper wire mesh, cool blue and steel palette,
-dark navy background, 800x450 game background
-```
-
-> **Save as**: `bg-level2.png` → `assets/images/bg-level2.png`
-
-#### BG-03: The Core (Levels 11-15)
-
-```
-pixel art background, The Core, deep dark red-purple sky,
-molten amber glow, reactor core silhouettes, massive flywheels,
-lava pipes, charred metal, warning stripes, fire atmosphere,
-hot orange and crimson palette, 800x450 game background
-```
-
-> **Save as**: `bg-level3.png` → `assets/images/bg-level3.png`
+Use these to generate individual sprites. For animated entities, generate the main frame first, then use **frame-by-frame** (Section 7) or **sprite sheet** (Section 8) for animation frames.
 
 ---
 
-### 2. PLAYER CHARACTER — Cogsworth
+### 1. Player Character — Cogsworth (32×32)
 
-All player sprites are 32×32 pixels. Transparency is native.
+All player sprites are 32×32 pixels. She is a young female steampunk adventurer.
 
-#### PL-01: Main Character (Idle)
+#### PL-01: Idle (Standing)
 
 ```
 pixel art game character, steampunk female adventurer idle, facing right, 32x32 pixels,
@@ -100,9 +141,9 @@ mechanical backpack, warm brass and copper, red scarf accent,
 transparent PNG
 ```
 
-> **Save as**: `player-idle.png` → `assets/images/player-idle.png`
+> **Save as**: `player-idle.png`
 
-#### PL-02: Jump Pose
+#### PL-02: Jump (Mid-Air)
 
 ```
 pixel art game character, steampunk female adventurer mid-jump pose, facing right,
@@ -111,9 +152,9 @@ blue-lensed goggles, red scarf flowing upward, brown jacket,
 gear on chest, brown boots tucked under, transparent PNG
 ```
 
-> **Save as**: `player-jump.png` → `assets/images/player-jump.png`
+> **Save as**: `player-jump.png`
 
-#### PL-03: Hurt/Death Pose
+#### PL-03: Hurt / Damage
 
 ```
 pixel art game character, steampunk female adventurer hurt pose, facing right,
@@ -122,237 +163,249 @@ hat tilted, red scarf disturbed, damage frame,
 transparent PNG
 ```
 
-> **Save as**: `player-hurt.png` → `assets/images/player-hurt.png`
+> **Save as**: `player-hurt.png`
 
 ---
 
-### 3. ENEMIES
+### 2. Enemies (32×32 / 28×28)
 
-#### EN-01: Walker Automaton (Idle/Patrol)
-
-```
-pixel art game enemy, steampunk mechanical automaton walking, facing right,
-32x32 pixels, brass dome head with glowing amber eyes,
-goggles, ventilator grill mouth, copper torso with gear,
-piston arms ending in pincer claws, riveted metal legs,
-dark brass and copper, transparent PNG
-```
-
-> **Save as**: `walker-walk.png` → `assets/images/walker-walk.png`
-
-#### EN-02: Walker Death
+#### EN-01: Walker Automaton (Patrol)
 
 ```
-pixel art game enemy, destroyed steampunk automaton, facing right, 32x32 pixels,
-same body with X eyes made of red pixels, dark overlay,
-head tilted, gear chest cracked, defeated pose, transparent PNG
+pixel art game enemy, steampunk mechanical walker robot idle, facing right, 32x32 pixels,
+brass dome head with glowing amber eyes, brass goggles,
+ventilator grill mouth, copper torso with gear in chest,
+piston arms with pincer claws, riveted metal legs,
+dark brass and copper, mechanical, steampunk, transparent PNG
 ```
 
-> **Save as**: `walker-death.png` → `assets/images/walker-death.png`
+> **Save as**: `walker-walk.png`
 
-#### EN-03: PatrolDrone (Flying)
+#### EN-02: Walker Destroyed
+
+```
+pixel art game enemy, steampunk walker robot destroyed, facing right, 32x32 pixels,
+darkened brass dome head, X mark red eyes, damaged copper torso,
+shattered gear exposed, limp arms, power down pose,
+dark brass and copper, 16-bit, transparent PNG
+```
+
+> **Save as**: `walker-death.png`
+
+#### EN-03: PatrolDrone
 
 ```
 pixel art game enemy, steampunk flying drone, facing right, 28x28 pixels,
-brass propeller on top, copper oval body,
-central glowing amber mechanical eye, small steam pipes,
-bronze and brass colors with amber glow, transparent PNG
+brass propeller on top, copper dome body, central amber gear eye,
+steam pipe sides, mechanical fin bottom,
+brass and copper colors, mechanical, transparent PNG
 ```
 
-> **Save as**: `drone.png` → `assets/images/drone.png`
+> **Save as**: `drone.png`
 
-#### EN-04: PatrolDrone Death
-
-```
-pixel art game enemy, destroyed steampunk drone, facing right, 28x28 pixels,
-same body with red X eye, dark overlay, propeller stopped,
-transparent PNG
-```
-
-> **Save as**: `drone-death.png` → `assets/images/drone-death.png`
-
-#### EN-05: Laser Beam (Drone Attack)
+#### EN-04: Drone Destroyed
 
 ```
-pixel art laser beam, 8x80 pixels, vertical glowing red energy,
-white hot core, red outer glow, game projectile,
-transparent PNG
+pixel art game enemy, steampunk drone destroyed, facing right, 28x28 pixels,
+darkened brass body, red X mark eye, cracked copper casing,
+dark overlay, power lost, disabled state,
+dark brass and copper, transparent PNG
 ```
 
-> **Save as**: `laser-beam.png` → `assets/images/laser-beam.png`
+> **Save as**: `drone-death.png`
+
+#### EN-05: Laser Beam
+
+```
+pixel art effect, vertical laser beam, 8x80 pixels,
+bright red core with white hot center,
+outer red glow fading to transparent,
+pixel laser, glowing energy, transparent PNG
+```
+
+> **Save as**: `laser-beam.png`
+
+> **Also generate**: `laser-cone.png` (16×12 — red warning triangle) and `laser-warning.png` (8×8 — pulsing red dot) as smaller variants of the same laser theme.
 
 ---
 
-### 4. OBSTACLES
+### 3. Obstacles
 
-#### OB-01: Saw Blade (BuriedSaw / SurpriseSaw)
+#### OB-01: Saw Blade (Spinning)
 
 ```
-pixel art circular saw blade, 28x28 pixels, metal gear with
-8 sharp jagged teeth, dark gray metal center,
-red glowing center eye, steel and iron, transparent PNG
+pixel art obstacle, circular spinning saw blade, 28x28 pixels,
+iron outer ring with sharp teeth, dark metal center,
+red glowing center hub, industrial blade,
+24-bit, transparent PNG
 ```
 
-> **Save as**: `saw-blade.png` → `assets/images/saw-blade.png`
+> **Save as**: `saw-blade.png`
 
 #### OB-02: Spike Trap
 
 ```
-pixel art spike trap, 48x32 pixels, wide metal base plate
-with rivets, five upward serrated spikes, dark red and gray,
-industrial hazard, floor trap, transparent PNG
+pixel art obstacle, floor spike trap, 48x32 pixels,
+iron base plate with rivets, 5 serrated metal teeth,
+red tinted spike tips, industrial trap,
+dark iron and steel colors, transparent PNG
 ```
 
-> **Save as**: `spike-trap.png` → `assets/images/spike-trap.png`
+> **Save as**: `spike-trap.png`
 
 ---
 
-### 5. COLLECTIBLES & PROPS
+### 4. Collectibles & Props
 
 #### CO-01: Gear Coin
 
 ```
-pixel art golden gear coin, 16x16 pixels, gold outer ring
-with notches, dark center hole, shiny highlight,
-game collectible, transparent PNG
+pixel art collectible, golden gear coin, 16x16 pixels,
+brass outer ring with notches, inner copper circle,
+center hole, shiny gold highlight, small,
+steampunk currency, transparent PNG
 ```
 
-> **Save as**: `coin.png` → `assets/images/coin.png`
+> **Save as**: `coin.png`
 
-#### CO-02: Exit Gate (Closed)
-
-```
-pixel art steampunk exit door closed, 48x64 pixels,
-heavy metal door with arched top, brass frame with rivets,
-two dark wooden panels, red locked indicator in center,
-brown and brass, transparent PNG
-```
-
-> **Save as**: `gate-closed.png` → `assets/images/gate-closed.png`
-
-#### CO-03: Exit Gate (Open/Active)
+#### CO-02: Gate Closed (Locked)
 
 ```
-pixel art steampunk exit door open, 48x64 pixels,
-same arched frame with rivets, panels glowing golden,
-bright yellow light emanating, green active indicator,
-golden glow effect, game goal sprite, transparent PNG
+pixel art prop, steampunk door gate locked, 48x64 pixels,
+dark brown metal frame, arched top, two iron door panels,
+rivets, small red locked indicator, heavy industrial door,
+dark brass and iron colors, transparent PNG
 ```
 
-> **Save as**: `gate-open.png` → `assets/images/gate-open.png`
+> **Save as**: `gate-closed.png`
+
+#### CO-03: Gate Open (Active)
+
+```
+pixel art prop, steampunk door gate unlocked, 48x64 pixels,
+dark brown metal frame, arched top, two glowing gold panels,
+rivets, bright green open indicator, golden glow effect,
+warm brass and gold colors, transparent PNG
+```
+
+> **Save as**: `gate-open.png`
 
 ---
 
-### 6. TILESET — Ground & Platforms
+### 5. Tileset
 
 #### TI-01: Ground Tile
 
 ```
-pixel art seamless ground tile, 32x32 pixels,
-riveted metal plate texture, dark brown-brass,
-brick-like metal panels with grid lines,
-four corner rivets, industrial steampunk floor,
-tileable seamless, no visible borders
+pixel art tile, steampunk metal platform floor, 32x32 pixels,
+brown metal plates with rivet corners,
+dark grout line grid pattern, industrial flooring,
+warm brown and brass colors, seamless tile, transparent PNG
 ```
 
-> **Save as**: `ground-tile.png` → `assets/images/ground-tile.png`
-
-#### TI-02: Floating Platform
-
-```
-pixel art floating platform tile, 32x32 pixels,
-metal grate or gear-tooth platform, brass colored,
-small gaps showing through, riveted edges,
-tileable horizontally, transparent
-```
+> **Save as**: `ground-tile.png`
 
 ---
 
-### 7. UI ELEMENTS
+### 6. UI Elements
 
-#### UI-01: Heart (Full)
-
-```
-pixel art heart icon full health, 22x22 pixels,
-red heart shape with white highlight,
-game UI icon, transparent PNG
-```
-
-> **Save as**: `heart-full.png` → `assets/images/heart-full.png`
-
-#### UI-02: Heart (Empty)
+#### UI-01: Heart Full
 
 ```
-pixel art heart icon empty health, 22x22 pixels,
-same shape but dark gray, depleted health,
-game UI icon, transparent PNG
+pixel art icon, full health heart, 20x20 pixels,
+bright red heart shape with white shine highlight,
+pixel perfect, game UI, transparent PNG
 ```
 
-> **Save as**: `heart-empty.png` → `assets/images/heart-empty.png`
+> **Save as**: `heart-full.png`
 
-#### UI-03: Pause Button Icon
-
-```
-pixel art pause button icon, 32x32 pixels,
-two vertical white bars in a circle on dark gray,
-game menu icon, transparent PNG
-```
-
-> **Save as**: `btn-pause.png` → `assets/images/btn-pause.png`
-
-#### UI-04: Dust Particle
+#### UI-02: Heart Empty
 
 ```
-pixel art dust particle, 4x4 pixels,
-white square pixel with slight transparency,
-generic particle for steam and dust effects, transparent
+pixel art icon, empty health heart outline, 20x20 pixels,
+dark grey heart outline, no fill,
+pixel perfect, game UI, transparent PNG
 ```
 
-> **Save as**: `particle.png` → `assets/images/particle.png`
+> **Save as**: `heart-empty.png`
+
+#### UI-03: Pause Button
+
+```
+pixel art icon, pause button, 32x32 pixels,
+dark circle background with two vertical white bars,
+game UI icon, subtle border,
+transparent PNG
+```
+
+> **Save as**: `btn-pause.png`
+
+> **Also generate**: `icon-play.png` (32×32 — white triangle on dark circle for resume), `btn-left.png` (64×64 — left arrow), `btn-right.png` (64×64 — right arrow), `btn-jump.png` (64×64 — up arrow). All use the same dark circle background style.
+
+#### UI-04: Particle
+
+```
+pixel art particle, white square pixel, 4x4 pixels,
+pure white with semi-transparent center,
+soft glow effect, game particle, transparent PNG
+```
+
+> **Save as**: `particle.png`
 
 ---
 
-### 8. EFFECTS & PARTICLES
+### 7. Backgrounds (800×450)
 
-#### FX-01: Steam Puff
+Full-scene landscapes. No transparency needed.
 
-```
-pixel art steam puff effect, 16x16 pixels,
-white-gray cloud puff, expanding circular shape,
-semi-transparent, steampunk steam vent, transparent PNG
-```
-
-#### FX-02: Gear Shatter (Enemy Death)
+#### BG-01: Bellows District (Levels 1-5)
 
 ```
-pixel art gear shatter effect, 16x16 pixels,
-gold and brown gear fragments scattered,
-explosion debris, game death effect, transparent PNG
+pixel art background, Bellows District, night sky with copper-orange
+smog haze, distant factory chimneys, brass pipes and catwalks silhouettes,
+industrial steampunk forge, warm amber and brass, dark navy sky,
+glowing furnace windows, 800x450 game background
 ```
+
+> **Save as**: `bg-level1.png`
+
+#### BG-02: Clockwork Quarter (Levels 6-10)
+
+```
+pixel art background, Clockwork Quarter, deep blue-purple twilight sky,
+giant clock tower silhouettes, interlocking gear walls,
+blue glowing energy lines, copper wire mesh, cool blue and steel palette,
+dark navy background, 800x450 game background
+```
+
+> **Save as**: `bg-level2.png`
+
+#### BG-03: The Core (Levels 11-15)
+
+```
+pixel art background, The Core, deep dark red-purple sky,
+molten amber glow, reactor core silhouettes, massive flywheels,
+lava pipes, charred metal, warning stripes, fire atmosphere,
+hot orange and crimson palette, 800x450 game background
+```
+
+> **Save as**: `bg-level3.png`
 
 ---
 
-### 9. DISTRICT-SPECIFIC VARIATIONS
+## 🎞️ Animation Frame Prompts
 
-Use these color/setting modifiers in your prompts for variation:
-
-| District  | Modify Prompt With |
-|-----------|-------------------|
-| Bellows   | warm brass and copper tones, amber glow, forge atmosphere, brown and orange palette |
-| Clockwork | cool blue steel, clockwork precision, blue-purple shadows, teal energy glow |
-| The Core  | molten red and orange, charred black metal, fire glow, hellish industrial |
+Two approaches: **frame-by-frame** (each frame standalone) or **sprite sheet** (all frames in one image). Frame-by-frame gives more control; sprite sheets are faster.
 
 ---
 
-### 10. FRAME-BY-FRAME PROMPTS
+### 8. Frame-by-Frame Prompts
 
-*Generate individual animation frames separately for maximum control. After downloading, rename each PNG to match the expected filename listed below, then place in `assets/images/`. The game checks for these files automatically; if missing, procedural fallback is used.*
+Generate each frame individually. After downloading, save with the exact filename listed. The game auto-detects them; if missing, procedural fallback kicks in.
 
-> **Naming pattern**: Each frame lists its expected filename. Example: `player-run-anim-0.png` → place in `assets/images/player-run-anim-0.png`
+#### PLAYER (32×32) — 10 frames
 
-#### PLAYER (32×32px) — 10 frames total
-
-##### PL-01-F0 (Idle Frame 1): Standing upright, both legs together, arms relaxed at sides, facing forward, aviator cap with brass goggles (blue lenses), red scarf hanging straight, brown leather jacket with brass gear on chest, utility belt with gold buckle, brown boots, mechanical backpack, neutral expression, warm brass and copper colors
+**PL-F0 (Idle 1):** Standing upright, both legs together, arms relaxed, neutral expression
 ```
 pixel art game character frame, steampunk female adventurer standing idle, facing right,
 pose frame 1 of 2, upright standing, both legs together,
@@ -361,8 +414,9 @@ flowing red scarf hanging straight, brown leather jacket,
 brass gear on chest, utility belt, brown pants and boots,
 mechanical backpack, neutral expression, 32x32 pixels, transparent PNG
 ```
+> **Save as**: `player-idle-anim-0.png`
 
-##### PL-01-F1 (Idle Frame 2): Same character but breathing in — chest slightly expanded (1-2px), shoulders raised 1px, scarf slightly lifted, subtle animation frame
+**PL-F1 (Idle 2):** Same character — breathing in, chest slightly expanded, shoulders raised, scarf slightly lifted
 ```
 pixel art game character frame, steampunk female adventurer idle breathing, facing right,
 pose frame 2 of 2, chest expanded slightly, shoulders raised 1px,
@@ -370,8 +424,9 @@ scarf slightly lifted, subtle breathing animation,
 brown aviator cap with goggles, blue lenses, red scarf,
 brown leather jacket with gear, 32x32 pixels, transparent PNG
 ```
+> **Save as**: `player-idle-anim-1.png`
 
-##### PL-01-RUN-F0 (Run Frame 1): Running pose, left leg forward, right leg trailing, right arm forward, left arm back, scarf flowing behind, dynamic action pose
+**PL-RUN-F0 (Run 1):** Left leg forward, right leg trailing, right arm forward, left arm back, scarf flowing
 ```
 pixel art game character frame, steampunk female adventurer running, facing right,
 pose frame 1 of 4 walk cycle, left leg forward striding,
@@ -379,8 +434,9 @@ right leg trailing behind, right arm swinging forward,
 left arm back, red scarf flowing behind, brown aviator cap with goggles,
 32x32 pixels, transparent PNG
 ```
+> **Save as**: `player-run-anim-0.png`
 
-##### PL-01-RUN-F1 (Run Frame 2): Running pose, legs together mid-stride, both arms at sides, scarf flowing horizontally, momentum frame
+**PL-RUN-F1 (Run 2):** Legs together mid-stride, both arms at sides, scarf flowing horizontally
 ```
 pixel art game character frame, steampunk female adventurer running, facing right,
 pose frame 2 of 4 walk cycle, legs together mid-stride,
@@ -388,8 +444,9 @@ both arms at sides, scarf flowing horizontal with momentum,
 brown cap with brass goggles, brown jacket, gear on chest,
 32x32 pixels, transparent PNG
 ```
+> **Save as**: `player-run-anim-1.png`
 
-##### PL-01-RUN-F2 (Run Frame 3): Running pose, right leg forward, left leg trailing, left arm forward, right arm back, scarf flowing, opposite of frame 1
+**PL-RUN-F2 (Run 3):** Right leg forward, left leg trailing, left arm forward, right arm back (opposite of F0)
 ```
 pixel art game character frame, steampunk female adventurer running, facing right,
 pose frame 3 of 4 walk cycle, right leg forward striding,
@@ -397,8 +454,9 @@ left leg trailing behind, left arm swinging forward,
 right arm back, red scarf flowing, brown cap with goggles,
 32x32 pixels, transparent PNG
 ```
+> **Save as**: `player-run-anim-2.png`
 
-##### PL-01-RUN-F3 (Run Frame 4): Same as frame 2, legs together mid-stride, transition frame back to frame 1
+**PL-RUN-F3 (Run 4):** Same as F1 — legs together mid-stride, transition frame back to F0
 ```
 pixel art game character frame, steampunk female adventurer running, facing right,
 pose frame 4 of 4 walk cycle, legs together mid-stride,
@@ -406,8 +464,9 @@ arms at sides, scarf flowing, transition pose,
 brown cap with brass goggles, brown jacket, 32x32 pixels,
 transparent PNG
 ```
+> **Save as**: `player-run-anim-3.png`
 
-##### PL-02-F0 (Jump Frame 1): Jumping upward, arms raised above head, knees bent and legs tucked, scarf flying up, dynamic upward motion
+**PL-JMP-F0 (Jump 1):** Jumping upward, arms raised above head, knees bent, scarf flying up
 ```
 pixel art game character frame, steampunk female adventurer jumping up, facing right,
 pose frame 1 of 2, arms raised above head, knees bent,
@@ -415,8 +474,9 @@ legs tucked under body, red scarf flying upward,
 brown aviator cap with brass goggles, blue lenses, brown jacket,
 32x32 pixels, transparent PNG
 ```
+> **Save as**: `player-jump-anim-0.png`
 
-##### PL-02-F1 (Jump Frame 2): Jumping at apex, arms slightly lowered from peak, legs still tucked, scarf still floating up, reaching highest point
+**PL-JMP-F1 (Jump 2):** Jumping at apex, arms slightly lowered, legs still tucked, scarf floating
 ```
 pixel art game character frame, steampunk female adventurer jump apex, facing right,
 pose frame 2 of 2, arms slightly lowered from peak,
@@ -424,16 +484,18 @@ legs still tucked, scarf floating upward, reaching highest point,
 brown cap with goggles, red scarf, gear on chest,
 32x32 pixels, transparent PNG
 ```
+> **Save as**: `player-jump-anim-1.png`
 
-##### PL-03-F0 (Fall Frame): Falling downward, arms spread out for balance, legs spread apart, scarf blowing upward, descent pose
+**PL-FALL-F0 (Fall):** Falling downward, arms spread for balance, legs spread apart, scarf blowing upward
 ```
 pixel art game character frame, steampunk female adventurer falling, facing right,
 falling downward pose, arms spread out for balance,
 legs spread apart, red scarf blowing upward, descent animation,
 brown cap with goggles, brown jacket, 32x32 pixels, transparent PNG
 ```
+> **Save as**: `player-fall.png` (single frame)
 
-##### PL-04-F0 (Hurt/Death Frame): Staggering backward, knocked back pose, red tint overlay, hat tilted sideways, scarf disturbed, damage state
+**PL-HURT-F0 (Hurt):** Staggering backward, red tint overlay, hat tilted, scarf disturbed
 ```
 pixel art game character frame, steampunk female adventurer hurt, facing right,
 staggering backward knocked back pose, red tint overlay,
@@ -441,10 +503,13 @@ hat tilted sideways, red scarf disturbed, damage state,
 brown cap with goggles, brown jacket with gear,
 32x32 pixels, transparent PNG
 ```
+> **Save as**: `player-hurt.png` (single frame)
 
-#### WALKER AUTOMATON (32×32px) — 6 frames total
+---
 
-##### EN-01-WALK-F0 (Walk Frame 1): Walking, left leg forward (leg drawn at x-offset -1), right arm forward (arm at x+1), brass dome head with glowing amber eyes, goggles, ventilator grill mouth, copper torso with gear in chest
+#### WALKER AUTOMATON (32×32) — 6 frames
+
+**WK-WALK-F0 (Walk 1):** Left leg forward, right arm forward, mechanical stride
 ```
 pixel art game enemy frame, steampunk mechanical walker robot walking, facing right,
 walk cycle frame 1 of 4, left leg forward, right arm forward,
@@ -453,217 +518,142 @@ ventilator grill mouth, copper torso with gear in chest,
 piston arms with pincer claws, riveted metal legs,
 dark brass and copper colors, 32x32 pixels, transparent PNG
 ```
+> **Save as**: `walker-walk-anim-0.png`
 
-##### EN-01-WALK-F1 (Walk Frame 2): Walking, neutral standing pose, both legs together, both arms at sides, transition frame
+**WK-WALK-F1 (Walk 2):** Neutral standing, both legs together, both arms at sides (transition)
 ```
 pixel art game enemy frame, steampunk mechanical walker robot walking, facing right,
-walk cycle frame 2 of 4, neutral standing, legs together,
-arms at sides, brass dome head with glowing amber eyes,
-copper torso with gear, piston arms, riveted legs,
+walk cycle frame 2 of 4, neutral standing pose,
+both legs together, both arms at sides, transition frame,
+brass dome head with amber eyes, copper torso,
 32x32 pixels, transparent PNG
 ```
+> **Save as**: `walker-walk-anim-1.png`
 
-##### EN-01-WALK-F2 (Walk Frame 3): Walking, right leg forward (leg at x+1), left arm forward (arm at x-1), opposite of frame 1
+**WK-WALK-F2 (Walk 3):** Right leg forward, left arm forward, opposite of F0
 ```
 pixel art game enemy frame, steampunk mechanical walker robot walking, facing right,
 walk cycle frame 3 of 4, right leg forward, left arm forward,
-brass dome head with amber eyes, copper torso with gear,
-piston arms with pincer claws, riveted legs,
-32x32 pixels, transparent PNG
+brass dome head with glowing amber eyes, brass goggles,
+copper torso with gear, piston arms, riveted legs,
+dark brass and copper, 32x32 pixels, transparent PNG
 ```
+> **Save as**: `walker-walk-anim-2.png`
 
-##### EN-01-WALK-F3 (Walk Frame 4): Same as frame 2, neutral standing, transition frame
+**WK-WALK-F3 (Walk 4):** Same as F1 — neutral transition back to F0
 ```
 pixel art game enemy frame, steampunk mechanical walker robot walking, facing right,
 walk cycle frame 4 of 4, neutral standing, legs together,
-arms at sides, brass dome head, amber eyes,
-copper torso with chest gear, 32x32 pixels, transparent PNG
-```
-
-##### EN-02-F0 (Death Frame 1): Walker destroyed, X eyes made of red pixels, head tilted, dark overlay, gear chest cracked, starting to collapse
-```
-pixel art game enemy frame, destroyed steampunk walker robot, facing right,
-death frame 1 of 2, X eyes made of red pixels, head tilted,
-gear chest cracked, dark overlay, starting to collapse,
+arms at sides, transition pose back to frame 1,
+brass dome head, copper torso, dark brass,
 32x32 pixels, transparent PNG
 ```
+> **Save as**: `walker-walk-anim-3.png`
 
-##### EN-02-F1 (Death Frame 2): Fully collapsed, fallen apart, gears scattered, smoke wisps, destroyed state
+**WK-DIE-F0 (Death 1):** Powering down, eyes turning to X marks
 ```
-pixel art game enemy frame, destroyed steampunk walker robot, facing right,
-death frame 2 of 2, fully collapsed fallen apart, gears scattered,
-smoke wisps rising, destroyed defeated state, dark overlay,
+pixel art game enemy frame, steampunk walker robot destroyed, facing right,
+death frame 1 of 2, eyes turning to red X marks,
+body darkening, power down beginning,
+brass dome head, copper torso, dark overlay,
 32x32 pixels, transparent PNG
 ```
+> **Save as**: `walker-death.png` (single frame — just use the death texture)
 
-#### PATROLDRONE (28×28px) — 3 frames total
-
-##### EN-03-F0 (Fly Frame 1): Flying, propeller blades visible (normal spin), copper oval body, central amber glowing eye, steam pipes on sides, bottom fin
+**WK-DIE-F1 (Death 2):** Fully deactivated, dark overlay, limp pose
 ```
-pixel art game enemy frame, steampunk flying drone flying, facing right,
-fly frame 1 of 2, propeller blades visible normal speed,
-copper oval body, central glowing amber mechanical eye,
-small steam pipes on sides, bottom fin, hovering pose,
-bronze and brass colors, 28x28 pixels, transparent PNG
+pixel art game enemy frame, steampunk walker robot destroyed, facing right,
+death frame 2 of 2, fully deactivated dark pose,
+red X eyes, darkened copper body, limp arms,
+completely powered down, 32x32 pixels, transparent PNG
 ```
-
-##### EN-03-F1 (Fly Frame 2): Flying, propeller fully blurred (fast spin blur effect), same body, fast motion effect
-```
-pixel art game enemy frame, steampunk flying drone flying, facing right,
-fly frame 2 of 2, propeller fully blurred fast spin motion blur,
-copper oval body, glowing amber eye, steam pipes,
-motion effect, 28x28 pixels, transparent PNG
-```
-
-##### EN-04-F0 (Death Frame): Drone destroyed, red X eye, dark overlay, propeller stopped, smoke implied, falling
-```
-pixel art game enemy frame, destroyed steampunk drone, facing right,
-death frame, red X eye, dark overlay, propeller stopped,
-smoke implied, falling destroyed state, 28x28 pixels,
-transparent PNG
-```
-
-#### GEAR COIN (16×16px) — 4 frames total
-
-##### CO-01-F0 (Spin Frame 1): Golden gear coin, notches at top, bottom, left, and right positions, shiny highlight at top-left, dark center hole
-```
-pixel art game collectible frame, golden gear coin spin animation,
-frame 1 of 4, notches at top bottom left and right positions,
-shiny highlight at top-left, dark center hole,
-gold outer ring, 16x16 pixels, transparent PNG
-```
-
-##### CO-01-F1 (Spin Frame 2): Same coin but rotated 22.5 degrees clockwise, notches shifted to diagonal positions, highlight moved
-```
-pixel art game collectible frame, golden gear coin spin animation,
-frame 2 of 4, rotated 22.5 degrees clockwise,
-notches shifted to diagonal positions, highlight moved,
-gold outer ring, dark center, 16x16 pixels, transparent PNG
-```
-
-##### CO-01-F2 (Spin Frame 3): Same coin rotated 45 degrees, notches at corners, highlight shifted further
-```
-pixel art game collectible frame, golden gear coin spin animation,
-frame 3 of 4, rotated 45 degrees clockwise,
-notches at four corner positions, highlight shifted,
-gold gear coin, 16x16 pixels, transparent PNG
-```
-
-##### CO-01-F3 (Spin Frame 4): Same coin rotated 67.5 degrees, notches at diagonal positions again, completing rotation cycle
-```
-pixel art game collectible frame, golden gear coin spin animation,
-frame 4 of 4, rotated 67.5 degrees clockwise,
-notches at diagonal positions, completing spin cycle,
-gold gear coin, 16x16 pixels, transparent PNG
-```
-
-#### SAW BLADE (28×28px) — 4 frames total
-
-##### OB-01-F0 (Spin Frame 1): Circular saw blade with 8 teeth, teeth pointing at 0°, 45°, 90°, 135°, 180°, 225°, 270°, 315°, red center eye
-```
-pixel art game obstacle frame, circular saw blade spinning,
-frame 1 of 4 rotation, 8 jagged teeth at 0° 45° 90° 135°
-180° 225° 270° 315°, dark gray metal center,
-red glowing center eye, steel and iron, 28x28 pixels, transparent PNG
-```
-
-##### OB-01-F1 (Spin Frame 2): Same saw blade rotated 11.25°, teeth shifted, same red center
-```
-pixel art game obstacle frame, circular saw blade spinning,
-frame 2 of 4 rotation, teeth shifted 11.25 degrees clockwise,
-dark gray metal, red glowing center eye,
-steel and iron colors, 28x28 pixels, transparent PNG
-```
-
-##### OB-01-F2 (Spin Frame 3): Same saw blade rotated 22.5°, teeth shifted further
-```
-pixel art game obstacle frame, circular saw blade spinning,
-frame 3 of 4 rotation, teeth shifted 22.5 degrees clockwise,
-dark gray center, red glowing eye,
-metal saw blade, 28x28 pixels, transparent PNG
-```
-
-##### OB-01-F3 (Spin Frame 4): Same saw blade rotated 33.75°, completing rotation cycle
-```
-pixel art game obstacle frame, circular saw blade spinning,
-frame 4 of 4 rotation, teeth shifted 33.75 degrees,
-completing spin cycle, dark metal,
-red center eye, 28x28 pixels, transparent PNG
-```
-
-#### SPIKE TRAP (48×32px) — 2 frames total
-
-##### OB-02-F0 (Retracted): Spike trap base plate only, spikes hidden below, flat metal plate with rivets, safe state
-```
-pixel art game obstacle frame, spike trap retracted,
-frame 1 of 2, wide metal base plate with rivets only,
-spikes hidden below surface, flat safe state,
-dark red and gray colors, 48x32 pixels, transparent PNG
-```
-
-##### OB-02-F1 (Extended): Spike trap activated, 5 serrated spikes extended upward, sharp red tips extended from base, danger state
-```
-pixel art game obstacle frame, spike trap extended activated,
-frame 2 of 2, 5 sharp serrated spikes extended upward,
-red tips emerging from metal base plate with rivets,
-industrial hazard danger state, 48x32 pixels, transparent PNG
-```
-
-#### STEAM EFFECT (16×16px) — 3 frames total
-
-##### FX-01-F0 (Steam Small): Small steam puff, just starting to expand, compact white-gray cloud, beginning of vent animation
-```
-pixel art effect frame, steam puff small expanding,
-frame 1 of 3 vent animation, small compact white-gray cloud,
-just starting to expand, semi-transparent,
-16x16 pixels, transparent PNG
-```
-
-##### FX-01-F1 (Steam Medium): Medium steam puff, partially expanded, cloud growing outward, mid-animation
-```
-pixel art effect frame, steam puff medium expanding,
-frame 2 of 3 vent animation, partially expanded cloud,
-growing outward, white-gray color, semi-transparent,
-16x16 pixels, transparent PNG
-```
-
-##### FX-01-F2 (Steam Large): Large steam puff, fully expanded, cloud dissipating, end of vent animation, fading out
-```
-pixel art effect frame, steam puff large dissipating,
-frame 3 of 3 vent animation, fully expanded cloud,
-starting to dissipate and fade, white-gray,
-semi-transparent, 16x16 pixels, transparent PNG
-```
-
-#### GEAR SHATTER (16×16px) — 2 frames total
-
-##### FX-02-F0 (Shatter Start): Gear fragments just starting to fly apart, small gold and brown pieces, explosion beginning
-```
-pixel art effect frame, gear shatter debris flying,
-frame 1 of 2 explosion, gold and brown gear fragments
-just starting to fly apart from center, small pieces,
-16x16 pixels, transparent PNG
-```
-
-##### FX-02-F1 (Shatter Spread): Gear fragments fully scattered, pieces flying outward in all directions, explosion complete
-```
-pixel art effect frame, gear shatter debris scattered,
-frame 2 of 2 explosion, gold and brown gear fragments
-fully scattered outward in all directions,
-explosion debris complete, 16x16 pixels, transparent PNG
-```
-
-> *After generating all frames, open Aseprite, create a new sprite sheet at the correct pixel dimensions, import each frame, arrange them in order, and export as a single PNG spritesheet. Then register animations in Phaser using `this.anims.createFromAseprite()` or manual frame references.*
+> **Save as**: `walker-death.png` (same texture — single frame death is fine)
 
 ---
 
-### 11. SPRITE SHEET GENERATION
+#### PATROLDRONE (28×28) — 4 frames
 
-Dreamina can generate multi-panel sprite sheets natively. Use these prompts for character animation frames in a single generation.
+**DR-FLY-F0 (Fly 1):** Normal propeller, hovering, amber eye glowing
+```
+pixel art game enemy frame, steampunk flying drone hovering, facing right,
+fly frame 1 of 2, normal propeller blades visible,
+copper dome body, central amber gear eye,
+steam pipe sides, brass and copper colors, mechanical,
+28x28 pixels, transparent PNG
+```
+> **Save as**: `drone-fly-anim-0.png`
 
-> **After generating**: Split the sprite sheet into individual frames using Aseprite's grid tool. Save each frame as the filename listed below, in `assets/images/`.
+**DR-FLY-F1 (Fly 2):** Propeller blurred (fast spinning), same hover pose
+```
+pixel art game enemy frame, steampunk flying drone hovering, facing right,
+fly frame 2 of 2, propeller motion blurred fast spinning,
+copper dome body, central amber gear eye,
+steam pipe sides, brass and copper, 28x28 pixels, transparent PNG
+```
+> **Save as**: `drone-fly-anim-1.png`
 
-#### PL-01-SS: Player Sprite Sheet (4 frames)
+**DR-DIE-F0 (Death):** Deactivated, red X eye, darkened body
+```
+pixel art game enemy frame, steampunk drone destroyed, facing right,
+death frame, red X mark eye, darkened copper body,
+power lost, falling disabled pose,
+dark brass and copper, 28x28 pixels, transparent PNG
+```
+> **Save as**: `drone-death.png` (single frame)
+
+---
+
+#### GEAR COIN (16×16) — 4 frames
+
+**CO-SPIN-F0 (Spin 1):** Notches at 0° (cardinal directions)
+```
+pixel art collectible frame, golden gear coin spinning, 16x16 pixels,
+frame 1 of 4 spin animation, notches at top bottom left right,
+brass outer ring, copper inner circle, center hole,
+gold highlight, steampunk currency, transparent PNG
+```
+> **Save as**: `coin-spin-anim-0.png`
+
+**CO-SPIN-F1 (Spin 2):** Notches rotated ~22° clockwise
+```
+pixel art collectible frame, golden gear coin spinning, 16x16 pixels,
+frame 2 of 4 spin animation, notches rotated slightly,
+brass outer ring, copper inner circle, center hole,
+gold highlight moves clockwise, transparent PNG
+```
+> **Save as**: `coin-spin-anim-1.png`
+
+**CO-SPIN-F2 (Spin 3):** Notches at ~45° (diagonal directions)
+```
+pixel art collectible frame, golden gear coin spinning, 16x16 pixels,
+frame 3 of 4 spin animation, notches at diagonal positions,
+brass outer ring, copper inner circle, center hole,
+gold highlight at bottom right, transparent PNG
+```
+> **Save as**: `coin-spin-anim-2.png`
+
+**CO-SPIN-F3 (Spin 4):** Notches rotated ~67° clockwise
+```
+pixel art collectible frame, golden gear coin spinning, 16x16 pixels,
+frame 4 of 4 spin animation, notches rotated further,
+brass outer ring, copper inner circle, center hole,
+gold highlight moving clockwise, transparent PNG
+```
+> **Save as**: `coin-spin-anim-3.png`
+
+---
+
+### 9. Sprite Sheet Prompts (Alternative)
+
+Alternative to frame-by-frame. Generate all animation frames in one image, then split using Aseprite.
+
+**How to use:**
+1. Generate the sprite sheet using the prompt below
+2. Download PNG
+3. Open in **Aseprite** → Sprite → Import Sprite Sheet → Grid size = frame size
+4. Export each frame as the individual filenames listed above
+
+#### PL-SS: Player Sprite Sheet (4 frames, 2×2 grid)
 
 ```
 pixel art sprite sheet, 4 frames of steampunk female adventurer,
@@ -674,269 +664,66 @@ brass gear on chest, arranged in 2x2 grid,
 each frame 32x32, transparent PNG
 ```
 
-#### EN-01-SS: Walker Automaton Sprite Sheet (4 frames)
+#### EN-SS: Walker Automaton Sprite Sheet (4 frames, 1×4 strip)
 
 ```
 pixel art sprite sheet, 4 frames of steampunk automaton,
 walking cycle animation, brass dome head, glowing eyes,
-mechanical arms and legs, arranged in 1x4 horizontal strip,
-each frame 32x32, transparent PNG
+copper torso with gear, piston arm and leg movement,
+2x2 grid or 1x4 strip, each frame 32x32, transparent PNG
 ```
 
-#### CO-01-SS: Gear Coin Spin Sheet (4 frames)
+#### CO-SS: Gear Coin Sprite Sheet (4 frames, 2×2 grid)
 
 ```
-pixel art sprite sheet, gear coin spin animation,
-4 frames showing rotation, golden gear with notches,
-arranged in 1x4 horizontal strip, each frame 16x16,
-transparent PNG
+pixel art sprite sheet, 4 frames golden gear coin,
+spinning rotation animation, brass and copper colors,
+notch positions changing each frame,
+2x2 grid, each frame 16x16, transparent PNG
 ```
 
-#### EN-02-SS: Walker Death Sheet (2 frames)
-
-```
-pixel art sprite sheet, 2 frames of steampunk automaton dying,
-frame 1: robot cracking, frame 2: collapsed with X eyes,
-brass dome head, copper body, arranged in 1x2 horizontal strip,
-each frame 32x32, transparent PNG
-```
-
-#### EN-03-SS: PatrolDrone Fly Sheet (2 frames)
+#### DR-SS: Drone Sprite Sheet (2 frames, 1×2 strip)
 
 ```
 pixel art sprite sheet, 2 frames of steampunk flying drone,
-frame 1: propeller normal, frame 2: propeller blurred (fast spin),
-copper oval body, glowing amber eye, arranged in 1x2 horizontal strip,
+propeller variation: normal and blurred, copper dome body,
+amber gear eye, hovering pose, 1x2 strip,
 each frame 28x28, transparent PNG
 ```
 
-#### EN-04-SS: PatrolDrone Death Sheet (1-2 frames)
-
-```
-pixel art sprite sheet, steampunk drone destroyed,
-red X eye, dark overlay, propeller stopped, smoke implied,
-1-2 frames, 28x28, transparent PNG
-```
-
-#### PL-02-SS: Player Jump Sheet (2 frames)
-
-```
-pixel art sprite sheet, steampunk female adventurer jump animation,
-2 frames: frame 1 jumping up (arms up), frame 2 reaching apex,
-brown cap with goggles, red scarf, 32x32 each frame,
-transparent PNG
-```
-
-#### PL-03-SS: Player Hurt Sheet (1-2 frames)
-
-```
-pixel art sprite sheet, steampunk female adventurer hurt animation,
-1-2 frames of staggering back, red tint, hat tilted,
-32x32 each frame, transparent PNG
-```
-
-#### OB-01-SS: Saw Blade Spin Sheet (4 frames)
-
-```
-pixel art sprite sheet, circular saw blade spin animation,
-4 frames of rotation animation, metal gear with jagged teeth,
-red center eye, each frame 28x28, arranged in 1x4 horizontal strip,
-transparent PNG
-```
-
-#### OB-02-SS: Spike Trap Sheet (2 frames)
-
-```
-pixel art sprite sheet, spike trap extend animation,
-2 frames: frame 1 retracted (hidden), frame 2 extended (spikes up),
-metal base plate with rivets, serrated spikes, 48x32 each frame,
-transparent PNG
-```
-
-#### FX-03-SS: Steam Vent Sheet (3 frames)
-
-```
-pixel art sprite sheet, steam puff animation,
-3 frames of expanding white-gray cloud puff,
-growing circular shape, semi-transparent,
-each frame 16x16, arranged in 1x3 horizontal strip,
-transparent PNG
-```
-
-#### FX-04-SS: Gear Shatter Sheet (2 frames)
-
-```
-pixel art sprite sheet, gear shatter debris animation,
-2 frames of gold and brown gear fragments flying apart,
-explosion particles, each frame 16x16, arranged horizontally,
-transparent PNG
-```
-
-### Sprite Sheet Summary
-
-| Code | Description | Frames | Layout | Frame Size |
-|------|------------|--------|--------|------------|
-| PL-01-SS | Player Idle/Run/Jump | 4 | 2×2 grid | 32×32 |
-| PL-02-SS | Player Jump Animation | 2 | 1×2 strip | 32×32 |
-| PL-03-SS | Player Hurt Animation | 1–2 | 1×2 strip | 32×32 |
-| EN-01-SS | Walker Walk Cycle | 4 | 1×4 strip | 32×32 |
-| EN-02-SS | Walker Death Animation | 2 | 1×2 strip | 32×32 |
-| EN-03-SS | PatrolDrone Fly Animation | 2 | 1×2 strip | 28×28 |
-| EN-04-SS | PatrolDrone Death Animation | 1–2 | 1×2 strip | 28×28 |
-| CO-01-SS | Gear Coin Spin | 4 | 1×4 strip | 16×16 |
-| OB-01-SS | Saw Blade Spin | 4 | 1×4 strip | 28×28 |
-| OB-02-SS | Spike Trap Extend | 2 | 1×2 strip | 48×32 |
-| FX-03-SS | Steam Vent Puff | 3 | 1×3 strip | 16×16 |
-| FX-04-SS | Gear Shatter Debris | 2 | 1×2 strip | 16×16 |
-
-> **How to split sprite sheets**: Download the PNG, open in Aseprite or similar editor, slice into individual frames using the grid tool, then export each frame separately as `{texture-key}-frame-{n}.png`.
-
 ---
 
-## 🗺️ COMPLETE ASSET INVENTORY
+## ⚡ Priority Order
 
-| # | Texture Key | Game Usage | Size | Source |
-|---|------------|-----------|------|--------|
-| 1 | `player-idle` | Player standing | 32x32 | PL-01 / PL-01-SS |
-| 2 | `player-run` | Player running | 32x32 | PL-01 (recolor) / PL-01-SS |
-| 3 | `player-jump` | Player jumping | 32x32 | PL-02 / PL-02-SS |
-| 4 | `player-fall` | Player falling | 32x32 | PL-02 (modify) / PL-02-SS |
-| 5 | `player-hurt` | Player damaged | 32x32 | PL-03 / PL-03-SS |
-| 6 | `walker-walk` | Walker patrol | 32x32 | EN-01 / EN-01-SS |
-| 7 | `walker-death` | Walker destroyed | 32x32 | EN-02 / EN-02-SS |
-| 8 | `drone` | PatrolDrone flying | 28x28 | EN-03 / EN-03-SS |
-| 9 | `drone-death` | Drone destroyed | 28x28 | EN-04 / EN-04-SS |
-| 10 | `laser-beam` | Drone laser | 8x80 | EN-05 |
-| 11 | `laser-cone` | Laser warning cone | 16x12 | EN-05 var |
-| 12 | `laser-warning` | Laser dot marker | 8x8 | EN-05 var |
-| 13 | `saw-blade` | BuriedSaw / SurpriseSaw | 28x28 | OB-01 / OB-01-SS |
-| 14 | `spike-trap` | SpikeTrap obstacle | 48x32 | OB-02 / OB-02-SS |
-| 15 | `coin` | Gear collectible | 16x16 | CO-01 / CO-01-SS |
-| 16 | `gate-closed` | Exit gate locked | 48x64 | CO-02 |
-| 17 | `gate-open` | Exit gate active | 48x64 | CO-03 |
-| 18 | `ground-tile` | Floor platforms | 32x32 | TI-01 |
-| 19 | `heart-full` | HUD health full | 22x22 | UI-01 |
-| 20 | `heart-empty` | HUD health empty | 22x22 | UI-02 |
-| 21 | `particle` | Dust/steam effects | 4x4 | UI-04 |
-| 22 | `btn-left` | Touch left button | 64x64 | UI var |
-| 23 | `btn-right` | Touch right button | 64x64 | UI var |
-| 24 | `btn-jump` | Touch jump button | 64x64 | UI var |
-| 25 | `btn-pause` | Pause overlay button | 32x32 | UI-03 |
-| 26 | `icon-play` | Resume icon | 32x32 | UI var |
-| 27 | `bg-level1` | Background Bellows | 800x450 | BG-01 |
-| 28 | `bg-level2` | Background Clockwork | 800x450 | BG-02 |
-| 29 | `bg-level3` | Background Core | 800x450 | BG-03 |
+Generate in this order for fastest playable results:
 
----
-
-## ⚡ Quick Priority Order
-
-| Priority | Assets | Why First |
-|----------|--------|-----------|
-| **P0** | `ground-tile`, `bg-level1`, `bg-level2`, `bg-level3` | Every level needs these immediately |
-| **P0** | `player-idle`, `player-run`, `player-jump`, `player-fall` | Core gameplay |
-| **P0** | `coin`, `gate-closed`, `gate-open` | Level objectives |
-| **P1** | `saw-blade`, `spike-trap` | Obstacles in many levels |
-| **P1** | `walker-walk`, `drone`, `laser-beam` | Enemies in many levels |
+| Priority | Assets | Why |
+|----------|--------|-----|
+| **P0** | `ground-tile`, `bg-level1/2/3` | Every level needs these immediately |
+| **P0** | `player-idle`, `player-run`, `player-jump`, `player-fall` | Core gameplay — character must be visible |
+| **P0** | `coin`, `gate-closed`, `gate-open` | Level objectives (collect, exit) |
+| **P1** | `saw-blade`, `spike-trap` | Obstacles in most levels |
+| **P1** | `walker-walk`, `drone`, `laser-beam` | Enemies |
 | **P1** | `heart-full`, `heart-empty` | HUD essential |
 | **P2** | `player-hurt`, `walker-death`, `drone-death` | Death states |
 | **P2** | `particle`, `btn-pause`, `icon-play` | Effects & UI |
-| **P3** | Touch buttons, `laser-cone`, `laser-warning` | Mobile & details |
+| **P3** | Touch buttons, `laser-cone`, `laser-warning` | Mobile & polish |
 
 ---
 
-## 🎯 Maintaining Art Style Consistency
+## 🔧 Dreamina Tips
 
-Seedream 5.0 has powerful built-in features for keeping art style identical across all assets. Follow this workflow:
-
-### 1. The Style Anchor
-
-Include these **exact same keywords** in EVERY prompt to anchor the visual style:
-
-```
-pixel art, 16-bit, game sprite, steampunk, transparent PNG
-```
-
-> The MASTER PROMPT TEMPLATE at the top of this doc already structures prompts this way — just follow it.
-
-### 2. Reference Image Workflow (Img2Img) — Best for Character Consistency
-
-Dreamina's Image-to-Image mode lets you upload a previously-generated asset as a reference, so the next generation keeps the same character design.
-
-**Step-by-step:**
-1. Generate **player-idle** first (the "anchor" frame)
-2. Download the best variant — this becomes your **character reference**
-3. For each subsequent pose (run, jump, hurt):
-   - Click **AI Image → Image-to-Image**
-   - Upload the player-idle PNG as reference
-   - Paste the new pose prompt
-   - Set **Strength to ~0.3-0.4** (low = preserve reference more; high = more freedom)
-   - Generate → the character's face, clothes, and colors stay consistent
-
-### 3. Multi-Image Fusion (Up to 6 References)
-
-For complex consistency (e.g., character + style + color palette), Dreamina supports up to 6 reference images:
-- **1st image**: Character identity (your anchor frame)
-- **2nd image**: Style reference (a pixel art example with the look you want)
-- **3rd+ images**: Color palette, pose reference, etc.
-
-> Click **"+"** in Dreamina to upload multiple references. Label them in the prompt: *"Maintain character appearance from reference image 1, apply pixel art style from reference image 2"*
-
-### 4. Prompt Structure for Consistency
-
-Follow this exact order in every prompt:
-```
-[Subject] + [Action/Pose] + [Style Anchor] + [Details] + [Technical]
-```
-
-Example:
-```
-pixel art game character, steampunk female adventurer idle, facing right,
-32x32 pixels, ← Subject + Pose
-pixel art, 16-bit, game sprite, steampunk, transparent PNG, ← Style Anchor
-brown aviator cap with brass goggles, red scarf, brown jacket, ... ← Details
-```
-
-### 5. Lock Seed for Reproducibility
-
-Seedream 5.0 supports seed values. When you get a great generation:
-- Note the **Seed number** (shown in generation details)
-- Use the same seed + same prompt + same reference → near-identical results
-- Useful for generating animation frames that need to match perfectly
-
-### 6. Conversational Refinement
-
-Don't regenerate from scratch if something is slightly off. Use Dreamina's chat:
-- *"Keep the same character but adjust the pose to running"*
-- *"Maintain original facial features, change jacket color to darker brown"*
-- *"Keep everything identical except make the scarf flow behind"*
-
-This preserves all previous qualities while making targeted changes.
-
-### 7. Batch Generation Strategy
-
-- Generate **4 variants** per prompt → pick the best one
-- For animation frames: generate all frames in one session with the same reference image
-- Don't mix sessions — different sessions can introduce style drift
-- If you need to regenerate later, always use the SAME reference image
+1. **Pixel Art preset**: Select Dreamina's "Pixel Art" style preset if available — it optimizes for crisp pixel output
+2. **Transparency is native**: Seedream 5.0 pixel art model outputs transparent PNGs directly — no background removal needed
+3. **4 variations**: Dreamina generates 4 variants per prompt. Pick the best, re-roll if needed
+4. **Nearest-neighbor resize**: Dreamina sometimes outputs larger than needed. Resize down using nearest-neighbor in Aseprite or ImageMagick `-sample`
+5. **If background appears**: Use Dreamina's built-in background remover (Canvas → Remove Background) as fallback
+6. **Keep prompts short**: Seedream 5.0 does better with concise prompts — avoid over-describing
+7. **Palette adjustment**: Import into Aseprite and apply indexed color mode with steampunk palette if colors need tuning
+8. **Animation workflow**: Generate **frame-by-frame** for precise control, or **sprite sheets** for speed. Frame-by-frame recommended for character, sprite sheets for simple loops (coin, drone)
+9. **Naming**: Save files with the exact names from the inventory table above. The game checks `assets/images/{filename}` automatically
+10. **No PNG = still works**: Every texture has a procedural fallback. Generate at your own pace — the game is fully playable without any PNGs
 
 ---
 
-## 🔧 Dreamina-Specific Tips
-
-1. **Access Dreamina**: Go to **dreamina.capcut.com → AI Image → Seedream 5.0** model. Select the "Pixel Art" style preset if available.
-2. **Transparency is native**: Dreamina's pixel art model outputs transparent PNGs directly — no background removal needed.
-3. **4 variations workflow**: Dreamina generates 4 variants per prompt. Pick the best one, then re-roll or tweak the prompt for the next asset. Rarely need more than 1-2 rounds.
-4. **Resize with nearest-neighbor**: Dreamina often outputs slightly larger than needed. Resize down to exact pixel dimensions using **nearest-neighbor** interpolation in Aseprite, Photoshop, or ImageMagick (`-sample` flag).
-5. **If a background appears**: Use Dreamina's built-in background remover (Canvas → Remove Background) as a fallback — but with Seedream 5.0's pixel art model this is rarely needed.
-6. **Sprite sheets**: Dreamina can generate multi-frame sprite sheets natively (see Section 11). After generation, split into individual frames using Aseprite's grid tool or slice manually.
-7. **Image-to-image consistency**: For consistent character designs across poses, generate the first pose, then use Dreamina's Image-to-Image feature with low strength (~0.3-0.4) to create the next pose while preserving the character (detailed in Section above).
-8. **Keep prompts short**: Seedream 5.0 does better with concise, specific prompts. Avoid over-describing — the model understands game asset conventions.
-9. **Renaming convention**: Save single sprites as `{texture-key}.png` (see inventory table). For split sprite sheet frames, use `{texture-key}-{n}.png` matching the animation frame index (e.g., `player-run-anim-0.png`, `coin-spin-anim-2.png`). The game checks for these files automatically in `assets/images/`.
-10. **Palette fine-tuning**: If colors need adjustment, import into Aseprite and apply indexed color mode with a custom palette — Dreamina outputs rich color by default.
-11. **Preferred generation order**: Start with **player-idle** (anchor frame) → use as reference for run/jump/hurt → then enemies → obstacles → backgrounds. Each category starts with one reference asset.
-12. **Seed number**: When you get a perfect result, note the seed number. Reusing the same seed + prompt + reference gives near-identical outputs — great for animation frame sets.
-
----
-
-*Last updated: June 2026 — For Dreamina AI (Seedream 5.0) text-to-image generation*
+*Last updated: June 2026 — For Dreamina AI (Seedream 5.0) pixel art generation*
