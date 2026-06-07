@@ -8,7 +8,16 @@ class LevelSelectScene extends Phaser.Scene {
         this.cameras.main.fadeIn(500);
         this.cameras.main.setBackgroundColor('#1a1a2e');
 
-        const save = SaveManager.load();
+        // Scan all save slots and use the one with the most progress
+        let save = null;
+        let maxUnlocked = 0;
+        for (let i = 0; i < 5; i++) {
+            const s = SaveManager.load(i);
+            if (s && s.unlockedLevels && s.unlockedLevels.length > maxUnlocked) {
+                save = s;
+                maxUnlocked = s.unlockedLevels.length;
+            }
+        }
         const unlocked = save ? save.unlockedLevels : [0];
 
         // ── Title ──

@@ -491,9 +491,12 @@ class GameScene extends Phaser.Scene {
 
     // ── Background ──
     _createBackground(levelData) {
-        const bg = this.add.tileSprite(0, 0, levelData.width, GAME_HEIGHT, levelData.background);
-        bg.setOrigin(0, 0);
-        bg.setScrollFactor(0.1);
+        // Use a fixed full-viewport image as background (no parallax) to avoid
+        // visible seams from non-tiling procedural textures.
+        const bgKey = levelData.background || 'bg-level1';
+        const bg = this.add.image(GAME_WIDTH / 2, GAME_HEIGHT / 2, bgKey)
+            .setScrollFactor(0)
+            .setDepth(-10);
 
         // Dark overlay for atmosphere
         const overlay = this.add.rectangle(0, 0, levelData.width, GAME_HEIGHT, 0x000000, 0.15);
@@ -562,10 +565,9 @@ class GameScene extends Phaser.Scene {
                 case 'spike-trap':
                     obs = new SpikeTrap(this, cfg.x, cfg.y, cfg);
                     break;
-                case 'saw':
                 default:
-                    obs = new Obstacle(this, cfg.x, cfg.y, cfg);
-                    break;
+                    console.warn('Unknown obstacle type: ' + type);
+                    return;
             }
             if (obs) this.obstacles.add(obs);
         });
@@ -787,7 +789,9 @@ class GameScene extends Phaser.Scene {
         if (this._gameOverTriggered) return;
         this._gameOverTriggered = true;
 
+        this.player.isDead = true;
         this.player.freeze();
+        this.player.body.enable = false;
         this.player.setTexture('player-hurt');
 
         // ── Visual polish: dramatic death ──

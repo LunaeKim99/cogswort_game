@@ -12,7 +12,6 @@ class BootScene extends Phaser.Scene {
 
         // Generate all procedural textures
         this.generatePlayerTextures();
-        this.generateEnemyTextures();
         this.generateCoinTexture();
         this.generateHeartTextures();
         this.generateParticleTexture();
@@ -135,87 +134,6 @@ class BootScene extends Phaser.Scene {
             gfx.fillRect(0, 0, 32, 32);
         });
         g.generateTexture('player-hurt', 32, 32);
-        g.destroy();
-    }
-
-    // ── ENEMY textures (28x28 each) ──
-    generateEnemyTextures() {
-        // WALK
-        let g = this.add.graphics();
-        // Antenna
-        g.fillStyle(0x888888);
-        g.fillRect(13, 1, 2, 5);
-        g.fillStyle(0xFFD700);
-        g.fillCircle(14, 1, 2);
-        // Propeller
-        g.fillStyle(0x777777);
-        g.fillRect(12, 4, 4, 3);
-        g.fillStyle(0xAAAAAA);
-        g.fillRect(4,  4, 8,  1);
-        g.fillRect(16, 4, 8,  1);
-        g.fillRect(12, 2, 4,  1);
-        g.fillRect(12, 6, 4,  1);
-        // Body
-        g.fillStyle(0x555555);
-        g.fillRect(6,  8,  16, 12);
-        g.fillStyle(0x444444);
-        g.fillRect(6,  11, 16, 1);
-        g.fillRect(6,  15, 16, 1);
-        // Side panels
-        g.fillStyle(0x666666);
-        g.fillRect(4,  10, 2,  6);
-        g.fillRect(22, 10, 2,  6);
-        // Eye
-        g.fillStyle(0xFF0000);
-        g.fillCircle(14, 13, 3);
-        g.fillStyle(0xFF4444);
-        g.fillCircle(14, 13, 2);
-        g.fillStyle(0xFF8888);
-        g.fillCircle(14, 13, 1);
-        // Propeller blur
-        g.fillStyle(0xCCCCCC);
-        g.fillRect(2,  5, 24, 1);
-        // Fins
-        g.fillStyle(0x666666);
-        g.fillRect(9,  20, 2,  4);
-        g.fillRect(17, 20, 2,  4);
-        // Rivets
-        g.fillStyle(0x999999);
-        g.fillRect(8,  9,  1,  1);
-        g.fillRect(19, 9,  1,  1);
-        g.fillRect(8,  17, 1,  1);
-        g.fillRect(19, 17, 1,  1);
-        g.generateTexture('enemy-walk', 28, 28);
-        g.destroy();
-
-        // DEATH (X eyes, dark)
-        g = this.add.graphics();
-        // Same body
-        g.fillStyle(0x888888);
-        g.fillRect(13, 1, 2, 5);
-        g.fillStyle(0x777777);
-        g.fillRect(12, 4, 4, 3);
-        g.fillStyle(0xAAAAAA);
-        g.fillRect(4,  4, 8,  1);
-        g.fillRect(16, 4, 8,  1);
-        g.fillStyle(0x555555);
-        g.fillRect(6,  8,  16, 12);
-        g.fillStyle(0x444444);
-        g.fillRect(6,  11, 16, 1);
-        g.fillRect(6,  15, 16, 1);
-        g.fillStyle(0x666666);
-        g.fillRect(4,  10, 2,  6);
-        g.fillRect(22, 10, 2,  6);
-        // X eyes
-        g.lineStyle(2, 0xFF0000);
-        g.beginPath();
-        g.moveTo(11, 11); g.lineTo(17, 15);
-        g.moveTo(17, 11); g.lineTo(11, 15);
-        g.strokePath();
-        // Dark overlay
-        g.fillStyle(0x000000, 0.4);
-        g.fillRect(0, 0, 28, 28);
-        g.generateTexture('enemy-death', 28, 28);
         g.destroy();
     }
 

@@ -45,9 +45,7 @@ function buriedSaw(x, triggerDistance) {
 function surpriseSaw(x, y, patrolLeft, patrolRight, speed) {
     return { type: 'surprise-saw', x, y, patrolLeft, patrolRight, speed: speed || 60, triggerDistance: 140 };
 }
-function oldSaw(x, y, patrolLeft, patrolRight, speed) {
-    return { type: 'saw', x, y, axis: 'x', patrolLeft, patrolRight, speed: speed || 65 };
-}
+
 function movingPlatform(x, y, width, cfg) {
     return { x, y, width, height: GROUND_H, ...cfg };
 }

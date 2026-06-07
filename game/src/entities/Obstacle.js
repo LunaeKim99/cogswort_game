@@ -99,6 +99,16 @@ class BuriedSaw extends Phaser.Physics.Arcade.Sprite {
     update(player) {
         const now = this.scene.time.now;
 
+        // Don't check proximity while animating
+        if (this._isFalling || this._isRising) return;
+
+        // ── Cooldown check: prevent re-triggering too soon ──
+        if (this._startHidden) {
+            if (now - this._stateTimer < this._cooldownDuration) {
+                return;
+            }
+        }
+
         if (this._startHidden && this._checkProximity(player)) {
             // Player nearby → rise up
             this._rise();
@@ -111,28 +121,7 @@ class BuriedSaw extends Phaser.Physics.Arcade.Sprite {
                 this._fall();
             }
         }
-
-        if (this._isFalling && !this._startHidden) {
-            // Cooldown after fully retracted
-            if (this.y >= this._hiddenY && this.alpha <= 0.4) {
-                this._startHidden = true;
-                this._stateTimer = now;
-            }
-        }
-
-        // Prevent re-trigger during cooldown
-        if (this._startHidden && !this._isRising && !this._isFalling) {
-            // Wait for cooldown
-            if (now - this._stateTimer >= this._cooldownDuration) {
-                // Ready to be triggered again
-            } else {
-                // Still in cooldown, don't rise
-                this._startHidden = false;
-                this.scene.time.delayedCall(50, () => {
-                    this._startHidden = true;
-                });
-            }
-        }
+        // Note: _startHidden & _stateTimer are reset in _fall()'s onComplete tween callback
     }
 
     destroy(fromScene) {
@@ -245,7 +234,6 @@ class SurpriseSaw extends Phaser.Physics.Arcade.Sprite {
                 // Instead, teleport to a position near player
                 if (player && this._checkProximity(player)) {
                     // Align X with patrol area near player
-                    const patrolCenter = (this.patrolLeft + this.patrolRight) / 2;
                     this.x = Phaser.Math.Clamp(player.x, this.patrolLeft + 20, this.patrolRight - 20);
                     this._emerge();
                 }
