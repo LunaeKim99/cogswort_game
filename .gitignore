@@ -7,3 +7,14 @@ Thumbs.db
 *.aab
 android/
 .capacitor/
+
+# Internal dev docs & agent prompts
+agent.md
+orchestrator-detailed-prompt.md
+plan.md
+
+# Asset conversion script (local tool)
+convert-assets.ps1
+
+# PDF references (copyrighted source material)
+*.pdf
