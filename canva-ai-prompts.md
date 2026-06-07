@@ -845,6 +845,83 @@ transparent PNG
 
 ---
 
+## 🎯 Maintaining Art Style Consistency
+
+Seedream 5.0 has powerful built-in features for keeping art style identical across all assets. Follow this workflow:
+
+### 1. The Style Anchor
+
+Include these **exact same keywords** in EVERY prompt to anchor the visual style:
+
+```
+pixel art, 16-bit, game sprite, steampunk, transparent PNG
+```
+
+> The MASTER PROMPT TEMPLATE at the top of this doc already structures prompts this way — just follow it.
+
+### 2. Reference Image Workflow (Img2Img) — Best for Character Consistency
+
+Dreamina's Image-to-Image mode lets you upload a previously-generated asset as a reference, so the next generation keeps the same character design.
+
+**Step-by-step:**
+1. Generate **player-idle** first (the "anchor" frame)
+2. Download the best variant — this becomes your **character reference**
+3. For each subsequent pose (run, jump, hurt):
+   - Click **AI Image → Image-to-Image**
+   - Upload the player-idle PNG as reference
+   - Paste the new pose prompt
+   - Set **Strength to ~0.3-0.4** (low = preserve reference more; high = more freedom)
+   - Generate → the character's face, clothes, and colors stay consistent
+
+### 3. Multi-Image Fusion (Up to 6 References)
+
+For complex consistency (e.g., character + style + color palette), Dreamina supports up to 6 reference images:
+- **1st image**: Character identity (your anchor frame)
+- **2nd image**: Style reference (a pixel art example with the look you want)
+- **3rd+ images**: Color palette, pose reference, etc.
+
+> Click **"+"** in Dreamina to upload multiple references. Label them in the prompt: *"Maintain character appearance from reference image 1, apply pixel art style from reference image 2"*
+
+### 4. Prompt Structure for Consistency
+
+Follow this exact order in every prompt:
+```
+[Subject] + [Action/Pose] + [Style Anchor] + [Details] + [Technical]
+```
+
+Example:
+```
+pixel art game character, steampunk female adventurer idle, facing right,
+32x32 pixels, ← Subject + Pose
+pixel art, 16-bit, game sprite, steampunk, transparent PNG, ← Style Anchor
+brown aviator cap with brass goggles, red scarf, brown jacket, ... ← Details
+```
+
+### 5. Lock Seed for Reproducibility
+
+Seedream 5.0 supports seed values. When you get a great generation:
+- Note the **Seed number** (shown in generation details)
+- Use the same seed + same prompt + same reference → near-identical results
+- Useful for generating animation frames that need to match perfectly
+
+### 6. Conversational Refinement
+
+Don't regenerate from scratch if something is slightly off. Use Dreamina's chat:
+- *"Keep the same character but adjust the pose to running"*
+- *"Maintain original facial features, change jacket color to darker brown"*
+- *"Keep everything identical except make the scarf flow behind"*
+
+This preserves all previous qualities while making targeted changes.
+
+### 7. Batch Generation Strategy
+
+- Generate **4 variants** per prompt → pick the best one
+- For animation frames: generate all frames in one session with the same reference image
+- Don't mix sessions — different sessions can introduce style drift
+- If you need to regenerate later, always use the SAME reference image
+
+---
+
 ## 🔧 Dreamina-Specific Tips
 
 1. **Access Dreamina**: Go to **dreamina.capcut.com → AI Image → Seedream 5.0** model. Select the "Pixel Art" style preset if available.
@@ -853,10 +930,12 @@ transparent PNG
 4. **Resize with nearest-neighbor**: Dreamina often outputs slightly larger than needed. Resize down to exact pixel dimensions using **nearest-neighbor** interpolation in Aseprite, Photoshop, or ImageMagick (`-sample` flag).
 5. **If a background appears**: Use Dreamina's built-in background remover (Canvas → Remove Background) as a fallback — but with Seedream 5.0's pixel art model this is rarely needed.
 6. **Sprite sheets**: Dreamina can generate multi-frame sprite sheets natively (see Section 11). After generation, split into individual frames using Aseprite's grid tool or slice manually.
-7. **Image-to-image consistency**: For consistent character designs across poses, generate the first pose, then use Dreamina's Image-to-Image feature with low strength to create the next pose while preserving the character.
+7. **Image-to-image consistency**: For consistent character designs across poses, generate the first pose, then use Dreamina's Image-to-Image feature with low strength (~0.3-0.4) to create the next pose while preserving the character (detailed in Section above).
 8. **Keep prompts short**: Seedream 5.0 does better with concise, specific prompts. Avoid over-describing — the model understands game asset conventions.
 9. **Renaming convention**: Save single sprites as `{texture-key}.png` (see inventory table). For split sprite sheet frames, use `{texture-key}-{n}.png` matching the animation frame index (e.g., `player-run-anim-0.png`, `coin-spin-anim-2.png`). The game checks for these files automatically in `assets/images/`.
 10. **Palette fine-tuning**: If colors need adjustment, import into Aseprite and apply indexed color mode with a custom palette — Dreamina outputs rich color by default.
+11. **Preferred generation order**: Start with **player-idle** (anchor frame) → use as reference for run/jump/hurt → then enemies → obstacles → backgrounds. Each category starts with one reference asset.
+12. **Seed number**: When you get a perfect result, note the seed number. Reusing the same seed + prompt + reference gives near-identical outputs — great for animation frame sets.
 
 ---
 
