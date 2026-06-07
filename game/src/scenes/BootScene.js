@@ -4,26 +4,69 @@ class BootScene extends Phaser.Scene {
         super({ key: 'BootScene' });
     }
 
+    preload() {
+        const w = this.cameras.main.width;
+        const h = this.cameras.main.height;
+
+        // Loading text
+        this.add.text(w / 2, h / 2 - 40, 'LOADING...', {
+            fontSize: '16px', fontFamily: 'monospace', color: '#aaaaaa'
+        }).setOrigin(0.5);
+
+        // Progress bar background
+        const barBg = this.add.graphics();
+        barBg.fillStyle(0x222222, 0.8);
+        barBg.fillRect(w / 2 - 160, h / 2 - 10, 320, 20);
+        barBg.lineStyle(1, 0x666666, 0.6);
+        barBg.strokeRect(w / 2 - 160, h / 2 - 10, 320, 20);
+
+        // Progress bar fill
+        const progressBar = this.add.graphics();
+        this.load.on('progress', (value) => {
+            progressBar.clear();
+            progressBar.fillStyle(0xFFD700, 1);
+            progressBar.fillRect(w / 2 - 158, h / 2 - 8, 316 * value, 16);
+        });
+
+        // Try loading all PNG textures from assets/images/
+        const pngKeys = [
+            'player-idle', 'player-run', 'player-jump', 'player-fall', 'player-hurt',
+            'walker-walk', 'walker-death', 'drone', 'drone-death',
+            'laser-beam', 'laser-cone', 'laser-warning',
+            'coin', 'saw-blade', 'spike-trap',
+            'gate-closed', 'gate-open',
+            'heart-full', 'heart-empty', 'particle',
+            'btn-left', 'btn-right', 'btn-jump', 'btn-pause', 'icon-play',
+            'ground-tile',
+            'bg-level1', 'bg-level2', 'bg-level3'
+        ];
+        pngKeys.forEach(key => {
+            this.load.image(key, `assets/images/${key}.png`);
+        });
+    }
+
     create() {
-        // Show loading text
+        // Show generating text
         this.add.text(400, 225, 'GENERATING ASSETS...', {
             fontSize: '20px', fontFamily: 'monospace', color: '#ffffff'
         }).setOrigin(0.5);
 
-        // Generate all procedural textures
+        // Generate procedural textures only for ones that didn't load from PNG
         this.generatePlayerTextures();
-        this.generateCoinTexture();
-        this.generateHeartTextures();
-        this.generateParticleTexture();
-        this.generateButtonTextures();
-        this.generatePauseButtonTexture();
-        this.generateGateTextures();
-        this.generateObstacleTextures();
-        this.generateNewEntityTextures();
-        this.generateGroundTile();
-        this.generateBackgroundTextures();
+        if (!this.textures.exists('coin')) this.generateCoinTexture();
+        if (!this.textures.exists('heart-full')) this.generateHeartTextures();
+        if (!this.textures.exists('particle')) this.generateParticleTexture();
+        if (!this.textures.exists('btn-left')) this.generateButtonTextures();
+        if (!this.textures.exists('btn-pause')) this.generatePauseButtonTexture();
+        if (!this.textures.exists('gate-closed')) this.generateGateTextures();
+        if (!this.textures.exists('saw-blade')) this.generateObstacleTextures();
+        if (!this.textures.exists('drone') || !this.textures.exists('walker-walk') || !this.textures.exists('laser-beam')) {
+            this.generateNewEntityTextures();
+        }
+        if (!this.textures.exists('ground-tile')) this.generateGroundTile();
+        if (!this.textures.exists('bg-level1')) this.generateBackgroundTextures();
 
-        // Register animations from procedural frames
+        // Always register animations (they use procedural multi-frame textures)
         this.createAnimations();
 
         // Transition after short delay
@@ -51,38 +94,48 @@ class BootScene extends Phaser.Scene {
     generatePlayerTextures() {
         // Base character builder (now uses _drawChar method)
 
-        // IDLE
-        let g = this.add.graphics();
-        this._drawChar(g, 0, 0);
-        g.generateTexture('player-idle', 32, 32);
-        g.destroy();
+        // IDLE — skip if loaded from PNG
+        if (!this.textures.exists('player-idle')) {
+            let g = this.add.graphics();
+            this._drawChar(g, 0, 0);
+            g.generateTexture('player-idle', 32, 32);
+            g.destroy();
+        }
 
-        // RUN (legs apart, arms swinging)
-        g = this.add.graphics();
-        this._drawChar(g, -1, 2);
-        g.generateTexture('player-run', 32, 32);
-        g.destroy();
+        // RUN (legs apart, arms swinging) — skip if loaded from PNG
+        if (!this.textures.exists('player-run')) {
+            let g = this.add.graphics();
+            this._drawChar(g, -1, 2);
+            g.generateTexture('player-run', 32, 32);
+            g.destroy();
+        }
 
-        // JUMP (arms up, legs tucked)
-        g = this.add.graphics();
-        this._drawChar(g, -2, -1);
-        g.generateTexture('player-jump', 32, 32);
-        g.destroy();
+        // JUMP (arms up, legs tucked) — skip if loaded from PNG
+        if (!this.textures.exists('player-jump')) {
+            let g = this.add.graphics();
+            this._drawChar(g, -2, -1);
+            g.generateTexture('player-jump', 32, 32);
+            g.destroy();
+        }
 
-        // FALL (arms down, legs spread)
-        g = this.add.graphics();
-        this._drawChar(g, 1, 1);
-        g.generateTexture('player-fall', 32, 32);
-        g.destroy();
+        // FALL (arms down, legs spread) — skip if loaded from PNG
+        if (!this.textures.exists('player-fall')) {
+            let g = this.add.graphics();
+            this._drawChar(g, 1, 1);
+            g.generateTexture('player-fall', 32, 32);
+            g.destroy();
+        }
 
-        // HURT (red-tinted)
-        g = this.add.graphics();
-        this._drawChar(g, 0, 0, (gfx) => {
-            gfx.fillStyle(0xFF0000, 0.3);
-            gfx.fillRect(0, 0, 32, 32);
-        });
-        g.generateTexture('player-hurt', 32, 32);
-        g.destroy();
+        // HURT (red-tinted) — skip if loaded from PNG
+        if (!this.textures.exists('player-hurt')) {
+            let g = this.add.graphics();
+            this._drawChar(g, 0, 0, (gfx) => {
+                gfx.fillStyle(0xFF0000, 0.3);
+                gfx.fillRect(0, 0, 32, 32);
+            });
+            g.generateTexture('player-hurt', 32, 32);
+            g.destroy();
+        }
     }
 
     // ── COIN texture (16x16) ──
@@ -359,343 +412,357 @@ class BootScene extends Phaser.Scene {
 
     _generateDroneTexture() {
         // DRONE (28x28) — steampunk mechanical flying drone
-        let g = this.add.graphics();
-        // Propeller shaft
-        g.fillStyle(0x888888);
-        g.fillRect(13, 0, 2, 4);
-        // Propeller blades (brass)
-        g.fillStyle(0xCD7F32);
-        g.fillRect(2,  1, 10, 2);
-        g.fillRect(16, 1, 10, 2);
-        g.fillRect(12, 1, 4,  2);
-        // Propeller blur
-        g.fillStyle(0xAA6B2E, 0.4);
-        g.fillRect(1,  1, 26, 2);
-        // Upper dome (brass)
-        g.fillStyle(0xB87333);
-        g.fillRect(5,  4,  18, 4);
-        g.fillStyle(0xCD7F32);
-        g.fillRect(7,  5,  14, 2);
-        // Body casing (copper)
-        g.fillStyle(0x8B5A2B);
-        g.fillRect(4,  8,  20, 12);
-        g.fillStyle(0xA0714B);
-        g.fillRect(6,  9,  16, 10);
-        // Central gear
-        g.fillStyle(0xFFD700);
-        g.fillCircle(14, 14, 4);
-        g.fillStyle(0xB8860B);
-        g.fillCircle(14, 14, 3);
-        // Gear teeth
-        for (let i = 0; i < 6; i++) {
-            const angle = (i / 6) * Math.PI * 2 - Math.PI / 2;
-            const tx = 14 + Math.cos(angle) * 4;
-            const ty = 14 + Math.sin(angle) * 4;
+        if (!this.textures.exists('drone')) {
+            let g = this.add.graphics();
+            // Propeller shaft
+            g.fillStyle(0x888888);
+            g.fillRect(13, 0, 2, 4);
+            // Propeller blades (brass)
+            g.fillStyle(0xCD7F32);
+            g.fillRect(2,  1, 10, 2);
+            g.fillRect(16, 1, 10, 2);
+            g.fillRect(12, 1, 4,  2);
+            // Propeller blur
+            g.fillStyle(0xAA6B2E, 0.4);
+            g.fillRect(1,  1, 26, 2);
+            // Upper dome (brass)
+            g.fillStyle(0xB87333);
+            g.fillRect(5,  4,  18, 4);
+            g.fillStyle(0xCD7F32);
+            g.fillRect(7,  5,  14, 2);
+            // Body casing (copper)
+            g.fillStyle(0x8B5A2B);
+            g.fillRect(4,  8,  20, 12);
+            g.fillStyle(0xA0714B);
+            g.fillRect(6,  9,  16, 10);
+            // Central gear
             g.fillStyle(0xFFD700);
-            g.fillRect(tx - 1, ty - 1, 2, 2);
+            g.fillCircle(14, 14, 4);
+            g.fillStyle(0xB8860B);
+            g.fillCircle(14, 14, 3);
+            // Gear teeth
+            for (let i = 0; i < 6; i++) {
+                const angle = (i / 6) * Math.PI * 2 - Math.PI / 2;
+                const tx = 14 + Math.cos(angle) * 4;
+                const ty = 14 + Math.sin(angle) * 4;
+                g.fillStyle(0xFFD700);
+                g.fillRect(tx - 1, ty - 1, 2, 2);
+            }
+            // Mechanical eye (amber glow)
+            g.fillStyle(0xFFAA00);
+            g.fillCircle(14, 14, 2);
+            g.fillStyle(0xFFDD44);
+            g.fillCircle(14, 14, 1);
+            // Steam pipes (sides)
+            g.fillStyle(0x6B4226);
+            g.fillRect(2,  10, 2, 6);
+            g.fillRect(24, 10, 2, 6);
+            // Pipe rivets
+            g.fillStyle(0x999999);
+            g.fillRect(2, 10, 2, 1);
+            g.fillRect(2, 15, 2, 1);
+            g.fillRect(24,10, 2, 1);
+            g.fillRect(24,15, 2, 1);
+            // Steam vent (bottom)
+            g.fillStyle(0x6B4226);
+            g.fillRect(10, 20, 8, 3);
+            g.fillStyle(0x8B5A2B);
+            g.fillRect(11, 21, 6, 1);
+            // Rivets on body
+            g.fillStyle(0xBBBBBB);
+            g.fillRect(8,  10, 1, 1);
+            g.fillRect(19, 10, 1, 1);
+            g.fillRect(8,  18, 1, 1);
+            g.fillRect(19, 18, 1, 1);
+            // Bottom fin
+            g.fillStyle(0x8B5A2B);
+            g.fillRect(6,  23, 16, 2);
+            g.fillStyle(0xA0714B);
+            g.fillRect(8,  23, 12, 1);
+            g.generateTexture('drone', 28, 28);
+            g.destroy();
         }
-        // Mechanical eye (amber glow)
-        g.fillStyle(0xFFAA00);
-        g.fillCircle(14, 14, 2);
-        g.fillStyle(0xFFDD44);
-        g.fillCircle(14, 14, 1);
-        // Steam pipes (sides)
-        g.fillStyle(0x6B4226);
-        g.fillRect(2,  10, 2, 6);
-        g.fillRect(24, 10, 2, 6);
-        // Pipe rivets
-        g.fillStyle(0x999999);
-        g.fillRect(2, 10, 2, 1);
-        g.fillRect(2, 15, 2, 1);
-        g.fillRect(24,10, 2, 1);
-        g.fillRect(24,15, 2, 1);
-        // Steam vent (bottom)
-        g.fillStyle(0x6B4226);
-        g.fillRect(10, 20, 8, 3);
-        g.fillStyle(0x8B5A2B);
-        g.fillRect(11, 21, 6, 1);
-        // Rivets on body
-        g.fillStyle(0xBBBBBB);
-        g.fillRect(8,  10, 1, 1);
-        g.fillRect(19, 10, 1, 1);
-        g.fillRect(8,  18, 1, 1);
-        g.fillRect(19, 18, 1, 1);
-        // Bottom fin
-        g.fillStyle(0x8B5A2B);
-        g.fillRect(6,  23, 16, 2);
-        g.fillStyle(0xA0714B);
-        g.fillRect(8,  23, 12, 1);
-        g.generateTexture('drone', 28, 28);
-        g.destroy();
 
         // DRONE DEATH (X eye, dark)
-        g = this.add.graphics();
-        g.fillStyle(0x888888);
-        g.fillRect(13, 0, 2, 4);
-        g.fillStyle(0xAA6B2E);
-        g.fillRect(2,  1, 10, 2);
-        g.fillRect(16, 1, 10, 2);
-        g.fillRect(12, 1, 4,  2);
-        g.fillStyle(0x8B5A2B);
-        g.fillRect(4,  8,  20, 12);
-        g.fillStyle(0x7A4A2B);
-        g.fillRect(6,  9,  16, 10);
-        g.fillStyle(0x666666);
-        g.fillCircle(14, 14, 4);
-        // X eye
-        g.lineStyle(2, 0xFF0000);
-        g.beginPath();
-        g.moveTo(11, 11); g.lineTo(17, 17);
-        g.moveTo(17, 11); g.lineTo(11, 17);
-        g.strokePath();
-        g.fillStyle(0x6B4226);
-        g.fillRect(2,  10, 2, 6);
-        g.fillRect(24, 10, 2, 6);
-        g.fillStyle(0x6B4226);
-        g.fillRect(10, 20, 8, 3);
-        g.fillStyle(0x6B4226);
-        g.fillRect(6,  23, 16, 2);
-        g.fillStyle(0x000000, 0.4);
-        g.fillRect(0, 0, 28, 28);
-        g.generateTexture('drone-death', 28, 28);
-        g.destroy();
+        if (!this.textures.exists('drone-death')) {
+            let g = this.add.graphics();
+            g.fillStyle(0x888888);
+            g.fillRect(13, 0, 2, 4);
+            g.fillStyle(0xAA6B2E);
+            g.fillRect(2,  1, 10, 2);
+            g.fillRect(16, 1, 10, 2);
+            g.fillRect(12, 1, 4,  2);
+            g.fillStyle(0x8B5A2B);
+            g.fillRect(4,  8,  20, 12);
+            g.fillStyle(0x7A4A2B);
+            g.fillRect(6,  9,  16, 10);
+            g.fillStyle(0x666666);
+            g.fillCircle(14, 14, 4);
+            // X eye
+            g.lineStyle(2, 0xFF0000);
+            g.beginPath();
+            g.moveTo(11, 11); g.lineTo(17, 17);
+            g.moveTo(17, 11); g.lineTo(11, 17);
+            g.strokePath();
+            g.fillStyle(0x6B4226);
+            g.fillRect(2,  10, 2, 6);
+            g.fillRect(24, 10, 2, 6);
+            g.fillStyle(0x6B4226);
+            g.fillRect(10, 20, 8, 3);
+            g.fillStyle(0x6B4226);
+            g.fillRect(6,  23, 16, 2);
+            g.fillStyle(0x000000, 0.4);
+            g.fillRect(0, 0, 28, 28);
+            g.generateTexture('drone-death', 28, 28);
+            g.destroy();
+        }
     }
 
     _generateWalkerTextures() {
         // WALKER WALK (32x32) — steampunk mechanical automaton
-        let g = this.add.graphics();
-        // ── Head (brass dome) ──
-        g.fillStyle(0xCD7F32);
-        g.fillRect(8,  1,  16, 2);
-        g.fillStyle(0xB87333);
-        g.fillCircle(16, 6, 7);
-        // Head rivets
-        g.fillStyle(0xDDDDDD);
-        g.fillRect(10, 3, 1, 1);
-        g.fillRect(21, 3, 1, 1);
-        g.fillRect(15, 1, 1, 1);
-        // ── Goggles (brass) ──
-        g.fillStyle(0xDAA520);
-        g.fillCircle(12, 7, 3);
-        g.fillCircle(20, 7, 3);
-        g.fillStyle(0x87CEEB);
-        g.fillCircle(12, 7, 2);
-        g.fillCircle(20, 7, 2);
-        g.fillStyle(0x8B6914);
-        g.fillRect(9,  7, 14, 1);
-        // Glowing mechanical eyes
-        g.fillStyle(0xFFAA00);
-        g.fillRect(11, 6, 1, 1);
-        g.fillRect(19, 6, 1, 1);
-        // ── Jaw / ventilator grill ──
-        g.fillStyle(0x8B5A2B);
-        g.fillRect(8,  9,  3, 4);
-        g.fillRect(21, 9,  3, 4);
-        g.fillStyle(0x6B4226);
-        g.fillRect(11, 9,  10, 4);
-        // Vent slots
-        g.fillStyle(0x4A2E1A);
-        g.fillRect(12, 10, 2, 1);
-        g.fillRect(15, 10, 2, 1);
-        g.fillRect(18, 10, 2, 1);
-        g.fillRect(12, 12, 2, 1);
-        g.fillRect(15, 12, 2, 1);
-        g.fillRect(18, 12, 2, 1);
-        // ── Neck / joint ──
-        g.fillStyle(0x888888);
-        g.fillRect(14, 13, 4, 2);
-        g.fillStyle(0x666666);
-        g.fillRect(15, 13, 2, 2);
-        // ── Torso (copper body) ──
-        g.fillStyle(0xA0714B);
-        g.fillRect(6,  15, 20, 12);
-        g.fillStyle(0x8B5A2B);
-        g.fillRect(8,  16, 16, 10);
-        // Chest plate
-        g.fillStyle(0xCD7F32);
-        g.fillRect(10, 17, 12, 4);
-        g.fillStyle(0xB87333);
-        g.fillRect(12, 18, 8, 2);
-        // Chest gear
-        g.fillStyle(0xFFD700);
-        g.fillCircle(16, 21, 3);
-        g.fillStyle(0xB8860B);
-        g.fillCircle(16, 21, 2);
-        g.fillStyle(0x8B6914);
-        g.fillCircle(16, 21, 1);
-        // Gears on left side
-        g.fillStyle(0xCD7F32);
-        g.fillCircle(7, 19, 2);
-        g.fillStyle(0xB87333);
-        g.fillCircle(7, 19, 1);
-        // Steam pipe (right side)
-        g.fillStyle(0x6B4226);
-        g.fillRect(24, 16, 3, 8);
-        g.fillStyle(0x8B5A2B);
-        g.fillRect(25, 16, 1, 8);
-        // ── Arms (mechanical) ──
-        g.fillStyle(0x8B5A2B);
-        g.fillRect(2,  16, 4, 3);
-        g.fillRect(26, 16, 4, 3);
-        // Upper arms
-        g.fillStyle(0xA0714B);
-        g.fillRect(3,  19, 2, 5);
-        g.fillRect(27, 19, 2, 5);
-        // Elbow joints
-        g.fillStyle(0x888888);
-        g.fillCircle(4, 24, 2);
-        g.fillCircle(28, 24, 2);
-        // Forearms
-        g.fillStyle(0x8B5A2B);
-        g.fillRect(2,  25, 3, 3);
-        g.fillRect(27, 25, 3, 3);
-        // Pincer claws
-        g.fillStyle(0x666666);
-        g.fillRect(1,  28, 2, 2);
-        g.fillRect(4,  28, 2, 2);
-        g.fillRect(26, 28, 2, 2);
-        g.fillRect(29, 28, 2, 2);
-        // ── Legs (piston/mechanical) ──
-        g.fillStyle(0x6B4226);
-        g.fillRect(10, 27, 4, 2);
-        g.fillRect(18, 27, 4, 2);
-        // Upper legs
-        g.fillStyle(0x8B5A2B);
-        g.fillRect(9,  29, 4, 3);
-        g.fillRect(19, 29, 4, 3);
-        // Knee joints
-        g.fillStyle(0x888888);
-        g.fillCircle(11, 29, 1);
-        g.fillCircle(21, 29, 1);
-        // Lower legs
-        g.fillStyle(0x6B4226);
-        g.fillRect(9,  27, 4, 2);
-        g.fillRect(19, 27, 4, 2);
-        // Metal boots
-        g.fillStyle(0x4A3E2E);
-        g.fillRect(8,  29, 6, 3);
-        g.fillRect(18, 29, 6, 3);
-        g.fillStyle(0x5D4E37);
-        g.fillRect(9,  30, 4, 1);
-        g.fillRect(19, 30, 4, 1);
-        // ── Body rivets ──
-        g.fillStyle(0xBBBBBB);
-        g.fillRect(8,  17, 1, 1);
-        g.fillRect(23, 17, 1, 1);
-        g.fillRect(8,  24, 1, 1);
-        g.fillRect(23, 24, 1, 1);
-        g.generateTexture('walker-walk', 32, 32);
-        g.destroy();
+        if (!this.textures.exists('walker-walk')) {
+            let g = this.add.graphics();
+            // ── Head (brass dome) ──
+            g.fillStyle(0xCD7F32);
+            g.fillRect(8,  1,  16, 2);
+            g.fillStyle(0xB87333);
+            g.fillCircle(16, 6, 7);
+            // Head rivets
+            g.fillStyle(0xDDDDDD);
+            g.fillRect(10, 3, 1, 1);
+            g.fillRect(21, 3, 1, 1);
+            g.fillRect(15, 1, 1, 1);
+            // ── Goggles (brass) ──
+            g.fillStyle(0xDAA520);
+            g.fillCircle(12, 7, 3);
+            g.fillCircle(20, 7, 3);
+            g.fillStyle(0x87CEEB);
+            g.fillCircle(12, 7, 2);
+            g.fillCircle(20, 7, 2);
+            g.fillStyle(0x8B6914);
+            g.fillRect(9,  7, 14, 1);
+            // Glowing mechanical eyes
+            g.fillStyle(0xFFAA00);
+            g.fillRect(11, 6, 1, 1);
+            g.fillRect(19, 6, 1, 1);
+            // ── Jaw / ventilator grill ──
+            g.fillStyle(0x8B5A2B);
+            g.fillRect(8,  9,  3, 4);
+            g.fillRect(21, 9,  3, 4);
+            g.fillStyle(0x6B4226);
+            g.fillRect(11, 9,  10, 4);
+            // Vent slots
+            g.fillStyle(0x4A2E1A);
+            g.fillRect(12, 10, 2, 1);
+            g.fillRect(15, 10, 2, 1);
+            g.fillRect(18, 10, 2, 1);
+            g.fillRect(12, 12, 2, 1);
+            g.fillRect(15, 12, 2, 1);
+            g.fillRect(18, 12, 2, 1);
+            // ── Neck / joint ──
+            g.fillStyle(0x888888);
+            g.fillRect(14, 13, 4, 2);
+            g.fillStyle(0x666666);
+            g.fillRect(15, 13, 2, 2);
+            // ── Torso (copper body) ──
+            g.fillStyle(0xA0714B);
+            g.fillRect(6,  15, 20, 12);
+            g.fillStyle(0x8B5A2B);
+            g.fillRect(8,  16, 16, 10);
+            // Chest plate
+            g.fillStyle(0xCD7F32);
+            g.fillRect(10, 17, 12, 4);
+            g.fillStyle(0xB87333);
+            g.fillRect(12, 18, 8, 2);
+            // Chest gear
+            g.fillStyle(0xFFD700);
+            g.fillCircle(16, 21, 3);
+            g.fillStyle(0xB8860B);
+            g.fillCircle(16, 21, 2);
+            g.fillStyle(0x8B6914);
+            g.fillCircle(16, 21, 1);
+            // Gears on left side
+            g.fillStyle(0xCD7F32);
+            g.fillCircle(7, 19, 2);
+            g.fillStyle(0xB87333);
+            g.fillCircle(7, 19, 1);
+            // Steam pipe (right side)
+            g.fillStyle(0x6B4226);
+            g.fillRect(24, 16, 3, 8);
+            g.fillStyle(0x8B5A2B);
+            g.fillRect(25, 16, 1, 8);
+            // ── Arms (mechanical) ──
+            g.fillStyle(0x8B5A2B);
+            g.fillRect(2,  16, 4, 3);
+            g.fillRect(26, 16, 4, 3);
+            // Upper arms
+            g.fillStyle(0xA0714B);
+            g.fillRect(3,  19, 2, 5);
+            g.fillRect(27, 19, 2, 5);
+            // Elbow joints
+            g.fillStyle(0x888888);
+            g.fillCircle(4, 24, 2);
+            g.fillCircle(28, 24, 2);
+            // Forearms
+            g.fillStyle(0x8B5A2B);
+            g.fillRect(2,  25, 3, 3);
+            g.fillRect(27, 25, 3, 3);
+            // Pincer claws
+            g.fillStyle(0x666666);
+            g.fillRect(1,  28, 2, 2);
+            g.fillRect(4,  28, 2, 2);
+            g.fillRect(26, 28, 2, 2);
+            g.fillRect(29, 28, 2, 2);
+            // ── Legs (piston/mechanical) ──
+            g.fillStyle(0x6B4226);
+            g.fillRect(10, 27, 4, 2);
+            g.fillRect(18, 27, 4, 2);
+            // Upper legs
+            g.fillStyle(0x8B5A2B);
+            g.fillRect(9,  29, 4, 3);
+            g.fillRect(19, 29, 4, 3);
+            // Knee joints
+            g.fillStyle(0x888888);
+            g.fillCircle(11, 29, 1);
+            g.fillCircle(21, 29, 1);
+            // Lower legs
+            g.fillStyle(0x6B4226);
+            g.fillRect(9,  27, 4, 2);
+            g.fillRect(19, 27, 4, 2);
+            // Metal boots
+            g.fillStyle(0x4A3E2E);
+            g.fillRect(8,  29, 6, 3);
+            g.fillRect(18, 29, 6, 3);
+            g.fillStyle(0x5D4E37);
+            g.fillRect(9,  30, 4, 1);
+            g.fillRect(19, 30, 4, 1);
+            // ── Body rivets ──
+            g.fillStyle(0xBBBBBB);
+            g.fillRect(8,  17, 1, 1);
+            g.fillRect(23, 17, 1, 1);
+            g.fillRect(8,  24, 1, 1);
+            g.fillRect(23, 24, 1, 1);
+            g.generateTexture('walker-walk', 32, 32);
+            g.destroy();
+        }
 
         // WALKER DEATH
-        g = this.add.graphics();
-        // Head (darkened)
-        g.fillStyle(0x8B6914);
-        g.fillRect(8,  1,  16, 2);
-        g.fillStyle(0x8B5A2B);
-        g.fillCircle(16, 6, 7);
-        g.fillStyle(0x888888);
-        g.fillCircle(12, 7, 3);
-        g.fillCircle(20, 7, 3);
-        g.fillStyle(0x666666);
-        g.fillCircle(12, 7, 2);
-        g.fillCircle(20, 7, 2);
-        g.fillStyle(0x8B6914);
-        g.fillRect(9,  7, 14, 1);
-        // X eyes
-        g.lineStyle(2, 0xFF0000);
-        g.beginPath();
-        g.moveTo(10, 5); g.lineTo(14, 8);
-        g.moveTo(14, 5); g.lineTo(10, 8);
-        g.strokePath();
-        g.beginPath();
-        g.moveTo(18, 5); g.lineTo(22, 8);
-        g.moveTo(22, 5); g.lineTo(18, 8);
-        g.strokePath();
-        g.fillStyle(0x6B4226);
-        g.fillRect(8,  9,  3, 4);
-        g.fillRect(21, 9,  3, 4);
-        g.fillStyle(0x4A2E1A);
-        g.fillRect(11, 9,  10, 4);
-        g.fillStyle(0x666666);
-        g.fillRect(14, 13, 4, 2);
-        // Torso (darkened)
-        g.fillStyle(0x7A4A2B);
-        g.fillRect(6,  15, 20, 12);
-        g.fillStyle(0x6B3A1B);
-        g.fillRect(8,  16, 16, 10);
-        g.fillStyle(0x8B6914);
-        g.fillRect(10, 17, 12, 4);
-        g.fillStyle(0x8B5A2B);
-        g.fillCircle(7, 19, 2);
-        g.fillStyle(0x4A2E1A);
-        g.fillRect(24, 16, 3, 8);
-        // Arms
-        g.fillStyle(0x6B3A1B);
-        g.fillRect(2,  16, 4, 3);
-        g.fillRect(26, 16, 4, 3);
-        g.fillStyle(0x7A4A2B);
-        g.fillRect(3,  19, 2, 5);
-        g.fillRect(27, 19, 2, 5);
-        g.fillStyle(0x666666);
-        g.fillCircle(4, 24, 2);
-        g.fillCircle(28, 24, 2);
-        g.fillStyle(0x6B3A1B);
-        g.fillRect(2,  25, 3, 3);
-        g.fillRect(27, 25, 3, 3);
-        // Legs
-        g.fillStyle(0x4A2E1A);
-        g.fillRect(10, 27, 4, 2);
-        g.fillRect(18, 27, 4, 2);
-        g.fillStyle(0x6B3A1B);
-        g.fillRect(9,  29, 4, 3);
-        g.fillRect(19, 29, 4, 3);
-        g.fillStyle(0x3E2A1A);
-        g.fillRect(8,  29, 6, 3);
-        g.fillRect(18, 29, 6, 3);
-        // Dark overlay
-        g.fillStyle(0x000000, 0.4);
-        g.fillRect(0, 0, 32, 32);
-        g.generateTexture('walker-death', 32, 32);
-        g.destroy();
+        if (!this.textures.exists('walker-death')) {
+            let g = this.add.graphics();
+            // Head (darkened)
+            g.fillStyle(0x8B6914);
+            g.fillRect(8,  1,  16, 2);
+            g.fillStyle(0x8B5A2B);
+            g.fillCircle(16, 6, 7);
+            g.fillStyle(0x888888);
+            g.fillCircle(12, 7, 3);
+            g.fillCircle(20, 7, 3);
+            g.fillStyle(0x666666);
+            g.fillCircle(12, 7, 2);
+            g.fillCircle(20, 7, 2);
+            g.fillStyle(0x8B6914);
+            g.fillRect(9,  7, 14, 1);
+            // X eyes
+            g.lineStyle(2, 0xFF0000);
+            g.beginPath();
+            g.moveTo(10, 5); g.lineTo(14, 8);
+            g.moveTo(14, 5); g.lineTo(10, 8);
+            g.strokePath();
+            g.beginPath();
+            g.moveTo(18, 5); g.lineTo(22, 8);
+            g.moveTo(22, 5); g.lineTo(18, 8);
+            g.strokePath();
+            g.fillStyle(0x6B4226);
+            g.fillRect(8,  9,  3, 4);
+            g.fillRect(21, 9,  3, 4);
+            g.fillStyle(0x4A2E1A);
+            g.fillRect(11, 9,  10, 4);
+            g.fillStyle(0x666666);
+            g.fillRect(14, 13, 4, 2);
+            // Torso (darkened)
+            g.fillStyle(0x7A4A2B);
+            g.fillRect(6,  15, 20, 12);
+            g.fillStyle(0x6B3A1B);
+            g.fillRect(8,  16, 16, 10);
+            g.fillStyle(0x8B6914);
+            g.fillRect(10, 17, 12, 4);
+            g.fillStyle(0x8B5A2B);
+            g.fillCircle(7, 19, 2);
+            g.fillStyle(0x4A2E1A);
+            g.fillRect(24, 16, 3, 8);
+            // Arms
+            g.fillStyle(0x6B3A1B);
+            g.fillRect(2,  16, 4, 3);
+            g.fillRect(26, 16, 4, 3);
+            g.fillStyle(0x7A4A2B);
+            g.fillRect(3,  19, 2, 5);
+            g.fillRect(27, 19, 2, 5);
+            g.fillStyle(0x666666);
+            g.fillCircle(4, 24, 2);
+            g.fillCircle(28, 24, 2);
+            g.fillStyle(0x6B3A1B);
+            g.fillRect(2,  25, 3, 3);
+            g.fillRect(27, 25, 3, 3);
+            // Legs
+            g.fillStyle(0x4A2E1A);
+            g.fillRect(10, 27, 4, 2);
+            g.fillRect(18, 27, 4, 2);
+            g.fillStyle(0x6B3A1B);
+            g.fillRect(9,  29, 4, 3);
+            g.fillRect(19, 29, 4, 3);
+            g.fillStyle(0x3E2A1A);
+            g.fillRect(8,  29, 6, 3);
+            g.fillRect(18, 29, 6, 3);
+            // Dark overlay
+            g.fillStyle(0x000000, 0.4);
+            g.fillRect(0, 0, 32, 32);
+            g.generateTexture('walker-death', 32, 32);
+            g.destroy();
+        }
     }
 
     _generateLaserTexture() {
         // Laser beam (8x80) — vertical glowing beam
-        let g = this.add.graphics();
-        // Core beam
-        g.fillStyle(0xFF4444, 0.9);
-        g.fillRect(2, 0, 4, 80);
-        // Inner glow (white)
-        g.fillStyle(0xFFFFFF, 0.6);
-        g.fillRect(3, 0, 2, 80);
-        // Outer glow (red, wide)
-        g.fillStyle(0xFF0000, 0.15);
-        g.fillRect(0, 0, 8, 80);
-        g.generateTexture('laser-beam', 8, 80);
-        g.destroy();
+        if (!this.textures.exists('laser-beam')) {
+            let g = this.add.graphics();
+            // Core beam
+            g.fillStyle(0xFF4444, 0.9);
+            g.fillRect(2, 0, 4, 80);
+            // Inner glow (white)
+            g.fillStyle(0xFFFFFF, 0.6);
+            g.fillRect(3, 0, 2, 80);
+            // Outer glow (red, wide)
+            g.fillStyle(0xFF0000, 0.15);
+            g.fillRect(0, 0, 8, 80);
+            g.generateTexture('laser-beam', 8, 80);
+            g.destroy();
+        }
 
         // Laser glow ring / sensor cone (16x12) — small radar pulse
-        g = this.add.graphics();
-        g.fillStyle(0xFF0000, 0.3);
-        g.fillTriangle(8, 0, 0, 12, 16, 12);
-        g.fillStyle(0xFF4444, 0.2);
-        g.fillTriangle(8, 2, 2, 12, 14, 12);
-        g.fillStyle(0xFF8888, 0.1);
-        g.fillTriangle(8, 4, 4, 12, 12, 12);
-        g.generateTexture('laser-cone', 16, 12);
-        g.destroy();
+        if (!this.textures.exists('laser-cone')) {
+            let g = this.add.graphics();
+            g.fillStyle(0xFF0000, 0.3);
+            g.fillTriangle(8, 0, 0, 12, 16, 12);
+            g.fillStyle(0xFF4444, 0.2);
+            g.fillTriangle(8, 2, 2, 12, 14, 12);
+            g.fillStyle(0xFF8888, 0.1);
+            g.fillTriangle(8, 4, 4, 12, 12, 12);
+            g.generateTexture('laser-cone', 16, 12);
+            g.destroy();
+        }
 
         // Laser warning marker (8x8) — pulsing red dot
-        g = this.add.graphics();
-        g.fillStyle(0xFF0000, 0.8);
-        g.fillCircle(4, 4, 4);
-        g.fillStyle(0xFF6666, 0.6);
-        g.fillCircle(4, 4, 2);
-        g.fillStyle(0xFFFFFF, 0.4);
-        g.fillCircle(4, 4, 1);
-        g.generateTexture('laser-warning', 8, 8);
-        g.destroy();
+        if (!this.textures.exists('laser-warning')) {
+            let g = this.add.graphics();
+            g.fillStyle(0xFF0000, 0.8);
+            g.fillCircle(4, 4, 4);
+            g.fillStyle(0xFF6666, 0.6);
+            g.fillCircle(4, 4, 2);
+            g.fillStyle(0xFFFFFF, 0.4);
+            g.fillCircle(4, 4, 1);
+            g.generateTexture('laser-warning', 8, 8);
+            g.destroy();
+        }
     }
 
     // ── GROUND TILE (32x32) ──
