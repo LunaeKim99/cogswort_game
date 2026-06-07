@@ -16,6 +16,7 @@
 3. Generate **4 variations** — pick the best one
 4. Download as **PNG** (transparent background is native)
 5. Import into `assets/images/` and reference in BootScene
+6. **Direction**: All sprites face **right**. The game flips them for left movement — no need to generate mirrored versions.
 
 > 💡 Dreamina's Seedream 5.0 has a dedicated pixel art model that understands game sprites, transparency, and pixel-perfect output natively. No need for "no anti-aliasing" or "flat colors" constraints.
 
@@ -31,6 +32,8 @@ pixel art [SUBJECT], game sprite, steampunk style,
 ```
 
 > Keep prompts short and direct — Seedream 5.0 understands pixel art conventions natively.
+>
+> 🎯 **Direction**: All character and enemy sprites face **RIGHT** by default. The game engine flips them horizontally for left-facing movement via `setFlipX()`. Do NOT generate left-facing variants.
 
 ---
 
@@ -78,7 +81,7 @@ All player sprites are 32×32 pixels. Transparency is native.
 #### PL-01: Main Character (Idle)
 
 ```
-pixel art game character, steampunk adventurer idle, 32x32 pixels,
+pixel art game character, steampunk adventurer idle, facing right, 32x32 pixels,
 brown aviator cap with brass goggles showing blue lenses,
 flowing red scarf, brown leather jacket, brass gear on chest,
 utility belt with gold buckle, brown pants and boots,
@@ -89,7 +92,7 @@ transparent PNG
 #### PL-02: Jump Pose
 
 ```
-pixel art game character, steampunk adventurer mid-jump pose,
+pixel art game character, steampunk adventurer mid-jump pose, facing right,
 32x32 pixels, arms up, legs tucked, brown aviator cap,
 blue-lensed goggles, red scarf flowing upward, brown jacket,
 gear on chest, brown boots tucked under, transparent PNG
@@ -98,7 +101,7 @@ gear on chest, brown boots tucked under, transparent PNG
 #### PL-03: Hurt/Death Pose
 
 ```
-pixel art game character, steampunk adventurer hurt pose,
+pixel art game character, steampunk adventurer hurt pose, facing right,
 32x32 pixels, staggering backward, red tint overlay,
 hat tilted, red scarf disturbed, damage frame,
 transparent PNG
@@ -111,7 +114,7 @@ transparent PNG
 #### EN-01: Walker Automaton (Idle/Patrol)
 
 ```
-pixel art game enemy, steampunk mechanical automaton walking,
+pixel art game enemy, steampunk mechanical automaton walking, facing right,
 32x32 pixels, brass dome head with glowing amber eyes,
 goggles, ventilator grill mouth, copper torso with gear,
 piston arms ending in pincer claws, riveted metal legs,
@@ -121,7 +124,7 @@ dark brass and copper, transparent PNG
 #### EN-02: Walker Death
 
 ```
-pixel art game enemy, destroyed steampunk automaton, 32x32 pixels,
+pixel art game enemy, destroyed steampunk automaton, facing right, 32x32 pixels,
 same body with X eyes made of red pixels, dark overlay,
 head tilted, gear chest cracked, defeated pose, transparent PNG
 ```
@@ -129,7 +132,7 @@ head tilted, gear chest cracked, defeated pose, transparent PNG
 #### EN-03: PatrolDrone (Flying)
 
 ```
-pixel art game enemy, steampunk flying drone, 28x28 pixels,
+pixel art game enemy, steampunk flying drone, facing right, 28x28 pixels,
 brass propeller on top, copper oval body,
 central glowing amber mechanical eye, small steam pipes,
 bronze and brass colors with amber glow, transparent PNG
@@ -138,7 +141,7 @@ bronze and brass colors with amber glow, transparent PNG
 #### EN-04: PatrolDrone Death
 
 ```
-pixel art game enemy, destroyed steampunk drone, 28x28 pixels,
+pixel art game enemy, destroyed steampunk drone, facing right, 28x28 pixels,
 same body with red X eye, dark overlay, propeller stopped,
 transparent PNG
 ```
@@ -302,7 +305,7 @@ Use these color/setting modifiers in your prompts for variation:
 
 ##### PL-01-F0 (Idle Frame 1): Standing upright, both legs together, arms relaxed at sides, facing forward, aviator cap with brass goggles (blue lenses), red scarf hanging straight, brown leather jacket with brass gear on chest, utility belt with gold buckle, brown boots, mechanical backpack, neutral expression, warm brass and copper colors
 ```
-pixel art game character frame, steampunk adventurer standing idle,
+pixel art game character frame, steampunk adventurer standing idle, facing right,
 pose frame 1 of 2, upright standing, both legs together,
 arms at sides, brown aviator cap with brass goggles showing blue lenses,
 flowing red scarf hanging straight, brown leather jacket,
@@ -312,7 +315,7 @@ mechanical backpack, neutral expression, 32x32 pixels, transparent PNG
 
 ##### PL-01-F1 (Idle Frame 2): Same character but breathing in — chest slightly expanded (1-2px), shoulders raised 1px, scarf slightly lifted, subtle animation frame
 ```
-pixel art game character frame, steampunk adventurer idle breathing,
+pixel art game character frame, steampunk adventurer idle breathing, facing right,
 pose frame 2 of 2, chest expanded slightly, shoulders raised 1px,
 scarf slightly lifted, subtle breathing animation,
 brown aviator cap with goggles, blue lenses, red scarf,
@@ -321,7 +324,7 @@ brown leather jacket with gear, 32x32 pixels, transparent PNG
 
 ##### PL-01-RUN-F0 (Run Frame 1): Running pose, left leg forward, right leg trailing, right arm forward, left arm back, scarf flowing behind, dynamic action pose
 ```
-pixel art game character frame, steampunk adventurer running,
+pixel art game character frame, steampunk adventurer running, facing right,
 pose frame 1 of 4 walk cycle, left leg forward striding,
 right leg trailing behind, right arm swinging forward,
 left arm back, red scarf flowing behind, brown aviator cap with goggles,
@@ -330,7 +333,7 @@ left arm back, red scarf flowing behind, brown aviator cap with goggles,
 
 ##### PL-01-RUN-F1 (Run Frame 2): Running pose, legs together mid-stride, both arms at sides, scarf flowing horizontally, momentum frame
 ```
-pixel art game character frame, steampunk adventurer running,
+pixel art game character frame, steampunk adventurer running, facing right,
 pose frame 2 of 4 walk cycle, legs together mid-stride,
 both arms at sides, scarf flowing horizontal with momentum,
 brown cap with brass goggles, brown jacket, gear on chest,
@@ -339,7 +342,7 @@ brown cap with brass goggles, brown jacket, gear on chest,
 
 ##### PL-01-RUN-F2 (Run Frame 3): Running pose, right leg forward, left leg trailing, left arm forward, right arm back, scarf flowing, opposite of frame 1
 ```
-pixel art game character frame, steampunk adventurer running,
+pixel art game character frame, steampunk adventurer running, facing right,
 pose frame 3 of 4 walk cycle, right leg forward striding,
 left leg trailing behind, left arm swinging forward,
 right arm back, red scarf flowing, brown cap with goggles,
@@ -348,7 +351,7 @@ right arm back, red scarf flowing, brown cap with goggles,
 
 ##### PL-01-RUN-F3 (Run Frame 4): Same as frame 2, legs together mid-stride, transition frame back to frame 1
 ```
-pixel art game character frame, steampunk adventurer running,
+pixel art game character frame, steampunk adventurer running, facing right,
 pose frame 4 of 4 walk cycle, legs together mid-stride,
 arms at sides, scarf flowing, transition pose,
 brown cap with brass goggles, brown jacket, 32x32 pixels,
@@ -357,7 +360,7 @@ transparent PNG
 
 ##### PL-02-F0 (Jump Frame 1): Jumping upward, arms raised above head, knees bent and legs tucked, scarf flying up, dynamic upward motion
 ```
-pixel art game character frame, steampunk adventurer jumping up,
+pixel art game character frame, steampunk adventurer jumping up, facing right,
 pose frame 1 of 2, arms raised above head, knees bent,
 legs tucked under body, red scarf flying upward,
 brown aviator cap with brass goggles, blue lenses, brown jacket,
@@ -366,7 +369,7 @@ brown aviator cap with brass goggles, blue lenses, brown jacket,
 
 ##### PL-02-F1 (Jump Frame 2): Jumping at apex, arms slightly lowered from peak, legs still tucked, scarf still floating up, reaching highest point
 ```
-pixel art game character frame, steampunk adventurer jump apex,
+pixel art game character frame, steampunk adventurer jump apex, facing right,
 pose frame 2 of 2, arms slightly lowered from peak,
 legs still tucked, scarf floating upward, reaching highest point,
 brown cap with goggles, red scarf, gear on chest,
@@ -375,7 +378,7 @@ brown cap with goggles, red scarf, gear on chest,
 
 ##### PL-03-F0 (Fall Frame): Falling downward, arms spread out for balance, legs spread apart, scarf blowing upward, descent pose
 ```
-pixel art game character frame, steampunk adventurer falling,
+pixel art game character frame, steampunk adventurer falling, facing right,
 falling downward pose, arms spread out for balance,
 legs spread apart, red scarf blowing upward, descent animation,
 brown cap with goggles, brown jacket, 32x32 pixels, transparent PNG
@@ -383,7 +386,7 @@ brown cap with goggles, brown jacket, 32x32 pixels, transparent PNG
 
 ##### PL-04-F0 (Hurt/Death Frame): Staggering backward, knocked back pose, red tint overlay, hat tilted sideways, scarf disturbed, damage state
 ```
-pixel art game character frame, steampunk adventurer hurt,
+pixel art game character frame, steampunk adventurer hurt, facing right,
 staggering backward knocked back pose, red tint overlay,
 hat tilted sideways, red scarf disturbed, damage state,
 brown cap with goggles, brown jacket with gear,
@@ -394,7 +397,7 @@ brown cap with goggles, brown jacket with gear,
 
 ##### EN-01-WALK-F0 (Walk Frame 1): Walking, left leg forward (leg drawn at x-offset -1), right arm forward (arm at x+1), brass dome head with glowing amber eyes, goggles, ventilator grill mouth, copper torso with gear in chest
 ```
-pixel art game enemy frame, steampunk mechanical walker robot walking,
+pixel art game enemy frame, steampunk mechanical walker robot walking, facing right,
 walk cycle frame 1 of 4, left leg forward, right arm forward,
 brass dome head with glowing amber eyes, brass goggles,
 ventilator grill mouth, copper torso with gear in chest,
@@ -404,7 +407,7 @@ dark brass and copper colors, 32x32 pixels, transparent PNG
 
 ##### EN-01-WALK-F1 (Walk Frame 2): Walking, neutral standing pose, both legs together, both arms at sides, transition frame
 ```
-pixel art game enemy frame, steampunk mechanical walker robot walking,
+pixel art game enemy frame, steampunk mechanical walker robot walking, facing right,
 walk cycle frame 2 of 4, neutral standing, legs together,
 arms at sides, brass dome head with glowing amber eyes,
 copper torso with gear, piston arms, riveted legs,
@@ -413,7 +416,7 @@ copper torso with gear, piston arms, riveted legs,
 
 ##### EN-01-WALK-F2 (Walk Frame 3): Walking, right leg forward (leg at x+1), left arm forward (arm at x-1), opposite of frame 1
 ```
-pixel art game enemy frame, steampunk mechanical walker robot walking,
+pixel art game enemy frame, steampunk mechanical walker robot walking, facing right,
 walk cycle frame 3 of 4, right leg forward, left arm forward,
 brass dome head with amber eyes, copper torso with gear,
 piston arms with pincer claws, riveted legs,
@@ -422,7 +425,7 @@ piston arms with pincer claws, riveted legs,
 
 ##### EN-01-WALK-F3 (Walk Frame 4): Same as frame 2, neutral standing, transition frame
 ```
-pixel art game enemy frame, steampunk mechanical walker robot walking,
+pixel art game enemy frame, steampunk mechanical walker robot walking, facing right,
 walk cycle frame 4 of 4, neutral standing, legs together,
 arms at sides, brass dome head, amber eyes,
 copper torso with chest gear, 32x32 pixels, transparent PNG
@@ -430,7 +433,7 @@ copper torso with chest gear, 32x32 pixels, transparent PNG
 
 ##### EN-02-F0 (Death Frame 1): Walker destroyed, X eyes made of red pixels, head tilted, dark overlay, gear chest cracked, starting to collapse
 ```
-pixel art game enemy frame, destroyed steampunk walker robot,
+pixel art game enemy frame, destroyed steampunk walker robot, facing right,
 death frame 1 of 2, X eyes made of red pixels, head tilted,
 gear chest cracked, dark overlay, starting to collapse,
 32x32 pixels, transparent PNG
@@ -438,7 +441,7 @@ gear chest cracked, dark overlay, starting to collapse,
 
 ##### EN-02-F1 (Death Frame 2): Fully collapsed, fallen apart, gears scattered, smoke wisps, destroyed state
 ```
-pixel art game enemy frame, destroyed steampunk walker robot,
+pixel art game enemy frame, destroyed steampunk walker robot, facing right,
 death frame 2 of 2, fully collapsed fallen apart, gears scattered,
 smoke wisps rising, destroyed defeated state, dark overlay,
 32x32 pixels, transparent PNG
@@ -448,7 +451,7 @@ smoke wisps rising, destroyed defeated state, dark overlay,
 
 ##### EN-03-F0 (Fly Frame 1): Flying, propeller blades visible (normal spin), copper oval body, central amber glowing eye, steam pipes on sides, bottom fin
 ```
-pixel art game enemy frame, steampunk flying drone flying,
+pixel art game enemy frame, steampunk flying drone flying, facing right,
 fly frame 1 of 2, propeller blades visible normal speed,
 copper oval body, central glowing amber mechanical eye,
 small steam pipes on sides, bottom fin, hovering pose,
@@ -457,7 +460,7 @@ bronze and brass colors, 28x28 pixels, transparent PNG
 
 ##### EN-03-F1 (Fly Frame 2): Flying, propeller fully blurred (fast spin blur effect), same body, fast motion effect
 ```
-pixel art game enemy frame, steampunk flying drone flying,
+pixel art game enemy frame, steampunk flying drone flying, facing right,
 fly frame 2 of 2, propeller fully blurred fast spin motion blur,
 copper oval body, glowing amber eye, steam pipes,
 motion effect, 28x28 pixels, transparent PNG
@@ -465,7 +468,7 @@ motion effect, 28x28 pixels, transparent PNG
 
 ##### EN-04-F0 (Death Frame): Drone destroyed, red X eye, dark overlay, propeller stopped, smoke implied, falling
 ```
-pixel art game enemy frame, destroyed steampunk drone,
+pixel art game enemy frame, destroyed steampunk drone, facing right,
 death frame, red X eye, dark overlay, propeller stopped,
 smoke implied, falling destroyed state, 28x28 pixels,
 transparent PNG
