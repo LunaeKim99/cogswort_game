@@ -16,5 +16,8 @@ plan.md
 # Asset conversion script (local tool)
 convert-assets.ps1
 
+# AI prompt reference (generated locally)
+canva-ai-prompts.md
+
 # PDF references (copyrighted source material)
 *.pdf
