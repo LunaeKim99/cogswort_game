@@ -371,6 +371,7 @@ class GameScene extends Phaser.Scene {
 
         // Restart button
         const restartBtn = this._makePauseButton(cx, cy + 35, '↻  RESTART', () => {
+            this._hidePauseMenu();
             if (this._pauseStartTime !== null) {
                 this._totalPausedTime += this.time.now - this._pauseStartTime;
                 this._pauseStartTime = null;
@@ -379,13 +380,16 @@ class GameScene extends Phaser.Scene {
             this.physics.world.resume();
             this.tweens.resumeAll();
             this.scene.stop('HUDScene');
-            this.scene.restart({ level: this.currentLevel, score: this.score, lives: this.lives });
+            this.time.delayedCall(0, () => {
+                this.scene.restart({ level: this.currentLevel, score: this.score, lives: this.lives });
+            });
         });
         restartBtn.bg.setDepth(B + 30);
         restartBtn.label.setDepth(B + 31);
 
         // Main Menu button
         const menuBtn = this._makePauseButton(cx, cy + 95, '☰  MAIN MENU', () => {
+            this._hidePauseMenu();
             if (this._pauseStartTime !== null) {
                 this._totalPausedTime += this.time.now - this._pauseStartTime;
                 this._pauseStartTime = null;
@@ -394,7 +398,9 @@ class GameScene extends Phaser.Scene {
             this.physics.world.resume();
             this.tweens.resumeAll();
             this.scene.stop('HUDScene');
-            this.scene.start('MainMenuScene');
+            this.time.delayedCall(0, () => {
+                this.scene.start('MainMenuScene');
+            });
         });
         menuBtn.bg.setDepth(B + 30);
         menuBtn.label.setDepth(B + 31);
@@ -443,9 +449,9 @@ class GameScene extends Phaser.Scene {
             label.setColor('#FFFFFF');
         });
         bg.on('pointerdown', () => {
+            callback();
             this.tweens.add({ targets: [bg, label], scaleX: 0.95, scaleY: 0.95, duration: 40 });
         });
-        bg.on('pointerup', () => callback());
         return { bg, label };
     }
 

@@ -113,10 +113,13 @@ levels.push({
         groundSection(2080, 480),
         groundSection(2624, 376),
         // Floating platforms
-        floatPlat(500,  310, 128),
-        floatPlat(1100, 290, 128),
-        floatPlat(1800, 320, 96),
-        floatPlat(2300, 280, 128)
+        floatPlat(400,  320, 96),   // A — start
+        floatPlat(750,  295, 80),   // B — up (-25)
+        floatPlat(1100, 305, 80),   // C — regression (+10)
+        floatPlat(1600, 280, 96),   // D — up (-25)
+        floatPlat(2000, 290, 80),   // E — regression (+10)
+        floatPlat(2400, 265, 80),   // F — up (-25)
+        floatPlat(2750, 275, 64)    // G — regression (+10)
     ],
     enemies: [
         walker(300,  180,  550),
@@ -130,14 +133,17 @@ levels.push({
     ],
     coins: [
         coin(200,  386),
-        coin(500,  278),  // floating
+        coin(400,  288),   // A-32
+        coin(750,  263),   // B-32
         coin(900,  386),
-        coin(1100, 258),  // floating
+        coin(1100, 273),   // C-32
         coin(1500, 386),
-        coin(1800, 288),  // floating
+        coin(1600, 248),   // D-32
+        coin(2000, 258),   // E-32
         coin(2100, 386),
-        coin(2300, 248),  // floating
+        coin(2400, 233),   // F-32
         coin(2700, 386),
+        coin(2750, 243),   // G-32
         coin(2800, 386)
     ]
 });
@@ -155,13 +161,15 @@ levels.push({
         groundSection(2496, 384),
         groundSection(3008, 592),
         // Floating platforms
-        floatPlat(350,  320, 128),
-        floatPlat(700,  310, 96),
-        floatPlat(1100, 300, 96),
-        floatPlat(1600, 270, 128),
-        floatPlat(2200, 310, 96),
-        floatPlat(2700, 270, 128),
-        floatPlat(3200, 290, 96)
+        floatPlat(350,  320, 96),   // A — start
+        floatPlat(650,  290, 80),   // B — up (-30)
+        floatPlat(1000, 305, 80),   // C — regression (+15)
+        floatPlat(1500, 275, 80),   // D — up (-30)
+        floatPlat(1850, 290, 64),   // E — regression (+15)
+        floatPlat(2250, 260, 80),   // F — up (-30)
+        floatPlat(2600, 275, 64),   // G — regression (+15)
+        floatPlat(3100, 245, 80),   // H — up (-30)
+        floatPlat(3400, 260, 64)    // I — regression (+15)
     ],
     enemies: [
         walker(250,  150,  500),
@@ -176,15 +184,18 @@ levels.push({
         spikeTrap(2800, 1500, 2000)
     ],
     coins: [
-        coin(200,  386),
-        coin(350,  288),
+        coin(150,  386),
+        coin(350,  288),     // A-32
+        coin(650,  258),     // B-32
         coin(800,  386),
-        coin(1100, 268),
-        coin(1450, 386),
-        coin(1600, 238),
+        coin(1000, 273),     // C-32
+        coin(1500, 243),     // D-32
+        coin(1850, 258),     // E-32
         coin(2000, 386),
-        coin(2200, 278),
-        coin(2700, 238),
+        coin(2250, 228),     // F-32
+        coin(2600, 243),     // G-32
+        coin(3100, 213),     // H-32
+        coin(3400, 228),     // I-32
         coin(3100, 386)
     ]
 });
@@ -204,15 +215,16 @@ levels.push({
         groundSection(3200, 384),
         groundSection(3712, 488),
         // Floating platforms
-        floatPlat(300,  320, 96),
-        floatPlat(600,  250, 96),
-        floatPlat(1000, 300, 64),
-        floatPlat(1500, 240, 96),
-        floatPlat(2000, 300, 64),
-        floatPlat(2500, 240, 96),
-        floatPlat(3000, 290, 64),
-        floatPlat(3500, 250, 96),
-        floatPlat(3900, 300, 64)
+        floatPlat(300,  320, 80),   // A — start
+        floatPlat(600,  285, 64),   // B — up (-35)
+        floatPlat(1000, 300, 64),   // C — regression (+15)
+        floatPlat(1400, 270, 64),   // D — up (-30)
+        floatPlat(1850, 285, 64),   // E — regression (+15)
+        floatPlat(2350, 255, 64),   // F — up (-30)
+        floatPlat(2750, 270, 64),   // G — regression (+15)
+        floatPlat(3150, 240, 64),   // H — up (-30)
+        floatPlat(3550, 255, 64),   // I — regression (+15)
+        floatPlat(3950, 230, 64)    // J — up (-25)
     ],
     enemies: [
         walker(250,  150,  480),
@@ -230,14 +242,18 @@ levels.push({
     ],
     coins: [
         coin(150,  386),
-        coin(300,  288),
-        coin(600,  218),
-        coin(1000, 268),
-        coin(1500, 208),
-        coin(2000, 268),
-        coin(2500, 208),
-        coin(3000, 258),
-        coin(3500, 218),
+        coin(300,  288),     // A-32
+        coin(600,  253),     // B-32
+        coin(1000, 268),     // C-32
+        coin(1400, 238),     // D-32
+        coin(1500, 386),
+        coin(1850, 253),     // E-32
+        coin(2350, 223),     // F-32
+        coin(2500, 386),
+        coin(2750, 238),     // G-32
+        coin(3150, 208),     // H-32
+        coin(3550, 223),     // I-32
+        coin(3950, 198),     // J-32
         coin(3800, 386)
     ]
 });
@@ -258,16 +274,17 @@ levels.push({
         groundSection(3584, 384),
         groundSection(4096, 704),
         // Floating platforms
-        floatPlat(300,  320, 96),
-        floatPlat(600,  240, 64),
-        floatPlat(1000, 300, 64),
-        floatPlat(1400, 230, 96),
-        floatPlat(1900, 290, 64),
-        floatPlat(2400, 230, 96),
-        floatPlat(2900, 280, 64),
-        floatPlat(3300, 220, 96),
-        floatPlat(3800, 270, 64),
-        floatPlat(4200, 230, 96)
+        floatPlat(300,  320, 80),   // A — start
+        floatPlat(600,  280, 64),   // B — up (-40)
+        floatPlat(1000, 295, 64),   // C — regression (+15)
+        floatPlat(1450, 260, 80),   // D — up (-35)
+        floatPlat(1850, 280, 64),   // E — regression (+20)
+        floatPlat(2350, 245, 64),   // F — up (-35)
+        floatPlat(2750, 265, 64),   // G — regression (+20)
+        floatPlat(3150, 230, 64),   // H — up (-35)
+        floatPlat(3600, 250, 64),   // I — regression (+20)
+        floatPlat(4050, 220, 64),   // J — up (-30)
+        floatPlat(4400, 240, 64)    // K — regression (+20)
     ],
     enemies: [
         walker(250,  150,  480),
@@ -290,15 +307,20 @@ levels.push({
     ],
     coins: [
         coin(150,  386),
-        coin(300,  288),
-        coin(600,  208),
-        coin(1000, 268),
-        coin(1400, 198),
-        coin(1900, 258),
-        coin(2400, 198),
-        coin(2900, 248),
-        coin(3300, 188),
-        coin(3800, 238)
+        coin(300,  288),     // A-32
+        coin(600,  248),     // B-32
+        coin(1000, 263),     // C-32
+        coin(1450, 228),     // D-32
+        coin(1500, 386),
+        coin(1850, 248),     // E-32
+        coin(2000, 386),
+        coin(2350, 213),     // F-32
+        coin(2750, 233),     // G-32
+        coin(3150, 198),     // H-32
+        coin(3600, 218),     // I-32
+        coin(4050, 188),     // J-32
+        coin(4400, 208),     // K-32
+        coin(3800, 386)
     ]
 });
 
