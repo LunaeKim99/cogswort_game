@@ -503,7 +503,7 @@ levels.push({
         groundSection(3840, 256),
         groundSection(4224, 320),
         groundSection(4672, 256),
-        groundSection(5056, 144),
+        groundSection(4928, 272),  // extended left to cover gate at x=5040
         // Floating platforms (narrow)
         floatPlat(250,  290, 64),
         floatPlat(500,  210, 48),
