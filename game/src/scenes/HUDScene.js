@@ -18,7 +18,7 @@ class HUDScene extends Phaser.Scene {
         // ── Semi-transparent HUD panel (top area) ──
         const panel = this.add.graphics();
         panel.setScrollFactor(0).setDepth(190);
-        panel.fillStyle(HUD.PANEL_COLOR, 0.4);
+        panel.fillStyle(HUD.PANEL_COLOR, HUD.PANEL_ALPHA);
         panel.fillRoundedRect(4, 36, W - 8, 52, HUD.CORNER_RADIUS);
         // Bottom border line
         panel.lineStyle(1, 0xFFD700, 0.2);
@@ -26,7 +26,7 @@ class HUDScene extends Phaser.Scene {
 
         // ── Hearts (top-left area) ──
         this.hearts = [];
-        for (let i = 0; i < 3; i++) {
+        for (let i = 0; i < INITIAL_LIVES; i++) {
             const hx = HUD.HEART_OFFSET_X + i * HUD.HEART_SPACING;
             const h = this.add.image(hx, HUD.HEART_OFFSET_Y, 'heart-full');
             h.setScrollFactor(0);
@@ -74,7 +74,7 @@ class HUDScene extends Phaser.Scene {
         // ── Coin counter with mini gear icon ──
         // Draw a small gear icon
         const coinIcon = this.add.graphics().setScrollFactor(0).setDepth(200);
-        this._drawMiniGear(coinIcon, W / 2 - 52, HUD.COIN_OFFSET_Y - 1, 6, 5, 0xFFD700);
+        drawMiniGear(coinIcon, W / 2 - 52, HUD.COIN_OFFSET_Y - 1, 6, 5, 0xFFD700);
 
         this.coinText = this.add.text(W / 2 - 36, HUD.COIN_OFFSET_Y, '0/' + this.totalCoins, {
             fontFamily: HUD.FONT_FAMILY,
@@ -167,7 +167,7 @@ class HUDScene extends Phaser.Scene {
 
     // ── Hearts update ──
     _updateHearts(lives) {
-        for (let i = 0; i < 3; i++) {
+        for (let i = 0; i < INITIAL_LIVES; i++) {
             const wasFull = this.hearts[i].texture.key === 'heart-full';
             this.hearts[i].setTexture(i < lives ? 'heart-full' : 'heart-empty');
 
@@ -183,22 +183,5 @@ class HUDScene extends Phaser.Scene {
                 });
             }
         }
-    }
-
-    // ── Draw a tiny gear icon ──
-    _drawMiniGear(g, cx, cy, radius, teeth, color) {
-        g.fillStyle(color, 0.9);
-        g.fillCircle(cx, cy, radius);
-        const tw = radius * 0.35;
-        const th = radius * 0.25;
-        const step = (Math.PI * 2) / teeth;
-        for (let i = 0; i < teeth; i++) {
-            const angle = i * step - Math.PI / 2;
-            const tx = cx + Math.cos(angle) * radius;
-            const ty = cy + Math.sin(angle) * radius;
-            g.fillRect(tx - tw / 2, ty - th / 2, tw, th);
-        }
-        g.fillStyle(0x000000, 0.5);
-        g.fillCircle(cx, cy, radius * 0.4);
     }
 }

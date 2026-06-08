@@ -4,8 +4,6 @@ const TILE_SIZE = 32;
 
 // Player physics (from Construct 2 spec)
 const PLAYER_SPEED = 200;
-const PLAYER_ACCELERATION = 600;
-const PLAYER_DECELERATION = 600;
 const PLAYER_JUMP = -480;       // First jump (shorter than before)
 const PLAYER_DOUBLE_JUMP = -400; // Second jump (double jump)
 const PLAYER_GRAVITY = 1200;

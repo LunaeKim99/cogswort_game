@@ -15,14 +15,14 @@ function levelMeta(districtIdx, subName, width, idx) {
     return {
         name: d.name + ' - ' + subName,
         district: d.name,
+        districtIdx: districtIdx,
         subName: subName,
         districtLevel: idx + 1,
         width: width,
         height: GAME_HEIGHT,
         playerStart: { x: 64, y: 350 },
         gateX: width - 160,
-        background: d.bg,
-        bgColor: d.color
+        background: d.bg
     };
 }
 

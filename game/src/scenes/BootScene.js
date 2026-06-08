@@ -28,6 +28,11 @@ class BootScene extends Phaser.Scene {
             progressBar.fillRect(w / 2 - 158, h / 2 - 8, 316 * value, 16);
         });
 
+        // Handle load errors gracefully - procedural fallback handles missing PNGs
+        this.load.on('loaderror', (fileObj) => {
+            console.warn('Failed to load asset, using procedural fallback:', fileObj.key);
+        });
+
         // Try loading all PNG textures from assets/images/
         const pngKeys = [
             'player-idle', 'player-run', 'player-jump', 'player-fall', 'player-hurt',
@@ -42,6 +47,15 @@ class BootScene extends Phaser.Scene {
         ];
         pngKeys.forEach(key => {
             this.load.image(key, `assets/images/${key}.png`);
+        });
+
+        // Safety timeout: if loading hangs, proceed anyway
+        this.time.delayedCall(5000, () => {
+            if (this.scene.isActive('BootScene')) {
+                console.warn('Boot load timeout - proceeding with procedural assets');
+                this.load.removeAllListeners();
+                this.scene.start('PreloadScene');
+            }
         });
     }
 

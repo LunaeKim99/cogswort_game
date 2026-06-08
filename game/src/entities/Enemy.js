@@ -89,7 +89,7 @@ class PatrolDrone extends Phaser.Physics.Arcade.Sprite {
     _showWarning(player) {
         if (!this._warningDot) {
             // Find ground Y below drone
-            const groundY = 418; // GROUND_Y from levels.js
+            const groundY = GROUND_Y;
             this._warningDot = this.scene.add.image(this.x, groundY, 'laser-warning')
                 .setDepth(15).setAlpha(0);
 
@@ -120,7 +120,7 @@ class PatrolDrone extends Phaser.Physics.Arcade.Sprite {
 
     // ── Fire laser beam ──
     _fireLaser() {
-        const groundY = 418;
+        const groundY = GROUND_Y;
         const beamY = this.y + 14;
         const beamH = groundY - beamY;
 
@@ -175,7 +175,7 @@ class PatrolDrone extends Phaser.Physics.Arcade.Sprite {
         const px = player.x;
         const py = player.y + player.body.height / 2;
 
-        return px > laserX - halfW && px < laserX + halfW && py > droneBottom && py < 418;
+        return px > laserX - halfW && px < laserX + halfW && py > droneBottom && py < GROUND_Y;
     }
 
     // ── Stomp ──
@@ -277,12 +277,6 @@ class PatrolDrone extends Phaser.Physics.Arcade.Sprite {
                 break;
         }
 
-        // ── Laser hit check (done in update for responsiveness) ──
-        if (this._isLaserActive() && player) {
-            const wasHit = this._checkLaserHit(player);
-            // The actual damage is handled by GameScene via overlap, but we 
-            // emit a signal or the GameScene checks _isLaserActive
-        }
     }
 
     // ── Cleanup on destroy ──
@@ -334,16 +328,21 @@ class Walker extends Phaser.Physics.Arcade.Sprite {
         // ── Animation ──
         this.play('walker-walk-anim', true);
 
-        // Patrol logic
-        if (this.x >= this.patrolRight) {
-            this.direction = -1;
-            this.setFlipX(true);
-        } else if (this.x <= this.patrolLeft) {
-            this.direction = 1;
-            this.setFlipX(false);
+        // Only patrol when standing on ground/platform
+        if (this.body.blocked.down) {
+            // Patrol logic
+            if (this.x >= this.patrolRight) {
+                this.direction = -1;
+                this.setFlipX(true);
+            } else if (this.x <= this.patrolLeft) {
+                this.direction = 1;
+                this.setFlipX(false);
+            }
+            this.setVelocityX(60 * this.direction);
+        } else {
+            // In air — don't apply horizontal velocity, just let gravity work
+            this.setVelocityX(0);
         }
-
-        this.setVelocityX(60 * this.direction);
     }
 
     stomp() {

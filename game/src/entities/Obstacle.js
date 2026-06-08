@@ -60,7 +60,7 @@ class BuriedSaw extends Phaser.Physics.Arcade.Sprite {
         this._isRising = true;
         this._isActive = false;
         this._isFalling = false;
-        this.body.enable = true;
+        this.body.enable = false;  // keep disabled during rise
         this.setAlpha(1);
 
         this.scene.tweens.add({
@@ -71,6 +71,7 @@ class BuriedSaw extends Phaser.Physics.Arcade.Sprite {
             onComplete: () => {
                 this._isRising = false;
                 this._isActive = true;
+                this.body.enable = true;  // ONLY enable after fully emerged
                 this._stateTimer = this.scene.time.now;
             }
         });
@@ -184,16 +185,18 @@ class SurpriseSaw extends Phaser.Physics.Arcade.Sprite {
 
     _emerge() {
         this._state = 'emerging';
-        this.body.enable = true;
-        this.setAlpha(1);
+        this.body.enable = false;  // keep disabled during emergence
+        this.setAlpha(0);
 
         this.scene.tweens.add({
             targets: this,
             y: this._emergeY,
+            alpha: 1,
             duration: 350,
             ease: 'Back.easeOut',
             onComplete: () => {
                 this._state = 'active';
+                this.body.enable = true;  // ONLY enable after fully emerged
                 this._stateTimer = this.scene.time.now;
             }
         });
@@ -201,6 +204,7 @@ class SurpriseSaw extends Phaser.Physics.Arcade.Sprite {
 
     _submerge() {
         this._state = 'submerging';
+        this.body.enable = false;  // disable immediately to prevent hits while submerging
 
         this.scene.tweens.add({
             targets: this,
@@ -295,7 +299,7 @@ class SpikeTrap extends Phaser.Physics.Arcade.Sprite {
         // Positioning:
         // - Ground spike (y ~ GROUND_Y - 12 = 406): retracted fully behind ground tile
         // - Inverted / floating: retracted above/below surface
-        const groundSurface = GROUND_Y - TILE_SIZE; // 386
+        const groundSurface = GROUND_Y; // 418
         const isOnGround = Math.abs(y - (GROUND_Y - 12)) < 10;
 
         if (isOnGround) {
@@ -324,7 +328,7 @@ class SpikeTrap extends Phaser.Physics.Arcade.Sprite {
         this.body.enable = false;
 
         // Initial delay before first extension
-        this.scene.time.delayedCall(config.initialDelay || 1000, () => {
+        this.scene.time.delayedCall(config.initialDelay !== undefined ? config.initialDelay : 1000, () => {
             this._ready = true;
             this._stateTimer = scene.time.now;
         });

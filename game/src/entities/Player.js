@@ -82,5 +82,6 @@ class Player extends Phaser.Physics.Arcade.Sprite {
     unfreeze() {
         this.body.moves = true;
         this.body.allowGravity = true;
+        this.isDead = false;
     }
 }

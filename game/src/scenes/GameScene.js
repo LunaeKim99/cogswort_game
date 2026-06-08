@@ -22,6 +22,14 @@ class GameScene extends Phaser.Scene {
         // Set world bounds (extra height for fall death zone)
         this.physics.world.setBounds(0, 0, levelData.width, levelData.height + 200);
 
+        // Play background music
+        try {
+            if (!this.sound.get('bgm-main') || !this.sound.get('bgm-main').isPlaying) {
+                this.bgm = this.sound.add('bgm-main', { loop: true, volume: 0.4 });
+                this.bgm.play();
+            }
+        } catch(e) { console.warn('Could not play BGM:', e); }
+
         // Create background
         this._createBackground(levelData);
 
@@ -35,7 +43,6 @@ class GameScene extends Phaser.Scene {
 
         // Create player
         this.player = new Player(this, levelData.playerStart.x, levelData.playerStart.y);
-        this.player.setCollideWorldBounds(true);
 
         // Create enemies
         this.enemies = this.physics.add.group();
@@ -78,16 +85,17 @@ class GameScene extends Phaser.Scene {
         // Player-obstacle overlap (instant damage, no stomp)
         this.physics.add.overlap(this.player, this.obstacles, this._handleObstacleHit, null, this);
 
-        // Player-gate overlap (gate always active)
+        // Player-gate overlap (gate must be activated first)
         this.physics.add.overlap(this.player, this.gate, this._handleGateReached, null, this);
 
-        // Gate always open from start — no coin requirement
-        this.gate.setTexture('gate-open');
-        this.gateLabel.setText('EXIT →').setColor('#FFD700').setAlpha(1);
-        this.gateHint.setText('OPEN').setColor('#44FF88');
+        // Gate starts locked — collect all coins to open it
 
         // Track level start time (for star rating)
         this._levelStartTime = this.time.now;
+
+        // Pause time tracking
+        this._totalPausedTime = 0;
+        this._pauseStartTime = null;
 
         // Setup keyboard input
         this.cursors = this.input.keyboard.createCursorKeys();
@@ -118,8 +126,20 @@ class GameScene extends Phaser.Scene {
         // State flags
         this._gameOverTriggered = false;
         this._levelCompleteTriggered = false;
-        this._gateActive = true;
+        this._gateActive = false;
         this._isPaused = false;
+
+        // ── Player trail particle emitter ──
+        this._trailEmitter = this.add.particles(0, 0, 'particle', {
+            alpha: { start: 0.6, end: 0 },
+            scale: { start: 0.8, end: 0 },
+            tint: 0x88CCFF,
+            lifespan: 300,
+            frequency: -1,
+            quantity: 1,
+            emitting: false
+        });
+        this._trailEmitter.setDepth(1);
 
         // Platformer feel improvements
         this._lastGroundedTime = 0;
@@ -223,7 +243,7 @@ class GameScene extends Phaser.Scene {
             this.tweens.add({
                 targets: [districtText, numText, nameText, overlay, sep],
                 alpha: 0,
-                scale: numText._scaleX || 1,
+                scale: 0,
                 duration: 400,
                 ease: 'Quad.easeOut',
                 onComplete: () => {
@@ -268,14 +288,26 @@ class GameScene extends Phaser.Scene {
         this._isPaused = !this._isPaused;
 
         if (this._isPaused) {
+            this._pauseStartTime = this.time.now;
             this._showPauseMenu();
             this.physics.world.pause();
-            this.tweens.pauseAll();
+            // Pause BGM
+            try { if (this.bgm) this.bgm.pause(); } catch(e) {}
+            // Delay tweens pause to allow pause menu pop-in animation to play
+            this.time.delayedCall(400, () => {
+                this.tweens.pauseAll();
+            });
             this.scene.pause('HUDScene');
             this.pauseBtn.setVisible(false);
         } else {
+            if (this._pauseStartTime !== null) {
+                this._totalPausedTime += this.time.now - this._pauseStartTime;
+                this._pauseStartTime = null;
+            }
             this.physics.world.resume();
             this.tweens.resumeAll();
+            // Resume BGM
+            try { if (this.bgm) this.bgm.resume(); } catch(e) {}
             this.scene.resume('HUDScene');
             this.pauseBtn.setVisible(true);
             this._hidePauseMenu();
@@ -299,10 +331,10 @@ class GameScene extends Phaser.Scene {
         frame.strokeRoundedRect(cx - 134, cy - 134, 268, 268, 8);
 
         // Corner decorations (small gears)
-        this._drawMiniGear(frame, cx - 130, cy - 130, 8, 6, 0xFFD700, 0.4);
-        this._drawMiniGear(frame, cx + 130, cy - 130, 8, 6, 0xFFD700, 0.4);
-        this._drawMiniGear(frame, cx - 130, cy + 130, 8, 6, 0xFFD700, 0.4);
-        this._drawMiniGear(frame, cx + 130, cy + 130, 8, 6, 0xFFD700, 0.4);
+        drawMiniGear(frame, cx - 130, cy - 130, 8, 6, 0xFFD700, 0.4);
+        drawMiniGear(frame, cx + 130, cy - 130, 8, 6, 0xFFD700, 0.4);
+        drawMiniGear(frame, cx - 130, cy + 130, 8, 6, 0xFFD700, 0.4);
+        drawMiniGear(frame, cx + 130, cy + 130, 8, 6, 0xFFD700, 0.4);
 
         // Panel background
         const panel = this.add.rectangle(cx, cy, 260, 250, 0x1a1a2e, 0.95)
@@ -335,6 +367,10 @@ class GameScene extends Phaser.Scene {
 
         // Restart button
         const restartBtn = this._makePauseButton(cx, cy + 35, '↻  RESTART', () => {
+            if (this._pauseStartTime !== null) {
+                this._totalPausedTime += this.time.now - this._pauseStartTime;
+                this._pauseStartTime = null;
+            }
             this._isPaused = false;
             this.physics.world.resume();
             this.tweens.resumeAll();
@@ -346,6 +382,10 @@ class GameScene extends Phaser.Scene {
 
         // Main Menu button
         const menuBtn = this._makePauseButton(cx, cy + 95, '☰  MAIN MENU', () => {
+            if (this._pauseStartTime !== null) {
+                this._totalPausedTime += this.time.now - this._pauseStartTime;
+                this._pauseStartTime = null;
+            }
             this._isPaused = false;
             this.physics.world.resume();
             this.tweens.resumeAll();
@@ -404,22 +444,6 @@ class GameScene extends Phaser.Scene {
         return { bg, label };
     }
 
-    // ── Draw small gear for decorations ──
-    _drawMiniGear(g, cx, cy, radius, teeth, color, alpha) {
-        g.fillStyle(color, alpha||0.5);
-        g.fillCircle(cx, cy, radius);
-        const tw = radius * 0.35, th = radius * 0.25;
-        const step = (Math.PI * 2) / teeth;
-        for (let i = 0; i < teeth; i++) {
-            const angle = i * step - Math.PI / 2;
-            const tx = cx + Math.cos(angle) * radius;
-            const ty = cy + Math.sin(angle) * radius;
-            g.fillRect(tx - tw / 2, ty - th / 2, tw, th);
-        }
-        g.fillStyle(0x000000, 0.3);
-        g.fillCircle(cx, cy, radius * 0.4);
-    }
-
     // ── Visual polish: entrance animation ──
     _doEntranceAnimation() {
         // Flash effect
@@ -427,7 +451,7 @@ class GameScene extends Phaser.Scene {
 
         // Player slam-in from above
         const startY = this.player.y;
-        this.player.y = -50;
+        this.player.y = Math.max(-50, levels[this.currentLevel].playerStart.y - 200);
         this.player.body.allowGravity = false;
         this.player.body.moves = false;
 
@@ -487,6 +511,11 @@ class GameScene extends Phaser.Scene {
                 onComplete: () => p.destroy()
             });
         }
+    }
+
+    // ── Safe sound play (wraps try/catch) ──
+    _playSound(key) {
+        try { this.sound.play(key); } catch (e) { console.warn('Sound play failed:', key, e); }
     }
 
     // ── Background ──
@@ -585,7 +614,7 @@ class GameScene extends Phaser.Scene {
     _checkDroneLasers() {
         if (this.player.isInvincible || this.player.isDead) return;
         this.enemies.children.iterate(enemy => {
-            if (enemy && enemy.active && !enemy.isDead && enemy._isLaserActive) {
+            if (enemy && enemy.active && !enemy.isDead && typeof enemy._checkLaserHit === 'function') {
                 if (enemy._checkLaserHit(this.player)) {
                     this._hurtPlayer();
                 }
@@ -667,7 +696,7 @@ class GameScene extends Phaser.Scene {
         const enemyCenter = enemy.y;
         const tolerance = 20;
 
-        const isFalling = player.body.velocity.y > 0;
+        const isFalling = player.body.velocity.y >= -10;
         const isAbove = playerBottom < enemyCenter + tolerance;
 
         if (isFalling && isAbove) {
@@ -680,7 +709,7 @@ class GameScene extends Phaser.Scene {
             this.events.emit('updateScore', this.score);
 
             // Play sound
-            try { this.sound.play('sfx-stomp'); } catch(e) {}
+            this._playSound('sfx-stomp');
 
             // ── Stomp combo ──
             const now = this.time.now;
@@ -738,6 +767,11 @@ class GameScene extends Phaser.Scene {
         const collected = this.totalCoins - this.coins.countActive();
         this.events.emit('updateCoins', { collected, total: this.totalCoins });
 
+        // Check if all coins collected → activate gate
+        if (collected >= this.totalCoins && !this._gateActive) {
+            this._activateGate();
+        }
+
         // ── Visual polish: coin collect effects ──
         this._showFloatingText(coin.x, coin.y, '+10', '#00FF88');
         this._emitParticles(coin.x, coin.y, 0x00FF88, 6);
@@ -754,7 +788,7 @@ class GameScene extends Phaser.Scene {
         this.events.emit('updateLives', this.lives);
 
         // Play sound
-        try { this.sound.play('sfx-hurt'); } catch(e) {}
+        this._playSound('sfx-hurt');
 
         // ── Visual polish: hurt effects ──
         this.cameras.main.shake(150, 0.012);
@@ -770,16 +804,17 @@ class GameScene extends Phaser.Scene {
     // ── Fall into void ──
     _checkFallDeath() {
         if (this.player.y > GAME_HEIGHT + 50) {
-            if (this.player.isDead) return;
+            if (this.player.isDead || this.player.isInvincible) return;
             this._hurtPlayer();
             // If still alive, respawn at start
             if (this.lives > 0) {
                 const start = levels[this.currentLevel].playerStart;
                 this.player.setPosition(start.x, start.y);
                 this.player.body.setVelocity(0, 0);
-                this.player.body.moves = true;
-                this.player.body.allowGravity = true;
-                this.player.isDead = false;
+                this._lastGroundedTime = 0;
+                this._jumpBufferTime = 0;
+                this._jumpCount = 0;
+                this._isJumping = false;
             }
         }
     }
@@ -798,13 +833,11 @@ class GameScene extends Phaser.Scene {
         this.cameras.main.flash(250, 255, 0, 0);
         this.cameras.main.shake(300, 0.015);
         this._emitParticles(this.player.x, this.player.y, 0xFF4444, 16);
-        // Brief hit-stop for impact feel (doesn't affect timer)
+        // Brief hit-stop for impact feel, then transition
         this.time.timeScale = 0.3;
-        this.time.delayedCall(150, () => { this.time.timeScale = 1; });
-
-        // Transition to GameOverScene after ~500ms real-time
-        // (150 game-ms at 0.3x timeScale).
         this.time.delayedCall(150, () => {
+            this.time.timeScale = 1;
+            try { if (this.bgm) this.bgm.stop(); } catch(e) {}
             this.scene.stop('HUDScene');
             this.scene.start('GameOverScene', {
                 score: this.score,
@@ -821,7 +854,7 @@ class GameScene extends Phaser.Scene {
         this.player.freeze();
 
         // Play win sound
-        try { this.sound.play('sfx-win'); } catch(e) {}
+        this._playSound('sfx-win');
 
         // Autosave — unlock next level
         const nextLevel = this.currentLevel + 1;
@@ -832,7 +865,9 @@ class GameScene extends Phaser.Scene {
 
             // Calculate star rating
             const coinsCollected = this.totalCoins - this.coins.countActive();
-            const elapsed = (this.time.now - this._levelStartTime) / 1000;
+            // Subtract total paused time from elapsed
+            const pausedTotal = this._totalPausedTime + (this._pauseStartTime ? this.time.now - this._pauseStartTime : 0);
+            const elapsed = (this.time.now - this._levelStartTime - pausedTotal) / 1000;
             const starResult = this._calculateStars(coinsCollected, elapsed);
 
             // Check if there are more levels
@@ -862,8 +897,8 @@ class GameScene extends Phaser.Scene {
         const levelData = levels[this.currentLevel];
         const totalCoins = levelData.coins.length;
 
-        // Determine district for time thresholds
-        const district = this.currentLevel < 5 ? 0 : this.currentLevel < 10 ? 1 : 2;
+        // Determine district for time thresholds (use districtIdx from levelData)
+        const district = levelData.districtIdx !== undefined ? levelData.districtIdx : 0;
 
         // 1) Lives (0–1 point): 3 lives → 1.0, 2 → 0.6, 1 → 0.2
         const livesPoints = this.lives === 3 ? 1.0 : this.lives === 2 ? 0.6 : 0.2;
@@ -914,10 +949,11 @@ class GameScene extends Phaser.Scene {
         // ── Gather input from all sources ──
         const leftInput = this.cursors.left.isDown || this.keyA.isDown || this.touchControls.getLeft();
         const rightInput = this.cursors.right.isDown || this.keyD.isDown || this.touchControls.getRight();
+        const touchJump = this.touchControls.consumeJump();
         const jumpJustDown = Phaser.Input.Keyboard.JustDown(this.cursors.up)
             || Phaser.Input.Keyboard.JustDown(this.keyW)
             || Phaser.Input.Keyboard.JustDown(this.keySpace)
-            || this.touchControls.consumeJump();
+            || touchJump;
 
         // ── Jump buffering: remember jump input for a short window ──
         if (jumpJustDown) {
@@ -938,12 +974,12 @@ class GameScene extends Phaser.Scene {
             this._lastGroundedTime = 0; // Prevent re-trigger
             this._isJumping = true;
             this._jumpCount = 1;
-            try { this.sound.play('sfx-jump'); } catch(e) {}
+            this._playSound('sfx-jump');
         } else if (canDoubleJump) {
             this.player.body.setVelocityY(PLAYER_DOUBLE_JUMP);
             this._isJumping = true;
             this._jumpCount = 2;
-            try { this.sound.play('sfx-jump'); } catch(e) {}
+            this._playSound('sfx-jump');
         }
 
         // ── Variable jump height: release early = shorter jump ──
@@ -968,22 +1004,9 @@ class GameScene extends Phaser.Scene {
         // ── Update player animation ──
         this.player.updateAnimation();
 
-        // ── Visual polish: player trail ──
-        if (this.player.body.velocity.x !== 0 || this.player.body.velocity.y !== 0) {
-            if (Math.random() < 0.35) {
-                const trail = this.add.rectangle(
-                    this.player.x + Phaser.Math.Between(-8, 8),
-                    this.player.y + Phaser.Math.Between(-4, 4),
-                    3, 3, 0x88CCFF
-                ).setAlpha(0.6).setDepth(-1);
-                this.tweens.add({
-                    targets: trail,
-                    alpha: 0,
-                    scale: 0,
-                    duration: 300,
-                    onComplete: () => trail.destroy()
-                });
-            }
+        // ── Visual polish: player trail (particle-based) ──
+        if ((this.player.body.velocity.x !== 0 || this.player.body.velocity.y !== 0) && Math.random() < 0.35) {
+            this._trailEmitter.emitParticleAt(this.player.x + Phaser.Math.Between(-8, 8), this.player.y + Phaser.Math.Between(-4, 4));
         }
 
         // ── Update enemies (pass player for drone laser detection) ──
