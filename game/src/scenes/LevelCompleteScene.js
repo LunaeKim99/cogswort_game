@@ -15,6 +15,7 @@ class LevelCompleteScene extends Phaser.Scene {
 
     create() {
         this.cameras.main.fadeIn(500);
+        console.log('[LCS] create() - nextLevel:', this.nextLevel, 'score:', this.score, 'lives:', this.lives, 'saveSlot:', this.saveSlot);
         this.cameras.main.setBackgroundColor('#1a2a1a');
 
         // Background
@@ -170,8 +171,10 @@ class LevelCompleteScene extends Phaser.Scene {
 
         // ── Input: Continue to next level ──
         const continueGame = () => {
+            console.log('[LCS] continueGame() called - transitioning to level', this.nextLevel);
             this.cameras.main.fadeOut(300, 0, 0, 0);
             this.cameras.main.once('camerafadeoutcomplete', () => {
+                console.log('[LCS] camerafadeoutcomplete FIRED - starting GameScene with level:', this.nextLevel);
                 this.scene.start('GameScene', {
                     level: this.nextLevel,
                     score: this.score,
