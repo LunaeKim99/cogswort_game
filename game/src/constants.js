@@ -41,8 +41,19 @@ const HUD = {
     FONT_TITLE: '18px',
     FONT_SCORE: '20px',
     FONT_COIN: '13px',
-    FONT_LEVEL: '14px'
+    FONT_LEVEL: '14px',
+    TIMER_OFFSET_X: 250,      // x = 800 - 250 = 550 from right
+    TIMER_OFFSET_Y: 48,
+    FONT_TIMER: '16px',
+    TIMER_THROTTLE_MS: 100,
 };
+
+// Timer display thresholds (shared between GameScene and HUDScene)
+const TIME_THRESHOLDS = [
+    { fast: 20, good: 35, ok: 60 },   // Bellows (Easy, districtIdx=0)
+    { fast: 30, good: 50, ok: 80 },   // Clockwork (Medium, districtIdx=1)
+    { fast: 40, good: 65, ok: 100 }   // The Core (Hard, districtIdx=2)
+];
 
 // ── Spectacle / Polish Constants ──
 const SPECTACLE = {

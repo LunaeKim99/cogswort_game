@@ -96,6 +96,7 @@ class GameScene extends Phaser.Scene {
         // Pause time tracking
         this._totalPausedTime = 0;
         this._pauseStartTime = null;
+        this._lastTimerEmit = 0;
 
         // Setup keyboard input
         this.cursors = this.input.keyboard.createCursorKeys();
@@ -113,7 +114,8 @@ class GameScene extends Phaser.Scene {
             score: this.score,
             lives: this.lives,
             levelName: levelData.name,
-            totalCoins: this.totalCoins
+            totalCoins: this.totalCoins,
+            districtIdx: levelData.districtIdx
         });
         // Send initial coin count (delayed to ensure HUDScene is listening)
         this.time.delayedCall(50, () => {
@@ -164,6 +166,8 @@ class GameScene extends Phaser.Scene {
 
         // ── Autosave — save progress on level start ──
         SaveManager.autosave(this.saveSlot, this.currentLevel, this.score, this.lives);
+
+        console.log('[GAME] create() completed for level', this.currentLevel, '- Gate at:', this.gate ? this.gate.x + ',' + this.gate.y : 'NO GATE');
     }
 
     // ── Level intro banner ──
@@ -830,6 +834,8 @@ class GameScene extends Phaser.Scene {
         if (this._levelCompleteTriggered) return;
         this._levelCompleteTriggered = true;
 
+        console.log('[GAME] _levelComplete() - level:', this.currentLevel, 'nextLevel:', this.currentLevel + 1, 'score:', this.score, 'lives:', this.lives);
+
         this.player.freeze();
 
         // Play win sound
@@ -840,6 +846,7 @@ class GameScene extends Phaser.Scene {
         SaveManager.autosave(this.saveSlot, nextLevel, this.score, this.lives);
 
         this.time.delayedCall(1000, () => {
+            console.log('[GAME] delayedCall FIRED - about to start LevelCompleteScene');
             this.scene.stop('HUDScene');
 
             // Calculate star rating
@@ -852,6 +859,7 @@ class GameScene extends Phaser.Scene {
             // Check if there are more levels
             if (nextLevel < levels.length) {
                 // Go to level complete screen
+                console.log('[GAME] Starting LevelCompleteScene with data:', JSON.stringify({ level: this.currentLevel, nextLevel, score: this.score, lives: this.lives }));
                 this.scene.start('LevelCompleteScene', {
                     score: this.score,
                     level: this.currentLevel,
@@ -887,12 +895,7 @@ class GameScene extends Phaser.Scene {
         const coinPoints = coinPct >= 1.0 ? 1.0 : coinPct >= 0.5 ? 0.6 : 0.2;
 
         // 3) Time (0–1 point): thresholds differ by district
-        const timeThresholds = [
-            { fast: 20, good: 35, ok: 60 },    // Bellows (Easy)
-            { fast: 30, good: 50, ok: 80 },     // Clockwork (Medium)
-            { fast: 40, good: 65, ok: 100 }     // The Core (Hard)
-        ];
-        const t = timeThresholds[district];
+        const t = TIME_THRESHOLDS[district];
         let timePoints = timeSeconds <= t.fast ? 1.0
             : timeSeconds <= t.good ? 0.6
             : timeSeconds <= t.ok ? 0.2 : 0;
@@ -1007,6 +1010,14 @@ class GameScene extends Phaser.Scene {
         this.obstacles.children.iterate(obs => {
             if (obs && obs.active) obs.update(this.player);
         });
+
+        // ── Emit timer update to HUD (throttled) ──
+        const now = this.time.now;
+        this._currentElapsed = (now - this._levelStartTime - this._totalPausedTime) / 1000;
+        if (!this._lastTimerEmit || now - this._lastTimerEmit >= HUD.TIMER_THROTTLE_MS) {
+            this._lastTimerEmit = now;
+            this.events.emit('updateTimer', { elapsed: this._currentElapsed });
+        }
 
         // ── Check fall death ──
         this._checkFallDeath();

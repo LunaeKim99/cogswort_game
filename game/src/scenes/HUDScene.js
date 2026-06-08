@@ -9,6 +9,7 @@ class HUDScene extends Phaser.Scene {
         this.lives = data.lives || 3;
         this.levelName = data.levelName || '';
         this.totalCoins = data.totalCoins || 0;
+        this.districtIdx = data.districtIdx !== undefined ? data.districtIdx : 0;
     }
 
     create() {
@@ -58,6 +59,19 @@ class HUDScene extends Phaser.Scene {
         this.scoreText.setScrollFactor(0);
         this.scoreText.setDepth(200);
         this.scoreText._baseText = 'SCORE: ' + this.score;
+
+        // ── Timer (top area, center-right) ──
+        this.timerText = this.add.text(W - HUD.TIMER_OFFSET_X, HUD.TIMER_OFFSET_Y, 'TIME: 00:00', {
+            fontFamily: HUD.FONT_FAMILY,
+            fontSize: HUD.FONT_TIMER,
+            color: '#4ade80',
+            stroke: '#000000',
+            strokeThickness: 3
+        }).setOrigin(1, 0).setScrollFactor(0).setDepth(200);
+
+        this._okThreshold = TIME_THRESHOLDS[this.districtIdx].ok;
+        this._fastThreshold = TIME_THRESHOLDS[this.districtIdx].fast;
+        this._goodThreshold = TIME_THRESHOLDS[this.districtIdx].good;
 
         // ── Level name (top-center) ──
         this.levelText = this.add.text(W / 2, HUD.LEVEL_OFFSET_Y, this.levelName, {
@@ -138,6 +152,39 @@ class HUDScene extends Phaser.Scene {
         gameScene.events.on('updateCoins', ({ collected, total }) => {
             this.coinText.setText(collected + '/' + total);
             this._updateProgressBar(collected / total);
+        });
+
+        gameScene.events.on('updateTimer', ({ elapsed }) => {
+            const mins = Math.floor(elapsed / 60);
+            const secs = Math.floor(elapsed % 60);
+            const timeStr = String(mins).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
+            this.timerText.setText('TIME: ' + timeStr);
+
+            // Color based on pace
+            let color;
+            if (elapsed <= this._fastThreshold) color = '#4ade80';      // green — ⭐⭐⭐ pace
+            else if (elapsed <= this._goodThreshold) color = '#fbbf24';  // yellow — ⭐⭐ pace
+            else if (elapsed <= this._okThreshold) color = '#f87171';    // red — ⭐ pace
+            else color = '#ef4444';                                       // dark red — out of time
+            this.timerText.setColor(color);
+
+            // Urgency pulse when past ok threshold
+            if (elapsed > this._okThreshold) {
+                if (!this._timerUrgencyTween) {
+                    this._timerUrgencyTween = this.tweens.add({
+                        targets: this.timerText,
+                        alpha: 0.5,
+                        duration: 500,
+                        yoyo: true,
+                        repeat: -1,
+                        ease: 'Sine.easeInOut'
+                    });
+                }
+            } else if (this._timerUrgencyTween) {
+                this._timerUrgencyTween.destroy();
+                this._timerUrgencyTween = null;
+                this.timerText.setAlpha(1);
+            }
         });
 
         // ── Screen vignette overlay (dark edges for atmosphere) ──
