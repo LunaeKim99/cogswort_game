@@ -806,6 +806,7 @@ class GameScene extends Phaser.Scene {
     _gameOver() {
         if (this._gameOverTriggered) return;
         this._gameOverTriggered = true;
+        console.log('[GAME] _gameOver() triggered — transitioning in 600ms');
 
         this.player.isDead = true;
         this.player.freeze();
@@ -816,16 +817,30 @@ class GameScene extends Phaser.Scene {
         this.cameras.main.flash(250, 255, 0, 0);
         this.cameras.main.shake(300, 0.015);
         this._emitParticles(this.player.x, this.player.y, 0xFF4444, 16);
-        // Brief hit-stop for impact feel, then transition
-        this.time.timeScale = 0.3;
-        this.time.delayedCall(150, () => {
-            this.time.timeScale = 1;
-            try { if (this.bgm) this.bgm.stop(); } catch(e) {}
-            this.scene.stop('HUDScene');
-            this.scene.start('GameOverScene', {
-                score: this.score,
-                level: this.currentLevel
-            });
+
+        // Fade-to-black overlay, then transition to GameOverScene
+        // Uses tween onComplete (immune to timeScale issues)
+        const overlay = this.add.rectangle(
+            this.cameras.main.scrollX + 400,
+            this.cameras.main.scrollY + 225,
+            800, 450, 0x000000, 0
+        ).setScrollFactor(0).setDepth(9999);
+
+        this.tweens.add({
+            targets: overlay,
+            alpha: 1,
+            duration: 500,
+            ease: 'Quad.easeIn',
+            onComplete: () => {
+                try { if (this.bgm) this.bgm.stop(); } catch(e) {}
+                overlay.destroy();
+                this.scene.stop('HUDScene');
+                console.log('[GAME] Starting GameOverScene — score:', this.score, 'level:', this.currentLevel);
+                this.scene.start('GameOverScene', {
+                    score: this.score,
+                    level: this.currentLevel
+                });
+            }
         });
     }
 

@@ -4,10 +4,15 @@ class GameOverScene extends Phaser.Scene {
         super({ key: 'GameOverScene' });
     }
 
+    init(data) {
+        this._score = data.score ?? 0;
+        this._level = (data.level ?? 0) + 1;
+        console.log('[GOS] init() — score:', this._score, 'level:', this._level);
+    }
+
     create() {
-        const data = this.scene.settings.data || {};
-        const score = data.score ?? 0;
-        const level = (data.level ?? 0) + 1;
+        const score = this._score;
+        const level = this._level;
 
         this.cameras.main.fadeIn(500);
         this.cameras.main.setBackgroundColor('#0d0d0d');
@@ -70,10 +75,11 @@ class GameOverScene extends Phaser.Scene {
 
         // Retry button
         makeButton(400, 320, '▶  RETRY', () => {
+            const retryLevel = this._level - 1;
             this.cameras.main.fadeOut(300, 0, 0, 0);
             this.cameras.main.once('camerafadeoutcomplete', () => {
                 this.scene.start('GameScene', {
-                    level: data.level || 0,
+                    level: retryLevel,
                     score: 0,
                     lives: INITIAL_LIVES
                 });
@@ -87,10 +93,11 @@ class GameOverScene extends Phaser.Scene {
 
         // Keyboard shortcuts (still work too)
         const restartGame = () => {
+            const retryLevel = this._level - 1;
             this.cameras.main.fadeOut(300, 0, 0, 0);
             this.cameras.main.once('camerafadeoutcomplete', () => {
                 this.scene.start('GameScene', {
-                    level: data.level || 0,
+                    level: retryLevel,
                     score: 0,
                     lives: INITIAL_LIVES
                 });
