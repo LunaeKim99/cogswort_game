@@ -39,7 +39,7 @@ class BootScene extends Phaser.Scene {
             'walker-walk', 'walker-death', 'drone', 'drone-death',
             'laser-beam', 'laser-cone', 'laser-warning',
             'coin', 'saw-blade', 'spike-trap',
-            'gate-closed', 'gate-open',
+            'gate-open',
             'heart-full', 'heart-empty', 'particle',
             'btn-left', 'btn-right', 'btn-jump', 'btn-pause', 'icon-play',
             'ground-tile',
@@ -72,7 +72,7 @@ class BootScene extends Phaser.Scene {
         if (!this.textures.exists('particle')) this.generateParticleTexture();
         if (!this.textures.exists('btn-left')) this.generateButtonTextures();
         if (!this.textures.exists('btn-pause')) this.generatePauseButtonTexture();
-        if (!this.textures.exists('gate-closed')) this.generateGateTextures();
+        if (!this.textures.exists('gate-open')) this.generateGateTextures();
         if (!this.textures.exists('saw-blade')) this.generateObstacleTextures();
         if (!this.textures.exists('drone') || !this.textures.exists('walker-walk') || !this.textures.exists('laser-beam')) {
             this.generateNewEntityTextures();
@@ -280,40 +280,10 @@ class BootScene extends Phaser.Scene {
         g2.destroy();
     }
 
-    // ── GATE textures (48x64) ──
+    // ── GATE texture (48x64) — always open ──
     generateGateTextures() {
-        // CLOSED / LOCKED gate (darker, no glow)
         let g = this.add.graphics();
         // Frame
-        g.fillStyle(0x4A3E2E);
-        g.fillRect(0, 0, 48, 64);
-        g.fillStyle(0x5D4E37);
-        g.fillRect(2, 2, 44, 60);
-        // Arch top
-        g.fillStyle(0x4A3E2E);
-        g.fillRect(0, 0, 48, 4);
-        g.fillTriangle(0, 4, 24, 0, 48, 4);
-        // Door panels
-        g.fillStyle(0x3E3426);
-        g.fillRect(6, 8, 14, 20);
-        g.fillRect(28, 8, 14, 20);
-        g.fillRect(6, 34, 14, 24);
-        g.fillRect(28, 34, 14, 24);
-        // Rivets
-        g.fillStyle(0x888888);
-        [[8,10],[20,10],[28,10],[40,10],[8,36],[20,36],[28,36],[40,36],[8,54],[40,54]]
-            .forEach(([x,y]) => { g.fillCircle(x, y, 1); });
-        // Lock indicator
-        g.fillStyle(0xFF4444);
-        g.fillCircle(24, 48, 4);
-        g.fillStyle(0xCC3333);
-        g.fillCircle(24, 48, 2);
-        g.generateTexture('gate-closed', 48, 64);
-        g.destroy();
-
-        // OPEN / ACTIVE gate (golden glow)
-        g = this.add.graphics();
-        // Frame same
         g.fillStyle(0x4A3E2E);
         g.fillRect(0, 0, 48, 64);
         g.fillStyle(0x5D4E37);

@@ -85,10 +85,10 @@ class GameScene extends Phaser.Scene {
         // Player-obstacle overlap (instant damage, no stomp)
         this.physics.add.overlap(this.player, this.obstacles, this._handleObstacleHit, null, this);
 
-        // Player-gate overlap (gate must be activated first)
+        // Player-gate overlap — reach gate to clear level
         this.physics.add.overlap(this.player, this.gate, this._handleGateReached, null, this);
 
-        // Gate starts locked — collect all coins to open it
+        // Gate always open — star rating rewards players who collect all coins
 
         // Track level start time (for star rating)
         this._levelStartTime = this.time.now;
@@ -126,7 +126,7 @@ class GameScene extends Phaser.Scene {
         // State flags
         this._gameOverTriggered = false;
         this._levelCompleteTriggered = false;
-        this._gateActive = false;
+        this._gateActive = true;   // Gate always open — star rating rewards full coin collection
         this._isPaused = false;
 
         // ── Player trail particle emitter ──
@@ -628,22 +628,33 @@ class GameScene extends Phaser.Scene {
         const gx = levelData.gateX || levelData.width - 80;
         const gy = GROUND_Y;  // bottom of gate at ground level
 
-        // Gate sprite (starts closed/locked)
-        this.gate = this.physics.add.sprite(gx, gy, 'gate-closed');
+        // Gate sprite (always open — star rating rewards full coin collection)
+        this.gate = this.physics.add.sprite(gx, gy, 'gate-open');
         this.gate.setOrigin(0.5, 1);  // bottom of sprite at ground level
         this.gate.body.setAllowGravity(false);
         this.gate.body.setImmovable(true);
 
+        // Glow pulse animation
+        this.tweens.add({
+            targets: this.gate,
+            scaleX: 1.05,
+            scaleY: 1.05,
+            duration: 1200,
+            yoyo: true,
+            repeat: -1,
+            ease: 'Sine.easeInOut'
+        });
+
         // "EXIT" label above the gate arch (bottom-anchored so text grows up)
-        this.gateLabel = this.add.text(gx, gy - 64 - 2, 'EXIT', {
-            fontSize: '10px', fontFamily: 'monospace', color: '#666666',
+        this.gateLabel = this.add.text(gx, gy - 64 - 2, 'EXIT →', {
+            fontSize: '10px', fontFamily: 'monospace', color: '#FFD700',
             fontStyle: 'bold'
-        }).setOrigin(0.5, 1).setAlpha(0.6);
+        }).setOrigin(0.5, 1).setAlpha(1);
         // Bottom at y=352, text extends upward ~340–352. Gate top=354. 2px gap.
 
-        // "Collect all coins to open gate" hint above EXIT
-        this.gateHint = this.add.text(gx, gy - 64 - 2 - 10 - 4, 'LOCKED', {
-            fontSize: '8px', fontFamily: 'monospace', color: '#FF4444',
+        // "OPEN" hint above EXIT
+        this.gateHint = this.add.text(gx, gy - 64 - 2 - 10 - 4, 'OPEN', {
+            fontSize: '8px', fontFamily: 'monospace', color: '#44FF88',
             fontStyle: 'bold'
         }).setOrigin(0.5, 1);
         // Bottom at y=338, text extends upward ~330–338. EXIT top≈340. 2px gap.
@@ -651,37 +662,8 @@ class GameScene extends Phaser.Scene {
 
     // ── Gate reached ──
     _handleGateReached(player, gate) {
-        if (!this._gateActive || this._levelCompleteTriggered) return;
+        if (this._levelCompleteTriggered) return;
         this._levelComplete();
-    }
-
-    // ── Activate gate (called when all coins collected) ──
-    _activateGate() {
-        this._gateActive = true;
-
-        // Change texture to open/glowing
-        this.gate.setTexture('gate-open');
-
-        // Update labels
-        this.gateLabel.setColor('#FFD700').setAlpha(1);
-        this.gateHint.setText('OPEN').setColor('#44FF88');
-
-        // Visual effects
-        this.cameras.main.flash(400, 255, 215, 0, true);  // gold flash
-
-        // Gate entrance glow
-        this.tweens.add({
-            targets: this.gate,
-            scaleX: 1.05,
-            scaleY: 1.05,
-            duration: 400,
-            yoyo: true,
-            repeat: 2,
-            ease: 'Sine.easeInOut'
-        });
-
-        // Show floating hint
-        this._showFloatingText(this.gate.x, this.gate.y - 40, 'GATE OPEN!', '#44FF88');
     }
 
     // ── Enemy collision handler (with stomp logic) ──
@@ -767,11 +749,6 @@ class GameScene extends Phaser.Scene {
         // Update HUD: coin counter
         const collected = this.totalCoins - this.coins.countActive();
         this.events.emit('updateCoins', { collected, total: this.totalCoins });
-
-        // Check if all coins collected → activate gate
-        if (collected >= this.totalCoins && !this._gateActive) {
-            this._activateGate();
-        }
 
         // ── Visual polish: coin collect effects ──
         this._showFloatingText(coin.x, coin.y, '+10', '#00FF88');
