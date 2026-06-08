@@ -318,15 +318,15 @@ levels.push({
         groundSection(2176, 320),
         groundSection(2624, 576),
         // Floating platforms
-        floatPlat(300,  310, 96),
-        floatPlat(600,  240, 64),
-        floatPlat(1000, 290, 64),
-        floatPlat(1500, 230, 96),
-        floatPlat(2100, 280, 64),
-        floatPlat(2500, 230, 96),
-        floatPlat(2800, 270, 64),
-        groundSection(3200, 400),   // 3200→3600: covers new gate area
-        floatPlat(3400, 270, 64)     // new floating platform in extended area
+        floatPlat(300,  310, 96),   // A
+        floatPlat(600,  280, 80),   // B
+        floatPlat(950,  295, 64),   // C (regression)
+        floatPlat(1400, 260, 80),   // D
+        floatPlat(1850, 285, 64),   // E (regression)
+        floatPlat(2300, 250, 96),   // F
+        floatPlat(2750, 265, 64),   // G (regression)
+        floatPlat(3200, 240, 80),   // H
+        floatPlat(3500, 255, 64)    // I (regression near end)
     ],
     enemies: [
         walker(250,  150,  480),
@@ -346,19 +346,21 @@ levels.push({
         spikeTrap(2700, 1800, 2000)
     ],
     coins: [
-        coin(150,  386),
-        coin(300,  278),
-        coin(600,  208),
-        coin(1000, 258),
-        coin(1300, 386),
-        coin(1500, 248),
-        coin(1700, 386),
-        coin(2100, 248),
-        coin(2500, 198),
-        coin(2700, 386),
-        coin(800, 386),
-        coin(2300, 386),
-        coin(3400, 238)
+        coin(150, 386),     // ground
+        coin(300, 278),     // A-32
+        coin(600, 248),     // B-32
+        coin(950, 263),     // C-32
+        coin(1300, 386),    // ground
+        coin(1400, 228),    // D-32
+        coin(1500, 248),    // on movingPlatform
+        coin(1700, 386),    // ground
+        coin(1850, 253),    // E-32
+        coin(2300, 218),    // F-32
+        coin(2400, 386),    // ground area (2176-2496 groundSection)
+        coin(2700, 386),    // ground
+        coin(2750, 233),    // G-32
+        coin(3200, 208),    // H-32
+        coin(3500, 223)     // I-32
     ]
 });
 
@@ -378,15 +380,16 @@ levels.push({
         groundSection(3264, 384),
         groundSection(3776, 224),
         // Floating platforms
-        floatPlat(300,  300, 80),
-        floatPlat(550,  230, 64),
-        floatPlat(900,  280, 64),
-        floatPlat(1400, 220, 80),
-        floatPlat(1900, 270, 64),
-        floatPlat(2300, 210, 64),
-        floatPlat(2700, 260, 64),
-        floatPlat(3100, 200, 80),
-        floatPlat(3600, 260, 64)
+        floatPlat(300,  310, 80),   // A start
+        floatPlat(550,  270, 64),   // B up
+        floatPlat(900,  285, 64),   // C regression
+        floatPlat(1400, 250, 80),   // D landing
+        floatPlat(1900, 270, 64),   // E regression
+        floatPlat(2300, 230, 64),   // F up
+        floatPlat(2700, 250, 64),   // G regression
+        floatPlat(3100, 210, 80),   // H up
+        floatPlat(3600, 240, 64),   // I regression
+        floatPlat(3850, 220, 64)    // J final
     ],
     enemies: [
         walker(200,  100,  400),
@@ -401,7 +404,8 @@ levels.push({
     ],
     movingPlatforms: [
         movingPlatform(1600, 280, 80, { patrolLeft: 1520, patrolRight: 1680, speed: 50 }),
-        movingPlatform(2400, 260, 80, { patrolLeft: 2320, patrolRight: 2480, speed: 55 })
+        movingPlatform(2400, 240, 80, { patrolLeft: 2320, patrolRight: 2480, speed: 55 }),
+        movingPlatform(3200, 230, 80, { axis: 'y', patrolUp: 190, patrolDown: 280, speed: 40 })
     ],
     obstacles: [
         spikeTrap(800, 2000, 2200),
@@ -410,19 +414,19 @@ levels.push({
         spikeTrap(3500, 1800, 2000)
     ],
     coins: [
-        coin(150,  386),
-        coin(300,  268),
-        coin(550,  198),
-        coin(900,  248),
-        coin(1400, 188),
+        coin(150, 386),
+        coin(300, 278),     // A-32
+        coin(550, 238),     // B-32
+        coin(900, 253),     // C-32
+        coin(1400, 218),    // D-32
         coin(1700, 386),
-        coin(1900, 238),
-        coin(2300, 178),
-        coin(2700, 228),
-        coin(3100, 168),
-        coin(700, 386),
-        coin(1300, 386),
-        coin(3600, 228)
+        coin(1900, 238),    // E-32
+        coin(2300, 198),    // F-32
+        coin(2700, 218),    // G-32
+        coin(3100, 178),    // H-32
+        coin(3600, 208),    // I-32
+        coin(3850, 188),    // J-32
+        coin(700, 386)      // ground
     ]
 });
 
@@ -444,17 +448,19 @@ levels.push({
         groundSection(3904, 320),
         groundSection(4352, 448),
         // Floating platforms
-        floatPlat(250,  300, 80),
-        floatPlat(550,  220, 64),
-        floatPlat(850,  280, 64),
-        floatPlat(1200, 210, 80),
-        floatPlat(1650, 260, 64),
-        floatPlat(2000, 200, 64),
-        floatPlat(2500, 260, 64),
-        floatPlat(2900, 190, 80),
-        floatPlat(3350, 250, 64),
-        floatPlat(3700, 200, 64),
-        floatPlat(4100, 260, 64)
+        floatPlat(250,  310, 80),   // A
+        floatPlat(550,  270, 64),   // B
+        floatPlat(850,  285, 64),   // C regression
+        floatPlat(1200, 250, 80),   // D
+        floatPlat(1650, 270, 64),   // E regression
+        floatPlat(2000, 230, 64),   // F
+        floatPlat(2500, 250, 64),   // G regression
+        floatPlat(2900, 210, 80),   // H
+        floatPlat(3350, 240, 64),   // I regression
+        floatPlat(3700, 200, 64),   // J
+        floatPlat(4100, 230, 64),   // K regression
+        floatPlat(4400, 200, 80),   // L landing
+        floatPlat(4600, 215, 64)    // M regression near gate
     ],
     enemies: [
         walker(200,  100,  380),
@@ -471,7 +477,8 @@ levels.push({
     movingPlatforms: [
         movingPlatform(1600, 280, 80, { patrolLeft: 1520, patrolRight: 1680, speed: 50 }),
         movingPlatform(2600, 260, 80, { patrolLeft: 2520, patrolRight: 2680, speed: 55 }),
-        movingPlatform(3500, 270, 80, { patrolLeft: 3420, patrolRight: 3580, speed: 50 })
+        movingPlatform(3500, 270, 80, { patrolLeft: 3420, patrolRight: 3580, speed: 50 }),
+        movingPlatform(3100, 220, 80, { axis: 'y', patrolUp: 180, patrolDown: 280, speed: 40 })
     ],
     obstacles: [
         spikeTrap(700, 1800, 2200),
@@ -482,20 +489,20 @@ levels.push({
         surpriseSaw(3800, 250, 3700, 3900, 60)
     ],
     coins: [
-        coin(150,  386),
-        coin(250,  268),
-        coin(550,  188),
-        coin(850,  248),
-        coin(1200, 178),
-        coin(1650, 228),
-        coin(2000, 168),
-        coin(2500, 228),
-        coin(2900, 158),
-        coin(3350, 218),
-        coin(700, 386),
-        coin(1500, 386),
-        coin(2400, 386),
-        coin(4000, 386)
+        coin(150, 386),
+        coin(250, 278),     // A-32
+        coin(550, 238),     // B-32
+        coin(850, 253),     // C-32
+        coin(1200, 218),    // D-32
+        coin(1650, 238),    // E-32
+        coin(2000, 198),    // F-32
+        coin(2500, 218),    // G-32
+        coin(2900, 178),    // H-32
+        coin(3350, 208),    // I-32
+        coin(3700, 168),    // J-32
+        coin(4100, 198),    // K-32
+        coin(4400, 168),    // L-32
+        coin(4600, 183)     // M-32
     ]
 });
 
@@ -519,18 +526,20 @@ levels.push({
         groundSection(4672, 256),
         groundSection(4928, 272),  // extended left to cover gate at x=5040
         // Floating platforms (narrow)
-        floatPlat(250,  290, 64),
-        floatPlat(500,  210, 48),
-        floatPlat(800,  270, 64),
-        floatPlat(1150, 200, 48),
-        floatPlat(1550, 260, 64),
-        floatPlat(1950, 190, 48),
-        floatPlat(2350, 250, 64),
-        floatPlat(2800, 190, 48),
-        floatPlat(3200, 240, 64),
-        floatPlat(3650, 190, 48),
-        floatPlat(4050, 250, 64),
-        floatPlat(4500, 200, 48)
+        floatPlat(250,  310, 64),   // A start
+        floatPlat(500,  260, 48),   // B narrow
+        floatPlat(800,  280, 64),   // C regression
+        floatPlat(1150, 240, 48),   // D narrow
+        floatPlat(1550, 260, 64),   // E regression
+        floatPlat(1950, 220, 48),   // F narrow
+        floatPlat(2350, 250, 64),   // G regression
+        floatPlat(2800, 210, 48),   // H narrow
+        floatPlat(3200, 240, 64),   // I regression
+        floatPlat(3650, 200, 48),   // J narrow
+        floatPlat(4050, 230, 64),   // K regression
+        floatPlat(4500, 190, 48),   // L narrow
+        floatPlat(4800, 210, 64),   // M regression
+        floatPlat(5000, 190, 48)    // N final narrow
     ],
     enemies: [
         walker(200,  100,  350),
@@ -550,7 +559,8 @@ levels.push({
         movingPlatform(1200, 280, 80, { patrolLeft: 1120, patrolRight: 1280, speed: 55 }),
         movingPlatform(2200, 250, 80, { patrolLeft: 2120, patrolRight: 2280, speed: 60 }),
         movingPlatform(3200, 270, 80, { patrolLeft: 3120, patrolRight: 3280, speed: 55 }),
-        movingPlatform(4200, 260, 80, { patrolLeft: 4120, patrolRight: 4280, speed: 60 })
+        movingPlatform(4200, 260, 80, { patrolLeft: 4120, patrolRight: 4280, speed: 60 }),
+        movingPlatform(3400, 220, 80, { axis: 'y', patrolUp: 170, patrolDown: 270, speed: 45 })
     ],
     obstacles: [
         spikeTrap(650, 1800, 2000),
@@ -563,21 +573,21 @@ levels.push({
         buriedSaw(4800, 130)
     ],
     coins: [
-        coin(150,  386),
-        coin(250,  258),
-        coin(500,  178),
-        coin(800,  238),
-        coin(1150, 168),
-        coin(1550, 228),
-        coin(1950, 158),
-        coin(2350, 218),
-        coin(2800, 158),
-        coin(3200, 208),
-        coin(600, 386),
-        coin(1000, 386),
-        coin(2600, 386),
-        coin(3650, 158),
-        coin(4500, 168)
+        coin(150, 386),
+        coin(250, 278),     // A-32
+        coin(500, 228),     // B-32
+        coin(800, 248),     // C-32
+        coin(1150, 208),    // D-32
+        coin(1550, 228),    // E-32
+        coin(1950, 188),    // F-32
+        coin(2350, 218),    // G-32
+        coin(2800, 178),    // H-32
+        coin(3200, 208),    // I-32
+        coin(3650, 168),    // J-32
+        coin(4050, 198),    // K-32
+        coin(4500, 158),    // L-32
+        coin(4800, 178),    // M-32
+        coin(5000, 158)     // N-32
     ]
 });
 
@@ -603,21 +613,22 @@ levels.push({
         groundSection(4928, 256),
         groundSection(5312, 288),
         // Floating platforms
-        floatPlat(200,  290, 64),
-        floatPlat(450,  200, 48),
-        floatPlat(700,  260, 64),
-        floatPlat(1050, 190, 48),
-        floatPlat(1450, 250, 64),
-        floatPlat(1800, 180, 48),
-        floatPlat(2200, 240, 64),
-        floatPlat(2550, 180, 48),
-        floatPlat(2950, 240, 64),
-        floatPlat(3300, 170, 48),
-        floatPlat(3700, 230, 64),
-        floatPlat(4050, 180, 48),
-        floatPlat(4400, 240, 64),
-        floatPlat(4750, 190, 48),
-        floatPlat(5150, 250, 64)
+        floatPlat(200,  310, 64),   // A start
+        floatPlat(450,  260, 48),   // B narrow
+        floatPlat(700,  280, 64),   // C regression
+        floatPlat(1050, 240, 48),   // D narrow
+        floatPlat(1450, 260, 64),   // E regression
+        floatPlat(1800, 220, 48),   // F narrow
+        floatPlat(2200, 250, 64),   // G regression
+        floatPlat(2550, 210, 48),   // H narrow
+        floatPlat(2950, 240, 64),   // I regression
+        floatPlat(3300, 200, 48),   // J narrow
+        floatPlat(3700, 230, 64),   // K regression
+        floatPlat(4050, 190, 48),   // L narrow
+        floatPlat(4400, 220, 64),   // M regression
+        floatPlat(4750, 180, 48),   // N narrow
+        floatPlat(5150, 200, 64),   // O regression
+        floatPlat(5400, 180, 48)    // P final narrow
     ],
     enemies: [
         walker(150,  80,  320),
@@ -642,7 +653,8 @@ levels.push({
         movingPlatform(2000, 250, 80, { patrolLeft: 1920, patrolRight: 2080, speed: 60 }),
         movingPlatform(3000, 260, 80, { patrolLeft: 2920, patrolRight: 3080, speed: 55 }),
         movingPlatform(4000, 240, 80, { patrolLeft: 3920, patrolRight: 4080, speed: 60 }),
-        movingPlatform(5000, 270, 80, { patrolLeft: 4920, patrolRight: 5080, speed: 55 })
+        movingPlatform(5000, 270, 80, { patrolLeft: 4920, patrolRight: 5080, speed: 55 }),
+        movingPlatform(5300, 200, 80, { axis: 'y', patrolUp: 160, patrolDown: 260, speed: 45 })
     ],
     obstacles: [
         spikeTrap(500, 1800, 2000),
@@ -656,22 +668,23 @@ levels.push({
         surpriseSaw(5100, 250, 5000, 5200, 60)
     ],
     coins: [
-        coin(150,  386),
-        coin(200,  258),
-        coin(450,  168),
-        coin(700,  228),
-        coin(1050, 158),
-        coin(1450, 218),
-        coin(1800, 148),
-        coin(2200, 208),
-        coin(2550, 148),
-        coin(2950, 208),
-        coin(650, 386),
-        coin(1400, 386),
-        coin(2200, 386),
-        coin(3500, 386),
-        coin(3300, 138),
-        coin(5150, 218)
+        coin(150, 386),
+        coin(200, 278),     // A-32
+        coin(450, 228),     // B-32
+        coin(700, 248),     // C-32
+        coin(1050, 208),    // D-32
+        coin(1450, 228),    // E-32
+        coin(1800, 188),    // F-32
+        coin(2200, 218),    // G-32
+        coin(2550, 178),    // H-32
+        coin(2950, 208),    // I-32
+        coin(3300, 168),    // J-32
+        coin(3700, 198),    // K-32
+        coin(4050, 158),    // L-32
+        coin(4400, 188),    // M-32
+        coin(4750, 148),    // N-32
+        coin(5150, 168),    // O-32
+        coin(5400, 148)     // P-32
     ]
 });
 
@@ -694,18 +707,20 @@ levels.push({
         groundSection(2720, 256),
         groundSection(3104, 496),
         // Floating platforms
-        floatPlat(200,  280, 64),
-        floatPlat(500,  200, 48),
-        floatPlat(750,  260, 64),
-        floatPlat(1100, 190, 48),
-        floatPlat(1500, 250, 64),
-        floatPlat(1800, 180, 48),
-        floatPlat(2200, 240, 64),
-        floatPlat(2600, 190, 48),
-        floatPlat(2900, 250, 64),
-        groundSection(3600, 600),   // 3600→4200: covers new gate area
-        floatPlat(3700, 220, 64),    // new floating platform
-        floatPlat(4000, 190, 48)     // new narrow floating platform
+        floatPlat(200,  280, 64),   // A start (LOWER than D2 start = harder)
+        floatPlat(500,  240, 48),   // B narrow
+        floatPlat(750,  260, 64),   // C regression
+        floatPlat(1100, 220, 48),   // D narrow
+        floatPlat(1500, 250, 64),   // E regression
+        floatPlat(1800, 210, 48),   // F narrow
+        floatPlat(2200, 240, 64),   // G regression
+        floatPlat(2600, 200, 48),   // H narrow
+        floatPlat(2900, 230, 64),   // I regression
+        floatPlat(3300, 190, 48),   // J narrow
+        floatPlat(3700, 210, 64),   // K regression
+        floatPlat(4000, 180, 48),   // L narrow near end
+        floatPlat(4100, 195, 64),   // M final regression
+        groundSection(3600, 600)    // 3600→4200: covers new gate area
     ],
     enemies: [
         walker(200,  100,  350),
@@ -721,9 +736,10 @@ levels.push({
         walker(2400, 2350, 2550)
     ],
     movingPlatforms: [
-        movingPlatform(900, 280, 80, { patrolLeft: 820, patrolRight: 980, speed: 55 }),
+        movingPlatform(900,  280, 80, { patrolLeft: 820,  patrolRight: 980,  speed: 55 }),
         movingPlatform(2000, 260, 80, { patrolLeft: 1920, patrolRight: 2080, speed: 60 }),
-        movingPlatform(3000, 270, 80, { patrolLeft: 2920, patrolRight: 3080, speed: 55 })
+        movingPlatform(3000, 270, 80, { patrolLeft: 2920, patrolRight: 3080, speed: 55 }),
+        movingPlatform(3500, 210, 80, { axis: 'y', patrolUp: 170, patrolDown: 260, speed: 45 })
     ],
     obstacles: [
         spikeTrap(500, 1800, 2000),
@@ -733,23 +749,22 @@ levels.push({
         buriedSaw(3000, 120)
     ],
     coins: [
-        coin(150,  386),
-        coin(200,  248),
-        coin(500,  168),
-        coin(750,  228),
-        coin(1100, 158),
-        coin(1500, 218),
-        coin(1800, 148),
-        coin(2200, 208),
-        coin(2600, 158),
-        coin(2900, 218),
+        coin(150, 386),
+        coin(200, 248),     // A-32
+        coin(500, 208),     // B-32
+        coin(750, 228),     // C-32
+        coin(1100, 188),    // D-32
+        coin(1500, 218),    // E-32
+        coin(1800, 178),    // F-32
+        coin(2200, 208),    // G-32
+        coin(2600, 168),    // H-32
+        coin(2900, 198),    // I-32
+        coin(3300, 158),    // J-32
+        coin(3700, 178),    // K-32
+        coin(4000, 148),    // L-32
+        coin(4100, 163),    // M-32
         coin(650, 386),
-        coin(1050, 386),
-        coin(1400, 386),
-        coin(2100, 386),
-        coin(3200, 386),
-        coin(3700, 188),
-        coin(4000, 158)
+        coin(3200, 386)
     ]
 });
 
@@ -773,19 +788,21 @@ levels.push({
         groundSection(4128, 224),
         groundSection(4480, 320),
         // Floating platforms
-        floatPlat(200,  280, 48),
-        floatPlat(400,  200, 48),
-        floatPlat(650,  250, 48),
-        floatPlat(1000, 180, 48),
-        floatPlat(1350, 240, 48),
-        floatPlat(1700, 170, 48),
-        floatPlat(2050, 230, 48),
-        floatPlat(2450, 170, 48),
-        floatPlat(2850, 230, 48),
-        floatPlat(3200, 160, 48),
-        floatPlat(3550, 220, 48),
-        floatPlat(3950, 170, 48),
-        floatPlat(4300, 240, 48)
+        floatPlat(200,  280, 48),   // A start
+        floatPlat(400,  240, 48),   // B up
+        floatPlat(650,  260, 48),   // C regression
+        floatPlat(1000, 220, 48),   // D up
+        floatPlat(1350, 250, 48),   // E regression
+        floatPlat(1700, 210, 48),   // F up
+        floatPlat(2050, 240, 48),   // G regression
+        floatPlat(2450, 200, 48),   // H up
+        floatPlat(2850, 230, 48),   // I regression
+        floatPlat(3200, 180, 48),   // J up
+        floatPlat(3550, 210, 48),   // K regression
+        floatPlat(3950, 170, 48),   // L up
+        floatPlat(4300, 200, 48),   // M regression
+        floatPlat(4500, 170, 48),   // N up
+        floatPlat(4650, 185, 48)    // O final regression
     ],
     enemies: [
         walker(150,  90,  290),
@@ -806,7 +823,8 @@ levels.push({
         movingPlatform(900,  270, 80, { patrolLeft: 820,  patrolRight: 980,  speed: 55 }),
         movingPlatform(1900, 250, 80, { patrolLeft: 1820, patrolRight: 1980, speed: 60 }),
         movingPlatform(2900, 260, 80, { patrolLeft: 2820, patrolRight: 2980, speed: 55 }),
-        movingPlatform(3900, 240, 80, { patrolLeft: 3820, patrolRight: 3980, speed: 60 })
+        movingPlatform(3900, 240, 80, { patrolLeft: 3820, patrolRight: 3980, speed: 60 }),
+        movingPlatform(3800, 200, 80, { axis: 'y', patrolUp: 150, patrolDown: 260, speed: 45 })
     ],
     obstacles: [
         spikeTrap(400, 1600, 1800),
@@ -819,22 +837,25 @@ levels.push({
         buriedSaw(4500, 120)
     ],
     coins: [
-        coin(150,  386),
-        coin(200,  248),
-        coin(400,  168),
-        coin(650,  218),
-        coin(1000, 148),
-        coin(1350, 208),
-        coin(1700, 138),
-        coin(2050, 198),
-        coin(2450, 138),
-        coin(2850, 198),
+        coin(150, 386),
+        coin(200, 248),     // A-32
+        coin(400, 208),     // B-32
+        coin(650, 228),     // C-32
+        coin(1000, 188),    // D-32
+        coin(1350, 218),    // E-32
+        coin(1700, 178),    // F-32
+        coin(2050, 208),    // G-32
+        coin(2450, 168),    // H-32
+        coin(2850, 198),    // I-32
+        coin(3200, 148),    // J-32
+        coin(3550, 178),    // K-32
+        coin(3950, 138),    // L-32
+        coin(4300, 168),    // M-32
+        coin(4500, 138),    // N-32
+        coin(4650, 153),    // O-32
         coin(550, 386),
         coin(900, 386),
-        coin(1300, 386),
-        coin(3200, 386),
-        coin(3200, 128),
-        coin(3550, 188)
+        coin(1300, 386)
     ]
 });
 
@@ -861,22 +882,24 @@ levels.push({
         groundSection(4800, 224),
         groundSection(5152, 448),
         // Floating platforms
-        floatPlat(200,  270, 48),
-        floatPlat(400,  190, 48),
-        floatPlat(600,  240, 48),
-        floatPlat(900,  170, 48),
-        floatPlat(1250, 230, 48),
-        floatPlat(1600, 160, 48),
-        floatPlat(1950, 220, 48),
-        floatPlat(2300, 160, 48),
-        floatPlat(2600, 220, 48),
-        floatPlat(2950, 150, 48),
-        floatPlat(3300, 210, 48),
-        floatPlat(3650, 160, 48),
-        floatPlat(4000, 220, 48),
-        floatPlat(4350, 170, 48),
-        floatPlat(4700, 230, 48),
-        floatPlat(5000, 190, 48)
+        floatPlat(200,  280, 48),   // A start
+        floatPlat(400,  230, 48),   // B up (40px step)
+        floatPlat(600,  260, 48),   // C regression
+        floatPlat(900,  220, 48),   // D up
+        floatPlat(1250, 250, 48),   // E regression
+        floatPlat(1600, 210, 48),   // F up
+        floatPlat(1950, 240, 48),   // G regression
+        floatPlat(2300, 200, 48),   // H up
+        floatPlat(2600, 230, 48),   // I regression
+        floatPlat(2950, 180, 48),   // J up
+        floatPlat(3300, 220, 48),   // K regression
+        floatPlat(3650, 170, 48),   // L up
+        floatPlat(4000, 210, 48),   // M regression
+        floatPlat(4350, 160, 48),   // N up
+        floatPlat(4700, 200, 48),   // O regression
+        floatPlat(5000, 150, 48),   // P up
+        floatPlat(5200, 180, 48),   // Q regression
+        floatPlat(5400, 150, 48)    // R final up
     ],
     enemies: [
         walker(150,  80,  300),
@@ -902,7 +925,8 @@ levels.push({
         movingPlatform(1800, 250, 80, { patrolLeft: 1720, patrolRight: 1880, speed: 60 }),
         movingPlatform(2800, 260, 80, { patrolLeft: 2720, patrolRight: 2880, speed: 55 }),
         movingPlatform(3800, 240, 80, { patrolLeft: 3720, patrolRight: 3880, speed: 60 }),
-        movingPlatform(4800, 250, 80, { patrolLeft: 4720, patrolRight: 4880, speed: 55 })
+        movingPlatform(4800, 250, 80, { patrolLeft: 4720, patrolRight: 4880, speed: 55 }),
+        movingPlatform(4600, 190, 80, { axis: 'y', patrolUp: 140, patrolDown: 250, speed: 50 })
     ],
     obstacles: [
         spikeTrap(350, 1500, 1700),
@@ -917,23 +941,25 @@ levels.push({
         spikeTrap(5200, 1400, 1600)
     ],
     coins: [
-        coin(150,  386),
-        coin(200,  238),
-        coin(400,  158),
-        coin(600,  208),
-        coin(900,  138),
-        coin(1250, 198),
-        coin(1600, 128),
-        coin(1950, 188),
-        coin(2300, 128),
-        coin(2600, 188),
-        coin(530, 386),
-        coin(850, 386),
-        coin(1500, 386),
-        coin(2900, 386),
-        coin(4200, 386),
-        coin(2950, 118),
-        coin(4000, 188)
+        coin(150, 386),
+        coin(200, 248),     // A-32
+        coin(400, 198),     // B-32
+        coin(600, 228),     // C-32
+        coin(900, 188),     // D-32
+        coin(1250, 218),    // E-32
+        coin(1600, 178),    // F-32
+        coin(1950, 208),    // G-32
+        coin(2300, 168),    // H-32
+        coin(2600, 198),    // I-32
+        coin(2950, 148),    // J-32
+        coin(3300, 188),    // K-32
+        coin(3650, 138),    // L-32
+        coin(4000, 178),    // M-32
+        coin(4350, 128),    // N-32
+        coin(4700, 168),    // O-32
+        coin(5000, 118),    // P-32
+        coin(5200, 148),    // Q-32
+        coin(5400, 118)     // R-32
     ]
 });
 
@@ -963,26 +989,27 @@ levels.push({
         groundSection(5504, 192),
         groundSection(5824, 176),
         // Floating platforms
-        floatPlat(150,  260, 48),
-        floatPlat(350,  180, 48),
-        floatPlat(550,  240, 48),
-        floatPlat(850,  160, 48),
-        floatPlat(1150, 220, 48),
-        floatPlat(1450, 150, 48),
-        floatPlat(1750, 210, 48),
-        floatPlat(2050, 150, 48),
-        floatPlat(2350, 210, 48),
-        floatPlat(2650, 140, 48),
-        floatPlat(2950, 200, 48),
-        floatPlat(3250, 140, 48),
-        floatPlat(3550, 200, 48),
-        floatPlat(3850, 140, 48),
-        floatPlat(4150, 200, 48),
-        floatPlat(4450, 150, 48),
-        floatPlat(4750, 210, 48),
-        floatPlat(5050, 160, 48),
-        floatPlat(5350, 220, 48),
-        floatPlat(5650, 170, 48)
+        floatPlat(150,  280, 48),   // A start
+        floatPlat(350,  230, 48),   // B up
+        floatPlat(550,  260, 48),   // C regression
+        floatPlat(850,  210, 48),   // D up
+        floatPlat(1150, 250, 48),   // E regression
+        floatPlat(1450, 200, 48),   // F up
+        floatPlat(1750, 240, 48),   // G regression
+        floatPlat(2050, 190, 48),   // H up
+        floatPlat(2350, 230, 48),   // I regression
+        floatPlat(2650, 180, 48),   // J up
+        floatPlat(2950, 220, 48),   // K regression
+        floatPlat(3250, 170, 48),   // L up
+        floatPlat(3550, 210, 48),   // M regression
+        floatPlat(3850, 160, 48),   // N up
+        floatPlat(4150, 200, 48),   // O regression
+        floatPlat(4450, 150, 48),   // P up
+        floatPlat(4750, 190, 48),   // Q regression
+        floatPlat(5050, 140, 48),   // R up
+        floatPlat(5350, 180, 48),   // S regression
+        floatPlat(5650, 140, 48),   // T near end
+        floatPlat(5850, 150, 48)    // U final regression
     ],
     enemies: [
         walker(150,  80,  280),
@@ -1011,7 +1038,8 @@ levels.push({
         movingPlatform(2800, 250, 80, { patrolLeft: 2720, patrolRight: 2880, speed: 55 }),
         movingPlatform(3800, 230, 80, { patrolLeft: 3720, patrolRight: 3880, speed: 60 }),
         movingPlatform(4800, 240, 80, { patrolLeft: 4720, patrolRight: 4880, speed: 55 }),
-        movingPlatform(5400, 250, 80, { patrolLeft: 5320, patrolRight: 5480, speed: 60 })
+        movingPlatform(5400, 250, 80, { patrolLeft: 5320, patrolRight: 5480, speed: 60 }),
+        movingPlatform(5700, 170, 80, { axis: 'y', patrolUp: 120, patrolDown: 230, speed: 50 })
     ],
     obstacles: [
         spikeTrap(300, 1400, 1600),
@@ -1027,24 +1055,28 @@ levels.push({
         buriedSaw(5600, 90)
     ],
     coins: [
-        coin(150,  386),
-        coin(150,  228),
-        coin(350,  148),
-        coin(550,  208),
-        coin(850,  128),
-        coin(1150, 188),
-        coin(1450, 118),
-        coin(1750, 178),
-        coin(2050, 118),
-        coin(2350, 178),
-        coin(450, 386),
-        coin(800, 386),
-        coin(1800, 386),
-        coin(2800, 386),
-        coin(4000, 386),
-        coin(2650, 108),
-        coin(3550, 168),
-        coin(4750, 178)
+        coin(150, 386),
+        coin(150, 248),     // A-32
+        coin(350, 198),     // B-32
+        coin(550, 228),     // C-32
+        coin(850, 178),     // D-32
+        coin(1150, 218),    // E-32
+        coin(1450, 168),    // F-32
+        coin(1750, 208),    // G-32
+        coin(2050, 158),    // H-32
+        coin(2350, 198),    // I-32
+        coin(2650, 148),    // J-32
+        coin(2950, 188),    // K-32
+        coin(3250, 138),    // L-32
+        coin(3550, 178),    // M-32
+        coin(3850, 128),    // N-32
+        coin(4150, 168),    // O-32
+        coin(4450, 118),    // P-32
+        coin(4750, 158),    // Q-32
+        coin(5050, 108),    // R-32
+        coin(5350, 148),    // S-32
+        coin(5650, 108),    // T-32
+        coin(5850, 118)     // U-32
     ]
 });
 
@@ -1077,28 +1109,28 @@ levels.push({
         groundSection(5856, 160),
         groundSection(6144, 256),
         // Floating platforms (very narrow)
-        floatPlat(150,  250, 48),
-        floatPlat(300,  170, 32),
-        floatPlat(500,  230, 48),
-        floatPlat(750,  150, 32),
-        floatPlat(1000, 210, 48),
-        floatPlat(1300, 140, 32),
-        floatPlat(1600, 200, 48),
-        floatPlat(1900, 130, 32),
-        floatPlat(2200, 200, 48),
-        floatPlat(2500, 130, 32),
-        floatPlat(2800, 190, 48),
-        floatPlat(3100, 120, 32),
-        floatPlat(3400, 180, 48),
-        floatPlat(3700, 120, 32),
-        floatPlat(4000, 180, 48),
-        floatPlat(4300, 120, 32),
-        floatPlat(4600, 180, 48),
-        floatPlat(4900, 130, 32),
-        floatPlat(5200, 190, 48),
-        floatPlat(5500, 140, 32),
-        floatPlat(5800, 200, 48),
-        floatPlat(6100, 160, 32)
+        floatPlat(150,  280, 48),   // A start
+        floatPlat(300,  230, 32),   // B extreme narrow
+        floatPlat(500,  260, 48),   // C regression
+        floatPlat(750,  210, 32),   // D narrow
+        floatPlat(1000, 250, 48),   // E regression
+        floatPlat(1300, 200, 32),   // F narrow
+        floatPlat(1600, 240, 48),   // G regression
+        floatPlat(1900, 180, 32),   // H narrow
+        floatPlat(2200, 230, 48),   // I regression
+        floatPlat(2500, 170, 32),   // J narrow
+        floatPlat(2800, 220, 48),   // K regression
+        floatPlat(3100, 160, 32),   // L narrow
+        floatPlat(3400, 210, 48),   // M regression
+        floatPlat(3700, 150, 32),   // N narrow
+        floatPlat(4000, 200, 48),   // O regression
+        floatPlat(4300, 140, 32),   // P narrow
+        floatPlat(4600, 190, 48),   // Q regression
+        floatPlat(4900, 130, 32),   // R narrow
+        floatPlat(5200, 180, 48),   // S regression
+        floatPlat(5500, 130, 32),   // T narrow
+        floatPlat(5800, 170, 48),   // U regression
+        floatPlat(6100, 120, 32)    // V highest point
     ],
     enemies: [
         walker(120,  75,  235),
@@ -1137,7 +1169,8 @@ levels.push({
         movingPlatform(3400, 230, 80, { patrolLeft: 3320, patrolRight: 3480, speed: 60 }),
         movingPlatform(4300, 240, 80, { patrolLeft: 4220, patrolRight: 4380, speed: 55 }),
         movingPlatform(5200, 250, 80, { patrolLeft: 5120, patrolRight: 5280, speed: 60 }),
-        movingPlatform(6000, 250, 80, { patrolLeft: 5920, patrolRight: 6080, speed: 55 })
+        movingPlatform(6000, 250, 80, { patrolLeft: 5920, patrolRight: 6080, speed: 55 }),
+        movingPlatform(5900, 160, 80, { axis: 'y', patrolUp: 110, patrolDown: 220, speed: 50 })
     ],
     obstacles: [
         spikeTrap(250, 1000, 1200),
@@ -1155,25 +1188,28 @@ levels.push({
         spikeTrap(6200, 800, 1000)
     ],
     coins: [
-        coin(150,  386),
-        coin(150,  218),
-        coin(300,  138),
-        coin(500,  198),
-        coin(750,  118),
-        coin(1000, 178),
-        coin(1300, 108),
-        coin(1600, 168),
-        coin(1900, 98),
-        coin(2200, 168),
-        coin(450, 386),
-        coin(750, 386),
-        coin(1300, 386),
-        coin(1900, 386),
-        coin(3000, 386),
-        coin(4200, 386),
-        coin(2500, 98),
-        coin(3100, 88),
-        coin(4300, 88),
-        coin(6100, 128)
+        coin(150, 386),     // ground
+        coin(150, 248),     // A-32
+        coin(300, 198),     // B-32
+        coin(500, 228),     // C-32
+        coin(750, 178),     // D-32
+        coin(1000, 218),    // E-32
+        coin(1300, 168),    // F-32
+        coin(1600, 208),    // G-32
+        coin(1900, 148),    // H-32
+        coin(2200, 198),    // I-32
+        coin(2500, 138),    // J-32
+        coin(2800, 188),    // K-32
+        coin(3100, 128),    // L-32
+        coin(3400, 178),    // M-32
+        coin(3700, 118),    // N-32
+        coin(4000, 168),    // O-32
+        coin(4300, 108),    // P-32
+        coin(4600, 158),    // Q-32
+        coin(4900, 98),     // R-32
+        coin(5200, 148),    // S-32
+        coin(5500, 98),     // T-32
+        coin(5800, 138),    // U-32
+        coin(6100, 88)      // V-32
     ]
 });
