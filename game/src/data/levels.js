@@ -156,11 +156,11 @@ levels.push({
         groundSection(3008, 592),
         // Floating platforms
         floatPlat(350,  320, 128),
-        floatPlat(700,  250, 96),
+        floatPlat(700,  310, 96),
         floatPlat(1100, 300, 96),
-        floatPlat(1600, 260, 128),
+        floatPlat(1600, 270, 128),
         floatPlat(2200, 310, 96),
-        floatPlat(2700, 250, 128),
+        floatPlat(2700, 270, 128),
         floatPlat(3200, 290, 96)
     ],
     enemies: [
@@ -181,10 +181,10 @@ levels.push({
         coin(800,  386),
         coin(1100, 268),
         coin(1450, 386),
-        coin(1600, 228),
+        coin(1600, 238),
         coin(2000, 386),
         coin(2200, 278),
-        coin(2700, 218),
+        coin(2700, 238),
         coin(3100, 386)
     ]
 });
