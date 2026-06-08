@@ -306,10 +306,10 @@ levels.push({
 // Medium → Medium-Hard progression
 
 // ════════════════════════════════════════════════════════════
-// Level 6 — "Tutorial" (width: 3200)
+// Level 6 — "Tutorial" (width: 3600)
 // ════════════════════════════════════════════════════════════
 levels.push({
-    ...levelMeta(1, 'Tutorial', 3200, 5),
+    ...levelMeta(1, 'Tutorial', 3600, 5),
     platforms: [
         groundSection(0,    576),
         groundSection(704,  384),
@@ -324,7 +324,9 @@ levels.push({
         floatPlat(1500, 230, 96),
         floatPlat(2100, 280, 64),
         floatPlat(2500, 230, 96),
-        floatPlat(2800, 270, 64)
+        floatPlat(2800, 270, 64),
+        groundSection(3200, 400),   // 3200→3600: covers new gate area
+        floatPlat(3400, 270, 64)     // new floating platform in extended area
     ],
     enemies: [
         walker(250,  150,  480),
@@ -332,7 +334,8 @@ levels.push({
         drone(1000, 200, 900, 1100),
         walker(1300, 1240, 1550),
         walker(1700, 1680, 2000),
-        drone(2300, 180, 2200, 2500)
+        drone(2300, 180, 2200, 2500),
+        walker(3300, 3250, 3500)     // patrols new section
     ],
     movingPlatforms: [
         movingPlatform(1500, 280, 80, { patrolLeft: 1420, patrolRight: 1580, speed: 45 })
@@ -354,7 +357,8 @@ levels.push({
         coin(2500, 198),
         coin(2700, 386),
         coin(800, 386),
-        coin(2300, 386)
+        coin(2300, 386),
+        coin(3400, 238)
     ]
 });
 
@@ -392,7 +396,8 @@ levels.push({
         drone(1400, 180, 1300, 1550),
         walker(1700, 1650, 1950),
         walker(2100, 2070, 2350),
-        drone(2500, 170, 2400, 2700)
+        drone(2500, 170, 2400, 2700),
+        walker(2800, 2750, 2950)
     ],
     movingPlatforms: [
         movingPlatform(1600, 280, 80, { patrolLeft: 1520, patrolRight: 1680, speed: 50 }),
@@ -459,7 +464,7 @@ levels.push({
         drone(1300, 170, 1200, 1450),
         walker(1500, 1450, 1750),
         walker(1900, 1870, 2120),
-        drone(2100, 160, 2000, 2300),
+        drone(2100, 160, 2100, 2250),
         walker(2300, 2260, 2550),
         drone(2800, 180, 2700, 3000)
     ],
@@ -538,7 +543,8 @@ levels.push({
         walker(1800, 1760, 2050),
         walker(2200, 2180, 2450),
         drone(2600, 160, 2500, 2800),
-        walker(3100, 3050, 3300)
+        walker(3100, 3050, 3300),
+        drone(4100, 240, 4000, 4200)
     ],
     movingPlatforms: [
         movingPlatform(1200, 280, 80, { patrolLeft: 1120, patrolRight: 1280, speed: 55 }),
@@ -646,7 +652,7 @@ levels.push({
         buriedSaw(2800, 120),
         surpriseSaw(3400, 240, 3300, 3500, 65),
         spikeTrap(4000, 1600, 1800),
-        buriedSaw(4600, 130),
+        buriedSaw(4500, 130),
         surpriseSaw(5100, 250, 5000, 5200, 60)
     ],
     coins: [
@@ -673,10 +679,10 @@ levels.push({
 // Hard → Very Hard progression
 
 // ════════════════════════════════════════════════════════════
-// Level 11 — "Tutorial" (width: 3600)
+// Level 11 — "Tutorial" (width: 4200)
 // ════════════════════════════════════════════════════════════
 levels.push({
-    ...levelMeta(2, 'Tutorial', 3600, 10),
+    ...levelMeta(2, 'Tutorial', 4200, 10),
     platforms: [
         groundSection(0,    384),
         groundSection(512,  256),
@@ -696,7 +702,10 @@ levels.push({
         floatPlat(1800, 180, 48),
         floatPlat(2200, 240, 64),
         floatPlat(2600, 190, 48),
-        floatPlat(2900, 250, 64)
+        floatPlat(2900, 250, 64),
+        groundSection(3600, 600),   // 3600→4200: covers new gate area
+        floatPlat(3700, 220, 64),    // new floating platform
+        floatPlat(4000, 190, 48)     // new narrow floating platform
     ],
     enemies: [
         walker(200,  100,  350),
@@ -707,7 +716,9 @@ levels.push({
         drone(1200, 170, 1100, 1300),
         walker(1500, 1460, 1700),
         walker(1850, 1800, 2050),
-        drone(2000, 160, 1900, 2150)
+        drone(2000, 160, 1900, 2150),
+        walker(3800, 3750, 4000),     // patrols new section
+        walker(2400, 2350, 2550)
     ],
     movingPlatforms: [
         movingPlatform(900, 280, 80, { patrolLeft: 820, patrolRight: 980, speed: 55 }),
@@ -736,7 +747,9 @@ levels.push({
         coin(1050, 386),
         coin(1400, 386),
         coin(2100, 386),
-        coin(3200, 386)
+        coin(3200, 386),
+        coin(3700, 188),
+        coin(4000, 158)
     ]
 });
 
@@ -775,19 +788,19 @@ levels.push({
         floatPlat(4300, 240, 48)
     ],
     enemies: [
-        walker(150,  80,  300),
-        drone(300,  190, 200,  400),
-        walker(500,  470,  720),
-        drone(650,  180, 550,  750),
-        walker(850,  820, 1050),
-        drone(1000, 170, 900, 1100),
-        walker(1250, 1200, 1450),
-        drone(1400, 160, 1300, 1500),
-        walker(1600, 1560, 1800),
-        walker(1950, 1900, 2150),
-        drone(2100, 160, 2000, 2250),
-        walker(2400, 2350, 2600),
-        drone(2700, 180, 2600, 2850)
+        walker(150,  90,  290),
+        drone(300,  190, 215,  385),
+        walker(500,  480,  710),
+        drone(650,  180, 565,  735),
+        walker(850,  830, 1040),
+        drone(1000, 170, 915, 1085),
+        walker(1250, 1215, 1435),
+        drone(1400, 160, 1315, 1485),
+        walker(1600, 1580, 1780),
+        walker(1950, 1920, 2130),
+        drone(2100, 160, 2025, 2225),
+        walker(2400, 2370, 2580),
+        drone(2700, 180, 2625, 2825)
     ],
     movingPlatforms: [
         movingPlatform(900,  270, 80, { patrolLeft: 820,  patrolRight: 980,  speed: 55 }),
@@ -870,13 +883,13 @@ levels.push({
         drone(300,  180, 200,  400),
         walker(480,  470,  650),
         drone(600,  170, 500,  700),
-        walker(800,  780, 1000),
+        drone(800,  200, 780, 1000),
         drone(950,  160, 850, 1050),
         walker(1150, 1120, 1350),
         drone(1300, 160, 1200, 1400),
         walker(1500, 1460, 1700),
         drone(1650, 150, 1550, 1750),
-        walker(1850, 1800, 2050),
+        drone(1850, 200, 1800, 2050),
         walker(2150, 2100, 2350),
         drone(2300, 160, 2200, 2450),
         walker(2550, 2500, 2750),
@@ -1002,16 +1015,16 @@ levels.push({
     ],
     obstacles: [
         spikeTrap(300, 1400, 1600),
-        buriedSaw(800, 110),
+        buriedSaw(800, 90),
         surpriseSaw(1400, 230, 1300, 1500, 60),
         spikeTrap(2000, 1400, 1600),
-        buriedSaw(2600, 110),
+        buriedSaw(2600, 90),
         surpriseSaw(3200, 220, 3100, 3300, 65),
         spikeTrap(3800, 1200, 1400),
-        buriedSaw(4300, 110),
+        buriedSaw(4300, 90),
         surpriseSaw(4800, 220, 4700, 4900, 60),
         spikeTrap(5200, 1200, 1400),
-        buriedSaw(5600, 110)
+        buriedSaw(5600, 90)
     ],
     coins: [
         coin(150,  386),
@@ -1088,34 +1101,34 @@ levels.push({
         floatPlat(6100, 160, 32)
     ],
     enemies: [
-        walker(120,  60,  250),
-        drone(250,  180, 150, 350),
-        walker(420,  400, 550),
-        drone(550,  170, 450, 650),
-        walker(750,  720, 880),
-        drone(900,  160, 800, 1000),
-        walker(1050, 1020, 1180),
-        drone(1200, 150, 1100, 1300),
-        walker(1400, 1360, 1520),
-        drone(1550, 150, 1450, 1650),
-        walker(1700, 1660, 1850),
-        drone(1900, 160, 1800, 2050),
-        walker(2100, 2060, 2250),
-        drone(2300, 150, 2200, 2450),
-        walker(2500, 2450, 2650),
-        drone(2700, 160, 2600, 2850),
-        walker(2900, 2850, 3050),
-        drone(3100, 160, 3000, 3250),
-        walker(3300, 3250, 3450),
-        drone(3500, 170, 3400, 3650),
-        walker(3800, 3750, 3950),
-        drone(4100, 160, 4000, 4250),
-        walker(4400, 4350, 4550),
-        drone(4700, 170, 4600, 4850),
-        walker(5000, 4950, 5150),
-        drone(5300, 160, 5200, 5450),
-        walker(5600, 5550, 5750),
-        drone(5900, 170, 5800, 6050)
+        walker(120,  75,  235),
+        drone(250,  180, 165, 335),
+        walker(420,  411, 539),
+        drone(550,  170, 465, 635),
+        walker(750,  732, 868),
+        drone(900,  160, 815, 985),
+        walker(1050, 1032, 1168),
+        drone(1200, 150, 1115, 1285),
+        walker(1400, 1372, 1508),
+        drone(1550, 150, 1465, 1635),
+        walker(1700, 1674, 1836),
+        drone(1900, 160, 1819, 2031),
+        walker(2100, 2074, 2236),
+        drone(2300, 150, 2219, 2431),
+        walker(2500, 2465, 2635),
+        drone(2700, 160, 2619, 2831),
+        walker(2900, 2865, 3035),
+        drone(3100, 160, 3019, 3231),
+        walker(3300, 3265, 3435),
+        drone(3500, 170, 3419, 3631),
+        walker(3800, 3765, 3935),
+        drone(4100, 160, 4019, 4231),
+        walker(4400, 4365, 4535),
+        drone(4700, 170, 4619, 4831),
+        walker(5000, 4965, 5135),
+        drone(5300, 160, 5219, 5431),
+        walker(5600, 5565, 5735),
+        drone(5900, 170, 5819, 6031)
     ],
     movingPlatforms: [
         movingPlatform(700,  270, 80, { patrolLeft: 620,  patrolRight: 780,  speed: 55 }),
@@ -1127,7 +1140,7 @@ levels.push({
         movingPlatform(6000, 250, 80, { patrolLeft: 5920, patrolRight: 6080, speed: 55 })
     ],
     obstacles: [
-        spikeTrap(250, 1200, 1400),
+        spikeTrap(250, 1000, 1200),
         buriedSaw(700, 100),
         surpriseSaw(1200, 220, 1100, 1300, 60),
         spikeTrap(1800, 1200, 1400),
@@ -1139,7 +1152,7 @@ levels.push({
         spikeTrap(5000, 1100, 1300),
         buriedSaw(5400, 100),
         surpriseSaw(5800, 210, 5700, 5900, 65),
-        spikeTrap(6200, 1000, 1200)
+        spikeTrap(6200, 800, 1000)
     ],
     coins: [
         coin(150,  386),
