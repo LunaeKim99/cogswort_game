@@ -631,6 +631,7 @@ class GameScene extends Phaser.Scene {
         // Gate sprite (always open — star rating rewards full coin collection)
         this.gate = this.physics.add.sprite(gx, gy, 'gate-open');
         this.gate.setOrigin(0.5, 1);  // bottom of sprite at ground level
+        this.gate.refreshBody();      // sync physics body to new origin
         this.gate.body.setAllowGravity(false);
         this.gate.body.setImmovable(true);
 
