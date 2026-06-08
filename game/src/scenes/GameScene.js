@@ -324,7 +324,7 @@ class GameScene extends Phaser.Scene {
             .setScrollFactor(0).setDepth(B).setAlpha(0);
 
         // Decorative border frame
-        const frame = this.add.graphics().setDepth(B + 11).setAlpha(0);
+        const frame = this.add.graphics().setScrollFactor(0).setDepth(B + 11).setAlpha(0);
         frame.lineStyle(2, 0xFFD700, 0.3);
         frame.strokeRoundedRect(cx - 140, cy - 140, 280, 280, 10);
         frame.lineStyle(1, 0xFFD700, 0.15);
@@ -338,13 +338,13 @@ class GameScene extends Phaser.Scene {
 
         // Panel background
         const panel = this.add.rectangle(cx, cy, 260, 250, 0x1a1a2e, 0.95)
-            .setStrokeStyle(2, 0xFFD700).setDepth(B + 10).setAlpha(0);
+            .setScrollFactor(0).setStrokeStyle(2, 0xFFD700).setDepth(B + 10).setAlpha(0);
 
         // Title
         const title = this.add.text(cx, cy - 95, '— PAUSED —', {
             fontSize: '26px', fontFamily: 'monospace', color: '#FFD700', fontStyle: 'bold',
             stroke: '#000000', strokeThickness: 3
-        }).setOrigin(0.5).setDepth(B + 20).setAlpha(0);
+        }).setOrigin(0.5).setScrollFactor(0).setDepth(B + 20).setAlpha(0);
 
         // Level info at bottom of panel
         const lvl = levels[this.currentLevel];
@@ -353,10 +353,10 @@ class GameScene extends Phaser.Scene {
         const levelInfo = this.add.text(cx, cy + 100, levelInfoStr, {
             fontSize: '10px', fontFamily: 'monospace', color: '#888888',
             stroke: '#000000', strokeThickness: 1
-        }).setOrigin(0.5).setDepth(B + 20).setAlpha(0);
+        }).setOrigin(0.5).setScrollFactor(0).setDepth(B + 20).setAlpha(0);
 
         // Separator line
-        const sep = this.add.graphics().setDepth(B + 20).setAlpha(0);
+        const sep = this.add.graphics().setScrollFactor(0).setDepth(B + 20).setAlpha(0);
         sep.lineStyle(1, 0xFFD700, 0.2);
         sep.lineBetween(cx - 80, cy - 60, cx + 80, cy - 60);
 
@@ -419,11 +419,12 @@ class GameScene extends Phaser.Scene {
 
     _makePauseButton(x, y, text, callback) {
         const bg = this.add.rectangle(x, y, 220, 46, 0x444466, 0.9)
+            .setScrollFactor(0)
             .setStrokeStyle(2, 0x8888AA)
             .setInteractive({ useHandCursor: true });
         const label = this.add.text(x, y, text, {
             fontSize: '16px', fontFamily: 'monospace', color: '#FFFFFF', fontStyle: 'bold'
-        }).setOrigin(0.5);
+        }).setOrigin(0.5).setScrollFactor(0);
 
         bg.on('pointerover', () => {
             this.tweens.add({ targets: [bg, label], scaleX: 1.06, scaleY: 1.06, duration: 80 });
