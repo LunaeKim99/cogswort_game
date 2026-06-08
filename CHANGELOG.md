@@ -19,6 +19,8 @@ All notable changes to Cogsworth: Last Wind are documented here.
 - Player trail particles (while moving)
 - Slow-motion death effect (time scale 0.3 on game over)
 - Interactive buttons with hover/press animations (main menu, game over)
+- Count-up timer display in HUD with color-coded pacing (green/yellow/red per district threshold)
+- Debug logging to LevelCompleteScene transitions
 
 ### Changed
 - `PLAYER_JUMP` increased from -500 to -580 (higher jumps)
@@ -30,11 +32,28 @@ All notable changes to Cogsworth: Last Wind are documented here.
 - Main menu: blinking text replaced with interactive START GAME button + ambient floating dust particles
 - Game over screen: blinking text replaced with interactive RETRY and MAIN MENU buttons
 - Level completion now requires reaching the exit gate (not automatic on last coin)
+- **Progressive coin scaling**: levels 6-15 now have more gears (L6→15, L7→13, L8→14, L9→15, L10→17, L11→16, L12→19, L13→19, L14→22, L15→23)
+- **Difficulty & distance progression**: levels 6 (3200→3600px) and 11 (3600→4200px) widened; +walkers on L7/L9/L11; patrol tightening on L8/L12/L15; walker→drone swap on L13; trigger distance shortened on L10/L14; spike delay shortened on L15
+- **Floating platform incline redesign** (all 15 levels):
+  - **Levels 2-5** (Bellows District): platforms now follow gradual incline + regression pattern (Y ranges: L2 320→275, L3 320→260, L4 320→230, L5 320→240); platform counts increased (L2: 4→7, L3: 7→9, L4: 9→10, L5: 10→11)
+  - **Levels 6-10** (Clockwork Quarter): platforms trend from Y≈310 down to 255→180 with regressions every 2-3 platforms; 5 vertical moving platforms added across L7-L10
+  - **Levels 11-15** (The Core): aggressive incline Y≈280→120 with narrow platforms (32-48px); 4 vertical moving platforms added across L11-L15
+- Gate always open — star rating purely cosmetic (full coin collection no longer required to advance)
+- Death transition: replaced timeScale+delayedCall with tween-based fade-to-black overlay (avoids timer stall)
+- Pause menu buttons: callback fires on `pointerdown` instead of `pointerup` (fixes mobile drift)
+- Resume / Restart / Main Menu callbacks: now call `_hidePauseMenu()` first, defer scene ops via `delayedCall(0)`
 
 ### Fixed
 - Coins in Level 2 that were floating in mid-air between platforms (repositioned to nearest platform)
 - Coin score loop exploit (overlap triggering multiple times during collect animation)
 - Coin physics body not properly disabling gravity when added to group
+- 10 bugs: SpikeTrap Y positioning, drone laser crash when target destroyed, coin collect animation playing twice, stomp threshold too strict (now 30px), intro banner scale stuck at 0, fall death leaving player frozen mid-air, game over timer race with `timeScale`, touch consumeJump order blocking keyboard, unused DPR constants, initialDelay falsy fallback, HUD panel alpha
+- Pause menu stuck at level start (missing `setScrollFactor(0)` on pause elements)
+- Level 3 gate overlap (missing `refreshBody()` after `setOrigin(0.5, 1)`)
+- Level 9 gate floating in mid-air gap (extended ground section)
+- 3 unreachable floating platforms in level 3 (lowered Y values)
+- Death menu (GameOverScene) not appearing (wrong scene data access — replaced `settings.data` with `init(data)`)
+- Pause menu: restart from pause and main menu from pause not working (root cause: `pointerup` + scene ops in input handler)
 
 ---
 
