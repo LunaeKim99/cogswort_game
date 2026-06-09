@@ -617,7 +617,7 @@ class GameScene extends Phaser.Scene {
     _handleObstacleHit(player, obstacle) {
         if (player.isInvincible || player.isDead) return;
         // Spike trap: only damage when extended
-        if (obstacle.isExtended && !obstacle.isExtended()) return;
+        if (typeof obstacle.isExtended === 'function' && !obstacle.isExtended()) return;
         this._hurtPlayer();
     }
 
@@ -795,6 +795,8 @@ class GameScene extends Phaser.Scene {
         if (this.player.y > GAME_HEIGHT + 50) {
             if (this.player.isDead || this.player.isInvincible) return;
             this._hurtPlayer();
+            // If game over was triggered, do nothing further
+            if (this._gameOverTriggered) return;
             // If still alive, respawn at start
             if (this.lives > 0) {
                 const start = levels[this.currentLevel].playerStart;
@@ -824,12 +826,16 @@ class GameScene extends Phaser.Scene {
         this.cameras.main.shake(300, 0.015);
         this._emitParticles(this.player.x, this.player.y, 0xFF4444, 16);
 
+        // Collect stats before transition
+        const coinsCollected = this.totalCoins - (this.coins?.countActive() ?? 0);
+        const elapsed = this._currentElapsed || 0;
+
         // Fade-to-black overlay, then transition to GameOverScene
         // Uses tween onComplete (immune to timeScale issues)
         const overlay = this.add.rectangle(
-            this.cameras.main.scrollX + 400,
-            this.cameras.main.scrollY + 225,
-            800, 450, 0x000000, 0
+            GAME_WIDTH / 2,
+            GAME_HEIGHT / 2,
+            GAME_WIDTH, GAME_HEIGHT, 0x000000, 0
         ).setScrollFactor(0).setDepth(9999);
 
         this.tweens.add({
@@ -841,10 +847,14 @@ class GameScene extends Phaser.Scene {
                 try { if (this.bgm) this.bgm.stop(); } catch(e) {}
                 overlay.destroy();
                 this.scene.stop('HUDScene');
-                console.log('[GAME] Starting GameOverScene — score:', this.score, 'level:', this.currentLevel);
+                console.log('[GAME] Starting GameOverScene — score:', this.score, 'level:', this.currentLevel, 'coins:', coinsCollected, 'elapsed:', elapsed);
                 this.scene.start('GameOverScene', {
                     score: this.score,
-                    level: this.currentLevel
+                    level: this.currentLevel,
+                    saveSlot: this.saveSlot,
+                    coinsCollected: coinsCollected,
+                    totalCoins: this.totalCoins,
+                    timeSeconds: Math.floor(elapsed)
                 });
             }
         });
@@ -871,7 +881,7 @@ class GameScene extends Phaser.Scene {
             this.scene.stop('HUDScene');
 
             // Calculate star rating
-            const coinsCollected = this.totalCoins - this.coins.countActive();
+        const coinsCollected = this.totalCoins - (this.coins?.countActive() ?? 0);
             // Subtract total paused time from elapsed
             const pausedTotal = this._totalPausedTime + (this._pauseStartTime ? this.time.now - this._pauseStartTime : 0);
             const elapsed = (this.time.now - this._levelStartTime - pausedTotal) / 1000;

@@ -74,12 +74,14 @@ class Player extends Phaser.Physics.Arcade.Sprite {
 
     // Freeze/unfreeze physics
     freeze() {
+        if (!this.body) return;
         this.body.moves = false;
         this.body.allowGravity = false;
         this.body.setVelocity(0, 0);
     }
 
     unfreeze() {
+        if (!this.body) return;
         this.body.moves = true;
         this.body.allowGravity = true;
         this.isDead = false;
