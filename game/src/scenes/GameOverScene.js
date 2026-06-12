@@ -215,9 +215,11 @@ class GameOverScene extends Phaser.Scene {
             });
         });
 
-        // ── Tap anywhere to retry (mobile-friendly) ──
+        // ── Tap anywhere to retry (mobile-friendly, ignores buttons) ──
         this.input.on('pointerdown', (pointer) => {
             if (this._transitioning) return;
+            const hits = this.input.hitTestPointer(pointer);
+            if (hits.length > 0) return;
             this._transitioning = true;
             restartGame();
         });

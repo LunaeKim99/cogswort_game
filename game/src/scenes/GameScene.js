@@ -865,47 +865,47 @@ class GameScene extends Phaser.Scene {
         if (this._levelCompleteTriggered) return;
         this._levelCompleteTriggered = true;
 
-        console.log('[GAME] _levelComplete() - level:', this.currentLevel, 'nextLevel:', this.currentLevel + 1, 'score:', this.score, 'lives:', this.lives);
-
         this.player.freeze();
-
-        // Play win sound
         this._playSound('sfx-win');
 
-        // Autosave — unlock next level
         const nextLevel = this.currentLevel + 1;
         SaveManager.autosave(this.saveSlot, nextLevel, this.score, this.lives);
 
-        this.time.delayedCall(1000, () => {
-            console.log('[GAME] delayedCall FIRED - about to start LevelCompleteScene');
-            this.scene.stop('HUDScene');
+        const overlay = this.add.rectangle(
+            GAME_WIDTH / 2, GAME_HEIGHT / 2,
+            GAME_WIDTH, GAME_HEIGHT, 0x000000, 0
+        ).setScrollFactor(0).setDepth(9999);
 
-            // Calculate star rating
-        const coinsCollected = this.totalCoins - (this.coins?.countActive() ?? 0);
-            // Subtract total paused time from elapsed
-            const pausedTotal = this._totalPausedTime + (this._pauseStartTime ? this.time.now - this._pauseStartTime : 0);
-            const elapsed = (this.time.now - this._levelStartTime - pausedTotal) / 1000;
-            const starResult = this._calculateStars(coinsCollected, elapsed);
+        this.tweens.add({
+            targets: overlay,
+            alpha: 1,
+            duration: 800,
+            delay: 400,
+            ease: 'Quad.easeIn',
+            onComplete: () => {
+                this.scene.stop('HUDScene');
+                const coinsCollected = this.totalCoins - (this.coins?.countActive() ?? 0);
+                const pausedTotal = this._totalPausedTime +
+                    (this._pauseStartTime ? this.time.now - this._pauseStartTime : 0);
+                const elapsed = (this.time.now - this._levelStartTime - pausedTotal) / 1000;
+                const starResult = this._calculateStars(coinsCollected, elapsed);
 
-            // Check if there are more levels
-            if (nextLevel < levels.length) {
-                // Go to level complete screen
-                console.log('[GAME] Starting LevelCompleteScene with data:', JSON.stringify({ level: this.currentLevel, nextLevel, score: this.score, lives: this.lives }));
-                this.scene.start('LevelCompleteScene', {
-                    score: this.score,
-                    level: this.currentLevel,
-                    nextLevel: nextLevel,
-                    lives: this.lives,
-                    saveSlot: this.saveSlot,
-                    stars: starResult
-                });
-            } else {
-                // All levels complete - WIN!
-                this.scene.start('WinScene', {
-                    score: this.score,
-                    level: this.currentLevel,
-                    saveSlot: this.saveSlot
-                });
+                if (nextLevel < levels.length) {
+                    this.scene.start('LevelCompleteScene', {
+                        score: this.score,
+                        level: this.currentLevel,
+                        nextLevel,
+                        lives: this.lives,
+                        saveSlot: this.saveSlot,
+                        stars: starResult
+                    });
+                } else {
+                    this.scene.start('WinScene', {
+                        score: this.score,
+                        level: this.currentLevel,
+                        saveSlot: this.saveSlot
+                    });
+                }
             }
         });
     }
