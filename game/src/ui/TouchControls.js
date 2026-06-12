@@ -3,6 +3,7 @@ class TouchControls extends Phaser.GameObjects.Container {
     constructor(scene) {
         super(scene);
         scene.add.existing(this);
+        scene.input.addPointer(3);
 
         this.leftPressed = false;
         this.rightPressed = false;
@@ -43,29 +44,27 @@ class TouchControls extends Phaser.GameObjects.Container {
     }
 
     _addHandlers(btn, type) {
-        btn.on('pointerdown', () => {
+        btn._activePointerId = null;
+
+        btn.on('pointerdown', (pointer) => {
+            btn._activePointerId = pointer.id;
             if (type === 'left') this.leftPressed = true;
             if (type === 'right') this.rightPressed = true;
             if (type === 'jump') {
                 this.jumpPressed = true;
                 this.jumpJustPressed = true;
             }
-            this.scene.tweens.add({
-                targets: btn,
-                alpha: 0.8,
-                duration: 80
-            });
+            this.scene.tweens.add({ targets: btn, alpha: 0.8, duration: 80 });
         });
 
-        const release = () => {
+        const release = (pointer) => {
+            if (pointer && btn._activePointerId !== null &&
+                btn._activePointerId !== pointer.id) return;
+            btn._activePointerId = null;
             if (type === 'left') this.leftPressed = false;
             if (type === 'right') this.rightPressed = false;
             if (type === 'jump') this.jumpPressed = false;
-            this.scene.tweens.add({
-                targets: btn,
-                alpha: BTN_ALPHA,
-                duration: 80
-            });
+            this.scene.tweens.add({ targets: btn, alpha: BTN_ALPHA, duration: 80 });
         };
 
         btn.on('pointerup', release);

@@ -27,7 +27,8 @@ class HUDScene extends Phaser.Scene {
 
         // ── Hearts (top-left area) ──
         this.hearts = [];
-        for (let i = 0; i < INITIAL_LIVES; i++) {
+        const MAX_HEART_SLOTS = 6;
+        for (let i = 0; i < MAX_HEART_SLOTS; i++) {
             const hx = HUD.HEART_OFFSET_X + i * HUD.HEART_SPACING;
             const h = this.add.image(hx, HUD.HEART_OFFSET_Y, 'heart-full');
             h.setScrollFactor(0);
@@ -45,6 +46,7 @@ class HUDScene extends Phaser.Scene {
                 ease: 'Sine.easeInOut',
                 delay: i * 200
             });
+            if (i >= this.lives) h.setVisible(false);
         }
 
         // ── Score text (top-right) ──
@@ -187,6 +189,49 @@ class HUDScene extends Phaser.Scene {
             }
         });
 
+        // ── Mute button (bottom-right, above touch controls) ──
+        const MUTE_X = GAME_WIDTH - 28;
+        const MUTE_Y = GAME_HEIGHT - 90;
+        let muted = false;
+        try { muted = localStorage.getItem('cogsworth_muted') === '1'; } catch(e) {}
+        try { this.scene.systems.game.sound.mute = muted; } catch(e) {}
+
+        const muteBtn = this.add.graphics()
+            .setScrollFactor(0).setDepth(500).setInteractive(
+                new Phaser.Geom.Rectangle(MUTE_X - 14, MUTE_Y - 14, 28, 28),
+                Phaser.Geom.Rectangle.Contains
+            );
+
+        const drawMuteIcon = (g, x, y, isMuted) => {
+            g.clear();
+            g.fillStyle(0x000000, 0.4);
+            g.fillRoundedRect(x - 14, y - 14, 28, 28, 4);
+            g.fillStyle(0xFFFFFF, isMuted ? 0.4 : 0.9);
+            g.fillRect(x - 8, y - 4, 6, 8);    // speaker body
+            g.fillTriangle(x - 2, y - 7, x + 5, y - 12, x + 5, y + 12, x - 2, y + 7); // cone
+            if (!isMuted) {
+                g.lineStyle(2, 0xFFFFFF, 0.9);
+                g.strokeCircle(x + 7, y, 4);
+                g.strokeCircle(x + 7, y, 8);
+            } else {
+                g.lineStyle(2, 0xFF4444, 0.9);
+                g.lineBetween(x + 4, y - 6, x + 12, y + 6);
+                g.lineBetween(x + 12, y - 6, x + 4, y + 6);
+            }
+        };
+
+        drawMuteIcon(muteBtn, MUTE_X, MUTE_Y, muted);
+
+        muteBtn.on('pointerdown', () => {
+            muted = !muted;
+            try {
+                this.scene.systems.game.sound.mute = muted;
+                localStorage.setItem('cogsworth_muted', muted ? '1' : '0');
+            } catch(e) {}
+            drawMuteIcon(muteBtn, MUTE_X, MUTE_Y, muted);
+            this.tweens.add({ targets: muteBtn, alpha: 0.5, duration: 80, yoyo: true });
+        });
+
         // ── Screen vignette overlay (dark edges for atmosphere) ──
         const vignette = this.add.graphics().setScrollFactor(0).setDepth(300);
         vignette.fillStyle(0x000000, 0.2);
@@ -214,19 +259,29 @@ class HUDScene extends Phaser.Scene {
 
     // ── Hearts update ──
     _updateHearts(lives) {
-        for (let i = 0; i < INITIAL_LIVES; i++) {
+        const MAX_HEART_SLOTS = 6;
+        for (let i = 0; i < MAX_HEART_SLOTS; i++) {
+            if (!this.hearts[i]) continue;
+            const shouldFill = i < lives;
             const wasFull = this.hearts[i].texture.key === 'heart-full';
-            this.hearts[i].setTexture(i < lives ? 'heart-full' : 'heart-empty');
+            this.hearts[i].setTexture(shouldFill ? 'heart-full' : 'heart-empty');
+            this.hearts[i].setVisible(true);
 
-            // Brief flash animation on change
-            if (wasFull !== (i < lives)) {
+            if (!wasFull && shouldFill) {
+                // Power-up gained — golden flash
+                this.tweens.add({
+                    targets: this.hearts[i],
+                    scaleX: 1.5, scaleY: 1.5,
+                    duration: 200, yoyo: true, ease: 'Quad.easeOut',
+                    onComplete: () => this.hearts[i].setTint(0xFFD700),
+                });
+            } else if (wasFull && !shouldFill) {
                 this.tweens.add({
                     targets: this.hearts[i],
                     scaleX: SPECTACLE.HEART_PULSE_SCALE,
                     scaleY: SPECTACLE.HEART_PULSE_SCALE,
                     duration: SPECTACLE.HEART_PULSE_DURATION / 2,
-                    yoyo: true,
-                    ease: 'Quad.easeOut'
+                    yoyo: true, ease: 'Quad.easeOut'
                 });
             }
         }

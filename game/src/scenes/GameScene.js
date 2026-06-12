@@ -387,20 +387,48 @@ class GameScene extends Phaser.Scene {
         restartBtn.bg.setDepth(B + 30);
         restartBtn.label.setDepth(B + 31);
 
-        // Main Menu button
+        // Main Menu button (with confirm)
         const menuBtn = this._makePauseButton(cx, cy + 95, '☰  MAIN MENU', () => {
-            this._hidePauseMenu();
-            if (this._pauseStartTime !== null) {
-                this._totalPausedTime += this.time.now - this._pauseStartTime;
-                this._pauseStartTime = null;
-            }
-            this._isPaused = false;
-            this.physics.world.resume();
-            this.tweens.resumeAll();
-            this.scene.stop('HUDScene');
-            this.time.delayedCall(0, () => {
-                this.scene.start('MainMenuScene');
+            if (menuBtn._confirming) return;
+            menuBtn._confirming = true;
+            menuBtn.label.setText('EXIT AND LOSE PROGRESS?');
+            menuBtn.label.setColor('#FF6666');
+            menuBtn.bg.setFillStyle(0x662222);
+
+            const doExit = () => {
+                this._hidePauseMenu();
+                if (this._pauseStartTime !== null) {
+                    this._totalPausedTime += this.time.now - this._pauseStartTime;
+                    this._pauseStartTime = null;
+                }
+                this._isPaused = false;
+                // Skip resume — scene is transitioning away, no need to tick physics
+                this.scene.stop('HUDScene');
+                this.time.delayedCall(0, () => { this.scene.start('MainMenuScene'); });
+            };
+
+            const yesBtn = this._makePauseButton(cx - 68, cy + 140, '✓ YES', doExit);
+            yesBtn.bg.setDepth(B + 40); yesBtn.label.setDepth(B + 41);
+            yesBtn.bg.setFillStyle(0x226622); yesBtn.bg.setStrokeStyle(2, 0x44AA44);
+            yesBtn.bg.width = 110; yesBtn.bg.height = 40;
+
+            const noBtn = this._makePauseButton(cx + 68, cy + 140, '✗ NO', () => {
+                menuBtn._confirming = false;
+                menuBtn.label.setText('☰  MAIN MENU');
+                menuBtn.label.setColor('#FFFFFF');
+                menuBtn.bg.setFillStyle(0x444466);
+                // Remove from cleanup list before destroying (prevents double-destroy)
+                this._pauseElements = this._pauseElements.filter(
+                    el => el !== yesBtn.bg && el !== yesBtn.label && el !== noBtn.bg && el !== noBtn.label
+                );
+                yesBtn.bg.destroy(); yesBtn.label.destroy();
+                noBtn.bg.destroy(); noBtn.label.destroy();
             });
+            noBtn.bg.setDepth(B + 40); noBtn.label.setDepth(B + 41);
+            noBtn.bg.setFillStyle(0x662222); noBtn.bg.setStrokeStyle(2, 0xAA4444);
+            noBtn.bg.width = 110; noBtn.bg.height = 40;
+
+            this._pauseElements.push(yesBtn.bg, yesBtn.label, noBtn.bg, noBtn.label);
         });
         menuBtn.bg.setDepth(B + 30);
         menuBtn.label.setDepth(B + 31);
@@ -1018,8 +1046,15 @@ class GameScene extends Phaser.Scene {
         this.player.updateAnimation();
 
         // ── Visual polish: player trail (particle-based) ──
-        if ((this.player.body.velocity.x !== 0 || this.player.body.velocity.y !== 0) && Math.random() < 0.35) {
-            this._trailEmitter.emitParticleAt(this.player.x + Phaser.Math.Between(-8, 8), this.player.y + Phaser.Math.Between(-4, 4));
+        this._trailTimer = (this._trailTimer || 0) + delta;
+        while (this._trailTimer >= 50) {
+            this._trailTimer -= 50;
+            if (this.player.body.velocity.x !== 0 || this.player.body.velocity.y !== 0) {
+                this._trailEmitter.emitParticleAt(
+                    this.player.x + Phaser.Math.Between(-8, 8),
+                    this.player.y + Phaser.Math.Between(-4, 4)
+                );
+            }
         }
 
         // ── Update enemies (pass player for drone laser detection) ──

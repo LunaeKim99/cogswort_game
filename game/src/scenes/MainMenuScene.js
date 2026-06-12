@@ -60,6 +60,19 @@ class MainMenuScene extends Phaser.Scene {
             fontSize: '16px', fontFamily: 'monospace', color: '#FFFFFF'
         }).setOrigin(0.5);
 
+        // ── Best score from save slots ──
+        try {
+            const slots = SaveManager.listSlots().filter(s => s.hasData);
+            if (slots.length > 0) {
+                const best = slots.reduce((a, b) =>
+                    (a.info.score > b.info.score ? a : b));
+                this.add.text(400, 175,
+                    'BEST: ' + best.info.score + '  •  LEVEL ' + (best.info.levelIndex + 1),
+                    { fontSize: '13px', fontFamily: 'monospace', color: '#FFD700' }
+                ).setOrigin(0.5);
+            }
+        } catch(e) {}
+
         // ── Visual polish: start button with hover effects ──
         const makeButton = (x, y, text, callback) => {
             const bg = this.add.rectangle(x, y, 300, 50, 0x444466, 0.9)

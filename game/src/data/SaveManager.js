@@ -33,7 +33,17 @@ const SaveManager = {
         try {
             const raw = localStorage.getItem(SAVE_PREFIX + slotIndex);
             if (!raw) return null;
-            return JSON.parse(raw);
+            const data = JSON.parse(raw);
+            if (!data || typeof data !== 'object') return null;
+            if (typeof data.currentLevel !== 'number') return null;
+            if (typeof data.score !== 'number') return null;
+            if (typeof data.lives !== 'number') return null;
+            if (!Array.isArray(data.unlockedLevels)) return null;
+            if (data.version !== 1) {
+                console.warn('[SaveManager] Unknown save version:', data.version, '— discarding');
+                return null;
+            }
+            return data;
         } catch (e) {
             console.warn('Load failed for slot ' + slotIndex + ':', e);
             return null;
@@ -82,10 +92,11 @@ const SaveManager = {
     listSlots() {
         const slots = [];
         for (let i = 0; i < SLOT_COUNT; i++) {
+            const info = this.getSlotInfo(i);
             slots.push({
                 index: i,
-                hasData: this.hasSlot(i),
-                info: this.getSlotInfo(i)
+                hasData: this.hasSlot(i) && info !== null,
+                info: info
             });
         }
         return slots;
