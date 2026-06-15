@@ -10,6 +10,7 @@ class Player extends Phaser.Physics.Arcade.Sprite {
         // State
         this.isInvincible = false;
         this.isDead = false;
+        this.facingDirection = 1; // 1 = right, -1 = left
 
         // Hitbox (slightly smaller than sprite)
         this.body.setSize(20, 28);

@@ -99,6 +99,25 @@ class GameScene extends Phaser.Scene {
         // Player-gate overlap — reach gate to clear level
         this.physics.add.overlap(this.player, this.gate, this._handleGateReached, null, this);
 
+        // ── Wrench throw system (must be created BEFORE overlap registration) ──
+        this._wrenchProjectiles = this.physics.add.group({ allowGravity: true });
+        this._wrenchOnCooldown = false;
+        this._wrenchCooldownTimer = 0;
+
+        // Wrench-enemy overlap
+        this.physics.add.overlap(this._wrenchProjectiles, this.enemies, this._handleWrenchHit, null, this);
+
+        // Wrench-platform collider (destroy on terrain hit)
+        this.physics.add.collider(this._wrenchProjectiles, this.platforms, (wrench) => {
+            if (wrench && wrench.active && wrench._isWrench) wrench.destroy();
+        });
+        // Wrench-moving platform collider
+        this.movingPlatforms.forEach(mp => {
+            this.physics.add.collider(this._wrenchProjectiles, mp, (wrench) => {
+                if (wrench && wrench.active && wrench._isWrench) wrench.destroy();
+            });
+        });
+
         // Gate always open — star rating rewards players who collect all coins
 
         // Track level start time (for star rating)
@@ -116,6 +135,7 @@ class GameScene extends Phaser.Scene {
         this.keyD = this.input.keyboard.addKey('D');
         this.keySpace = this.input.keyboard.addKey('SPACE');
         this.keyShield = this.input.keyboard.addKey(SHIELD_KEY);
+        this.keyWrench = this.input.keyboard.addKey(WRENCH_KEY);
 
         // Setup touch controls
         this.touchControls = new TouchControls(this);
@@ -767,7 +787,32 @@ class GameScene extends Phaser.Scene {
     _handleEnemyCollision(player, enemy) {
         if (enemy.isDead) return;
 
-        // STOMP LOGIC:
+        // SPECIAL CASE: Drone — only stompable via top weak point
+        if (enemy instanceof PatrolDrone) {
+            if (enemy.isWeakPointHit(player)) {
+                // Weak point stomp!
+                enemy.stomp();
+                player.bounce();
+                this.score += STOMP_SCORE;
+                if (this._hasWrenchStrike) {
+                    this.cameras.main.shake(150, 0.015);
+                }
+                if (Math.random() < GEAR_STOMP_DROP_CHANCE && !this._levelCompleteTriggered) {
+                    this._spawnGearDrop(enemy.x, enemy.y);
+                }
+                this.events.emit('updateScore', this.score);
+                this._playSound('sfx-stomp');
+                this._onStompScore(enemy);
+                return;
+            }
+            // Not weak point hit → hurt player
+            if (!player.isInvincible) {
+                this._hurtPlayer();
+            }
+            return;
+        }
+
+        // STOMP LOGIC (for non-drone enemies like walkers):
         // 1. Player is falling (velocity Y > 0)
         // 2. Player's bottom (BBoxBottom) is above enemy's center (enemy.y + 20 tolerance)
         // 3. Enemy is not already dead
@@ -801,48 +846,115 @@ class GameScene extends Phaser.Scene {
             // Play sound
             this._playSound('sfx-stomp');
 
-            // ── Stomp combo ──
-            const now = this.time.now;
-            if (now - this._lastStompTime < SPECTACLE.COMBO_MAX_BREAK_TIME) {
-                this._comboCount++;
-            } else {
-                this._comboCount = 1;
-            }
-            this._lastStompTime = now;
-
-            if (this._comboCount >= 2) {
-                // Show combo text
-                const comboLabel = this.add.text(enemy.x, enemy.y - 50, this._comboCount + 'x COMBO!', {
-                    fontFamily: 'monospace',
-                    fontSize: '22px',
-                    color: '#FF6600',
-                    fontStyle: 'bold',
-                    stroke: '#000000',
-                    strokeThickness: 4
-                }).setOrigin(0.5);
-
-                this.tweens.add({
-                    targets: comboLabel,
-                    y: comboLabel.y - 40,
-                    scale: 1.3,
-                    alpha: 0,
-                    duration: 900,
-                    ease: 'Quad.easeOut',
-                    onComplete: () => comboLabel.destroy()
-                });
-
-                // Bigger screen shake for combos
-                this.cameras.main.shake(150, 0.015);
-            }
-
-            // ── Visual polish: stomp effects ──
-            this.cameras.main.shake(100, 0.008);
-            this._emitParticles(enemy.x, enemy.y, 0xFFD700, 12);
-            this._showFloatingText(enemy.x, enemy.y - 20, '+20', '#FFD700');
+            // Scoring effects (combo, particles, floating text)
+            this._onStompScore(enemy);
         } else if (!player.isInvincible) {
             // Player hit by enemy from side/below
             this._hurtPlayer();
         }
+    }
+
+    _onStompScore(enemy) {
+        // Combo
+        const now = this.time.now;
+        if (now - this._lastStompTime < SPECTACLE.COMBO_MAX_BREAK_TIME) {
+            this._comboCount++;
+        } else {
+            this._comboCount = 1;
+        }
+        this._lastStompTime = now;
+
+        if (this._comboCount >= 2) {
+            const comboLabel = this.add.text(enemy.x, enemy.y - 50, this._comboCount + 'x COMBO!', {
+                fontFamily: 'monospace',
+                fontSize: '22px',
+                color: '#FF6600',
+                fontStyle: 'bold',
+                stroke: '#000000',
+                strokeThickness: 4
+            }).setOrigin(0.5);
+            this.tweens.add({
+                targets: comboLabel,
+                y: comboLabel.y - 40,
+                scale: 1.3,
+                alpha: 0,
+                duration: 900,
+                ease: 'Quad.easeOut',
+                onComplete: () => comboLabel.destroy()
+            });
+            this.cameras.main.shake(150, 0.015);
+        }
+
+        // Polish
+        this.cameras.main.shake(100, 0.008);
+        this._emitParticles(enemy.x, enemy.y, 0xFFD700, 12);
+        this._showFloatingText(enemy.x, enemy.y - 20, '+20', '#FFD700');
+    }
+
+    // ── Wrench throw ──
+    _throwWrench() {
+        if (this._wrenchOnCooldown || this.player.isDead) return;
+        if (this._wrenchProjectiles.countActive() >= WRENCH_MAX_ACTIVE) return;
+
+        this._wrenchOnCooldown = true;
+        this._wrenchCooldownTimer = 0;
+        this.events.emit('wrenchThrown');
+
+        // Determine facing direction
+        const dir = this.player.flipX ? -1 : 1;
+        const spawnX = this.player.x + dir * 16;
+        const spawnY = this.player.y - 4;
+
+        // Create projectile
+        const wrench = this.physics.add.sprite(spawnX, spawnY, 'wrench-throw');
+        wrench.setDepth(50);
+        wrench.body.setGravityY(WRENCH_GRAVITY);
+        wrench.setVelocityX(dir * WRENCH_SPEED);
+        wrench.body.setAllowGravity(true);
+        wrench._isWrench = true;
+        wrench._startX = wrench.x;
+        wrench._direction = dir;
+
+        this._wrenchProjectiles.add(wrench);
+
+        // Squish animation on player
+        this.tweens.add({
+            targets: this.player,
+            scaleX: 0.7,
+            scaleY: 1.3,
+            duration: 80,
+            yoyo: true,
+            ease: 'Quad.easeOut',
+            onComplete: () => {
+                this.player.setScale(1);
+            }
+        });
+
+        this._playSound('sfx-tap');
+    }
+
+    _handleWrenchHit(wrench, enemy) {
+        if (!wrench || !wrench.active || !wrench._isWrench) return;
+        if (enemy.isDead) return;
+
+        // Kill enemy
+        enemy.stomp();
+        this.score += WRENCH_BOUNCE_SCORE;
+
+        // Gear drop chance
+        if (Math.random() < GEAR_STOMP_DROP_CHANCE && !this._levelCompleteTriggered) {
+            this._spawnGearDrop(enemy.x, enemy.y);
+        }
+
+        // Effects
+        this._emitParticles(enemy.x, enemy.y, 0xFFD700, 8);
+        this._showFloatingText(enemy.x, enemy.y - 20, '+20', '#FFD700');
+        this.cameras.main.shake(80, 0.006);
+        this.events.emit('updateScore', this.score);
+        this._playSound('sfx-stomp');
+
+        // Destroy wrench
+        wrench.destroy();
     }
 
     // ── Coin collection ──
@@ -1152,6 +1264,36 @@ class GameScene extends Phaser.Scene {
         // ── Check drone laser damage ──
         this._checkDroneLasers();
 
+        // ── Wrench projectile update (range check + spin) ──
+        this._wrenchProjectiles.children.iterate(wrench => {
+            if (!wrench || !wrench.active || !wrench._isWrench) return;
+
+            // Track distance
+            const dist = Math.abs(wrench.x - wrench._startX);
+            if (dist > WRENCH_MAX_RANGE) {
+                wrench.destroy();
+                return;
+            }
+
+            // Visual spin
+            wrench.rotation += 0.15 * wrench._direction;
+
+            // Remove if below world
+            if (wrench.y > GAME_HEIGHT + 50) {
+                wrench.destroy();
+            }
+        });
+
+        // Wrench cooldown timer
+        if (this._wrenchOnCooldown) {
+            this._wrenchCooldownTimer += delta;
+            if (this._wrenchCooldownTimer >= WRENCH_COOLDOWN) {
+                this._wrenchOnCooldown = false;
+                this._wrenchCooldownTimer = 0;
+                this.events.emit('wrenchReady');
+            }
+        }
+
         // ── Update moving platforms ──
         this.movingPlatforms.forEach(mp => {
             if (mp && mp.active) mp.update();
@@ -1176,6 +1318,15 @@ class GameScene extends Phaser.Scene {
         // ── Shield key (S) ──
         if (Phaser.Input.Keyboard.JustDown(this.keyShield) && this._shieldCharges > 0 && !this.player.isInvincible && !this.player.isDead && !this._merchantNearby) {
             this._useShield();
+        }
+
+        // ── Wrench throw (X key or touch throw button) ──
+        if (!this._shopOpen && !this._merchantNearby) {
+            const wrenchTouch = this.touchControls.consumeThrow();
+            const wrenchJustDown = Phaser.Input.Keyboard.JustDown(this.keyWrench) || wrenchTouch;
+            if (wrenchJustDown && !this._wrenchOnCooldown) {
+                this._throwWrench();
+            }
         }
     }
 

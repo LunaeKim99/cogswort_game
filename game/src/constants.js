@@ -84,3 +84,24 @@ const SHOP_ITEMS = [
 
 // ── Shield key binding (S key) ──
 const SHIELD_KEY = 'S';
+
+// ── Wrench Throw ──
+const WRENCH_SPEED = 400;
+const WRENCH_GRAVITY = 200;
+const WRENCH_MAX_RANGE = 350;
+const WRENCH_COOLDOWN = 1200;
+const WRENCH_MAX_ACTIVE = 2;
+const WRENCH_KEY = 'X';
+const WRENCH_BOUNCE_SCORE = 20;
+
+// ── Drone Weak Point ──
+const DRONE_WEAK_POINT_HEIGHT = 8;
+
+// ── Drone Aggressive Sensor ──
+const DRONE_SENSOR_WIDTH = 200;
+const DRONE_SENSOR_HEIGHT = 120;
+const DRONE_AGGRO_SPEED_MULT = 1.5;
+const DRONE_RECOVERY_DURATION = 1500;
+
+// ── Drone Debug ──
+const DEBUG_DRONE = false;

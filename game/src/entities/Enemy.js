@@ -50,23 +50,84 @@ class PatrolDrone extends Phaser.Physics.Arcade.Sprite {
         this._scanRange = 120;          // how far down the sensor reaches
         this._detectRadiusX = 60;       // horizontal detection width
 
-        // ── Bobbing animation ──
-        scene.tweens.add({
-            targets: this,
-            y: y - 4,
-            duration: 1200 + Math.random() * 400,
-            yoyo: true,
-            repeat: -1,
-            ease: 'Sine.easeInOut'
-        });
+        // ── Aggressive mode (forward-facing sensor) ──
+        this._aggroMode = false;
+        this._recovering = false;
+        this._recoveryTimer = 0;
+        this._originalY = y;
+        this._aggroY = y;
+        this._debugRect = null;
+        this._bobTween = null;
+
+        // ── Weak point (stomp on top only) ──
+        this._weakPoint = new Phaser.Geom.Rectangle(0, 0, 1, DRONE_WEAK_POINT_HEIGHT);
+
+        // ── Bobbing animation (stored as _bobTween so we can pause/resume) ──
+        this._startBobTween();
     }
 
-    // ── Check if player is in sensor range ──
+    // ── Check if player is in forward-facing sensor cone ──
     _isPlayerInSensor(player) {
         if (!player || !player.body || this.isDead) return false;
-        const dx = Math.abs(player.x - this.x);
-        const dy = (player.y + player.body.height / 2) - this.y;
-        return dx < this._detectRadiusX && dy > 0 && dy < this._scanRange;
+
+        // Forward-facing detection zone based on patrol direction
+        const halfW = this.displayWidth / 2;
+        const frontEdgeX = this.x + (this.direction * halfW);
+
+        let sensorLeft, sensorRight;
+        if (this.direction === 1) { // facing right
+            sensorLeft = frontEdgeX;
+            sensorRight = frontEdgeX + DRONE_SENSOR_WIDTH;
+        } else { // facing left
+            sensorLeft = frontEdgeX - DRONE_SENSOR_WIDTH;
+            sensorRight = frontEdgeX;
+        }
+        const sensorTop = this.y - DRONE_SENSOR_HEIGHT / 2;
+        const sensorBottom = this.y + DRONE_SENSOR_HEIGHT / 2;
+
+        const px = player.x;
+        const py = player.y + player.body.height / 2;
+
+        return px >= sensorLeft && px <= sensorRight && py >= sensorTop && py <= sensorBottom;
+    }
+
+    // ── Update aggressive chase mode ──
+    _updateAggression(delta, player) {
+        const playerInSensor = player && this._isPlayerInSensor(player);
+
+        if (playerInSensor && !this.isDead) {
+            this._aggroMode = true;
+            this._recovering = false;
+            this._recoveryTimer = 0;
+            // Kill bobbing tween while in aggro mode (visual-only Y movement conflicts with manual Y)
+            if (this._bobTween) {
+                this._bobTween.destroy();
+                this._bobTween = null;
+            }
+        } else if (this._aggroMode && !playerInSensor) {
+            if (!this._recovering) {
+                this._recovering = true;
+                this._recoveryTimer = 0;
+            }
+        }
+
+        if (this._recovering) {
+            this._recoveryTimer += delta;
+            if (this._recoveryTimer >= DRONE_RECOVERY_DURATION) {
+                this._aggroMode = false;
+                this._recovering = false;
+                this._recoveryTimer = 0;
+                this.body.setVelocityY(0);
+                // Tween back to original Y, then restart bob
+                this.scene.tweens.add({
+                    targets: this,
+                    y: this._originalY,
+                    duration: 300,
+                    ease: 'Sine.easeOut',
+                    onComplete: () => this._startBobTween()
+                });
+            }
+        }
     }
 
     // ── Draw sensor cone visual (below drone, pointing down) ──
@@ -185,6 +246,12 @@ class PatrolDrone extends Phaser.Physics.Arcade.Sprite {
         this.body.enable = false;
         this.play('drone-death-anim');
 
+        // Hit flash
+        this.setTint(0xFFFFFF);
+        this.scene.time.delayedCall(200, () => {
+            if (this.active) this.clearTint();
+        });
+
         // Clean up laser visuals
         this._hideSensorCone();
         this._hideWarning();
@@ -193,7 +260,42 @@ class PatrolDrone extends Phaser.Physics.Arcade.Sprite {
             this._laserBeam = null;
         }
         // Stop bobbing tween
+        if (this._bobTween) {
+            this._bobTween.destroy();
+            this._bobTween = null;
+        }
         this.scene.tweens.killTweensOf(this);
+    }
+
+    _startBobTween() {
+        if (this._bobTween) return;
+        this._bobTween = this.scene.tweens.add({
+            targets: this,
+            y: this._originalY - 4,
+            duration: 1200 + Math.random() * 400,
+            yoyo: true,
+            repeat: -1,
+            ease: 'Sine.easeInOut'
+        });
+    }
+
+    // ── Update weak point hitbox (top of drone, for precise stomp) ──
+    updateWeakPoint(hasWrenchStrike) {
+        const frac = hasWrenchStrike ? 0.8 : 0.4;
+        const wpWidth = this.displayWidth * frac;
+        const wpX = this.x - wpWidth / 2;
+        const wpY = this.y - this.displayHeight / 2;
+        this._weakPoint.setTo(wpX, wpY, wpWidth, DRONE_WEAK_POINT_HEIGHT);
+    }
+
+    // ── Check if player overlaps weak point ──
+    isWeakPointHit(player) {
+        if (!player || !player.body) return false;
+        const playerRect = new Phaser.Geom.Rectangle(
+            player.body.x, player.body.y,
+            player.body.width, player.body.height
+        );
+        return Phaser.Geom.Rectangle.Overlaps(this._weakPoint, playerRect);
     }
 
     // ── Update ──
@@ -209,15 +311,45 @@ class PatrolDrone extends Phaser.Physics.Arcade.Sprite {
         // ── Animation ──
         this.play('drone-fly-anim', true);
 
-        // ── Patrol movement ──
-        if (this.x >= this.patrolRight) {
-            this.direction = -1;
-            this.setFlipX(true);
-        } else if (this.x <= this.patrolLeft) {
-            this.direction = 1;
-            this.setFlipX(false);
+        // ── Update weak point hitbox (for precise stomp) ──
+        this.updateWeakPoint(this.scene._hasWrenchStrike || false);
+
+        // ── Patrol / Aggressive movement ──
+        if (this._aggroMode && player && player.body) {
+            // Chase player horizontally
+            const chaseSpeed = 50 * DRONE_AGGRO_SPEED_MULT;
+            const dx = player.x - this.x;
+            if (dx > 5) {
+                this.direction = 1;
+                this.setFlipX(false);
+                this.setVelocityX(chaseSpeed);
+            } else if (dx < -5) {
+                this.direction = -1;
+                this.setFlipX(true);
+                this.setVelocityX(-chaseSpeed);
+            } else {
+                this.setVelocityX(0);
+            }
+            // Descend toward player Y (clamped to not go above original spawn Y)
+            const targetY = Math.min(player.y - 20, this._originalY);
+            const dy = targetY - this.y;
+            if (Math.abs(dy) > 5) {
+                this.body.setVelocityY(Math.sign(dy) * 80);
+            } else {
+                this.body.setVelocityY(0);
+            }
+        } else {
+            // Normal patrol
+            if (this.x >= this.patrolRight) {
+                this.direction = -1;
+                this.setFlipX(true);
+            } else if (this.x <= this.patrolLeft) {
+                this.direction = 1;
+                this.setFlipX(false);
+            }
+            this.setVelocityX(50 * this.direction);
+            this.body.setVelocityY(0);
         }
-        this.setVelocityX(50 * this.direction);
 
         // ── Sensor cone follow body (extends downward from drone bottom) ──
         if (this._sensorCone) {
@@ -231,8 +363,8 @@ class PatrolDrone extends Phaser.Physics.Arcade.Sprite {
         switch (this._state) {
             case DRONE_STATE.IDLE:
                 this._hideSensorCone();
+                this._updateAggression(delta, player);
                 if (player && this._isPlayerInSensor(player)) {
-                    // Player detected → enter warning state
                     this._state = DRONE_STATE.WARNING;
                     this._stateTimer = now;
                     this._showSensorCone();
@@ -277,6 +409,41 @@ class PatrolDrone extends Phaser.Physics.Arcade.Sprite {
                 break;
         }
 
+        // ── Debug sensor visualization ──
+        this._drawDebugSensor();
+    }
+
+    _drawDebugSensor() {
+        if (!DEBUG_DRONE) {
+            if (this._debugRect) {
+                this._debugRect.destroy();
+                this._debugRect = null;
+            }
+            return;
+        }
+        const halfW = this.displayWidth / 2;
+        const frontEdgeX = this.x + (this.direction * halfW);
+        let sensorLeft, sensorRight;
+        if (this.direction === 1) {
+            sensorLeft = frontEdgeX;
+            sensorRight = frontEdgeX + DRONE_SENSOR_WIDTH;
+        } else {
+            sensorLeft = frontEdgeX - DRONE_SENSOR_WIDTH;
+            sensorRight = frontEdgeX;
+        }
+        const sensorTop = this.y - DRONE_SENSOR_HEIGHT / 2;
+        const sensorW = sensorRight - sensorLeft;
+        const sensorH = DRONE_SENSOR_HEIGHT;
+        const sensorCX = (sensorLeft + sensorRight) / 2;
+        const sensorCY = sensorTop + sensorH / 2;
+
+        if (!this._debugRect) {
+            this._debugRect = this.scene.add.rectangle(sensorCX, sensorCY, sensorW, sensorH, 0xFF0000, 0.2)
+                .setDepth(50);
+        } else {
+            this._debugRect.setPosition(sensorCX, sensorCY);
+            this._debugRect.setSize(sensorW, sensorH);
+        }
     }
 
     // ── Cleanup on destroy ──
@@ -287,6 +454,8 @@ class PatrolDrone extends Phaser.Physics.Arcade.Sprite {
             this._laserBeam.destroy();
             this._laserBeam = null;
         }
+        if (this._debugRect) { this._debugRect.destroy(); this._debugRect = null; }
+        if (this._bobTween) { this._bobTween.destroy(); this._bobTween = null; }
         this.scene.tweens.killTweensOf(this);
         super.destroy(fromScene);
     }

@@ -275,6 +275,70 @@ class HUDScene extends Phaser.Scene {
             this.tweens.add({ targets: muteBtn, alpha: 0.5, duration: 80, yoyo: true });
         });
 
+        // ── Wrench cooldown indicator (above mute button) ──
+        const WRENCH_X = GAME_WIDTH - 28;
+        const WRENCH_Y = GAME_HEIGHT - 120;
+        const barW = 22;
+        const barH = 3;
+
+        // Wrench icon
+        this.wrenchIcon = this.add.text(WRENCH_X, WRENCH_Y, '\u2699', {
+            fontFamily: 'monospace',
+            fontSize: '14px',
+            color: '#FFD700',
+            stroke: '#000000',
+            strokeThickness: 2,
+            fontStyle: 'bold'
+        }).setOrigin(0.5).setScrollFactor(0).setDepth(500);
+
+        // Cooldown bar background
+        this.wrenchCooldownBg = this.add.graphics().setScrollFactor(0).setDepth(500);
+        this.wrenchCooldownBg.fillStyle(0x333333, 0.8);
+        this.wrenchCooldownBg.fillRoundedRect(WRENCH_X - barW / 2, WRENCH_Y + 10, barW, barH, 1);
+
+        // Cooldown bar fill (starts full)
+        this.wrenchCooldownFill = this.add.graphics().setScrollFactor(0).setDepth(501);
+        this.wrenchCooldownFill.fillStyle(0xFFD700, 0.9);
+        this.wrenchCooldownFill.fillRoundedRect(WRENCH_X - barW / 2, WRENCH_Y + 10, barW, barH, 1);
+
+        // Listen for cooldown events
+        this._wrenchReady = true;
+        gameScene.events.on('wrenchReady', () => {
+            this._wrenchReady = true;
+            if (this.wrenchIcon) this.wrenchIcon.setColor('#FFD700');
+            this.wrenchCooldownFill.clear();
+            this.wrenchCooldownFill.fillStyle(0xFFD700, 0.9);
+            this.wrenchCooldownFill.fillRoundedRect(WRENCH_X - barW / 2, WRENCH_Y + 10, barW, barH, 1);
+        });
+
+        gameScene.events.on('wrenchThrown', () => {
+            this._wrenchReady = false;
+            if (this.wrenchIcon) this.wrenchIcon.setColor('#666666');
+            // Animate cooldown bar shrinking over WRENCH_COOLDOWN ms
+            this.wrenchCooldownFill.clear();
+            this.wrenchCooldownFill.fillStyle(0xFFD700, 0.9);
+            this.wrenchCooldownFill.fillRoundedRect(WRENCH_X - barW / 2, WRENCH_Y + 10, barW, barH, 1);
+
+            // Use a tween to animate the bar
+            const tempRect = { w: barW };
+            this.tweens.add({
+                targets: tempRect,
+                w: 0,
+                duration: WRENCH_COOLDOWN,
+                ease: 'Linear',
+                onUpdate: () => {
+                    if (this.wrenchCooldownFill && this.wrenchCooldownFill.active) {
+                        this.wrenchCooldownFill.clear();
+                        this.wrenchCooldownFill.fillStyle(0xFFD700, 0.9);
+                        this.wrenchCooldownFill.fillRoundedRect(
+                            WRENCH_X - barW / 2, WRENCH_Y + 10,
+                            tempRect.w, barH, 1
+                        );
+                    }
+                }
+            });
+        });
+
         // ── Screen vignette overlay (dark edges for atmosphere) ──
         const vignette = this.add.graphics().setScrollFactor(0).setDepth(300);
         vignette.fillStyle(0x000000, 0.2);
