@@ -812,11 +812,41 @@ class GameScene extends Phaser.Scene {
             return;
         }
 
-        // STOMP LOGIC (for non-drone enemies like walkers):
-        // 1. Player is falling (velocity Y > 0)
-        // 2. Player's bottom (BBoxBottom) is above enemy's center (enemy.y + 20 tolerance)
-        // 3. Enemy is not already dead
+        // SPECIAL CASE: Crawler — only stompable via top weak point
+        if (enemy instanceof Crawler) {
+            const wp = enemy.getCrawlerWeakPointRect(this._hasWrenchStrike);
+            const pb = new Phaser.Geom.Rectangle(
+                player.body.x + player.body.width * 0.25,
+                player.body.y + player.body.height - 6,
+                player.body.width * 0.5,
+                6
+            );
+            const isFalling = player.body.velocity.y >= -10;
+            if (isFalling && Phaser.Geom.Intersects.RectangleToRectangle(pb, wp)) {
+                // Weak point stomp!
+                enemy.stomp();
+                player.bounce();
+                this.score += STOMP_SCORE;
+                if (this._hasWrenchStrike) {
+                    this.cameras.main.shake(150, 0.015);
+                }
+                if (Math.random() < GEAR_STOMP_DROP_CHANCE && !this._levelCompleteTriggered) {
+                    this._spawnGearDrop(enemy.x, enemy.y);
+                }
+                this.events.emit('updateScore', this.score);
+                this._playSound('sfx-stomp');
+                this._onStompScore(enemy);
+                return;
+            }
+            // Not weak point hit → hurt player
+            if (!player.isInvincible) {
+                this._hurtPlayer();
+            }
+            return;
+        }
 
+        // STOMP LOGIC (fallback — unused for known enemy types):
+        // Kept for compatibility if new enemy types are added without weak point.
         const playerBottom = player.body.y + player.body.height;
         const enemyCenter = enemy.y;
         const tolerance = this._hasWrenchStrike ? 26 : 20;

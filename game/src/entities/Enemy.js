@@ -134,11 +134,17 @@ class PatrolDrone extends Phaser.Physics.Arcade.Sprite {
     // ── Draw sensor cone visual (below drone, pointing down) ──
     _showSensorCone() {
         if (this._sensorCone) return;
-        this._sensorCone = this.scene.add.image(this.x, this.y + 14, 'laser-cone')
-            .setOrigin(0.5, 0)  // top-center: cone extends downward from drone bottom
-            .setAlpha(0.4)
-            .setScale(1, this._scanRange / 12)
-            .setDepth(5);
+        this._sensorCone = this.scene.add.graphics().setDepth(5);
+        this._sensorCone.fillStyle(0xFF0000, 0.25);
+        // Draw downward triangle cone (relative to 0,0; we position via x/y)
+        const coneH = this._scanRange;
+        const coneW = 40;
+        this._sensorCone.fillTriangle(
+            0, 0,
+            -coneW / 2, coneH,
+            coneW / 2, coneH
+        );
+        this._sensorCone.setPosition(this.x, this.y + 14);
     }
     _hideSensorCone() {
         if (this._sensorCone) {
@@ -186,12 +192,11 @@ class PatrolDrone extends Phaser.Physics.Arcade.Sprite {
         const beamY = this.y + 14;
         const beamH = groundY - beamY;
 
-        // Create laser beam sprite
-        this._laserBeam = this.scene.add.image(this.x, beamY + beamH / 2, 'laser-beam')
-            .setDisplaySize(8, beamH)
-            .setOrigin(0.5, 0.5)
-            .setAlpha(0)
-            .setDepth(15);
+        // Create laser beam using Graphics
+        const beamG = this.scene.add.graphics().setDepth(15).setAlpha(0);
+        beamG.fillStyle(0xFF0000, 1);
+        beamG.fillRect(this.x - 4, this.y + 14, 8, beamH);
+        this._laserBeam = beamG;
 
         // Flash in
         this.scene.tweens.add({
@@ -223,7 +228,7 @@ class PatrolDrone extends Phaser.Physics.Arcade.Sprite {
     }
 
     _isLaserActive() {
-        return this._state === DRONE_STATE.FIRING && this._laserBeam && this._laserBeam.active && this._laserBeam.alpha > 0.5;
+        return this._state === DRONE_STATE.FIRING && this._laserBeam && this._laserBeam.alpha > 0.5;
     }
 
     // ── Check laser hit on player ──
@@ -354,8 +359,7 @@ class PatrolDrone extends Phaser.Physics.Arcade.Sprite {
 
         // ── Sensor cone follow body (extends downward from drone bottom) ──
         if (this._sensorCone) {
-            this._sensorCone.x = this.x;
-            this._sensorCone.y = this.y + 14;
+            this._sensorCone.setPosition(this.x, this.y + 14);
         }
 
         // ── Laser state machine ──
@@ -519,6 +523,24 @@ class Crawler extends Phaser.Physics.Arcade.Sprite {
     stomp() {
         this.isDead = true;
         this.body.enable = false;
+        this.setVelocityX(0);
         this.play('crawler-death-anim');
+        this.scene.tweens.killTweensOf(this);
+    }
+
+    getCrawlerWeakPointRect(hasWrenchStrike) {
+        const ratio = hasWrenchStrike ? 0.9 : 0.6;
+        const wpW = this.body.width * ratio;
+        return new Phaser.Geom.Rectangle(
+            this.body.x + (this.body.width - wpW) / 2,
+            this.body.top,
+            wpW,
+            CRAWLER_WEAK_POINT_HEIGHT
+        );
+    }
+
+    destroy(fromScene) {
+        this.scene.tweens.killTweensOf(this);
+        super.destroy(fromScene);
     }
 }

@@ -105,3 +105,6 @@ const DRONE_RECOVERY_DURATION = 1500;
 
 // ── Drone Debug ──
 const DEBUG_DRONE = false;
+
+// ── Crawler Weak Point ──
+const CRAWLER_WEAK_POINT_HEIGHT = 8;
