@@ -643,7 +643,7 @@ class GameScene extends Phaser.Scene {
         levelData.enemies.forEach(e => {
             let enemy;
             if (e.type === 'walker' || !e.type) {
-                enemy = new Walker(this, e.x, e.y, e.patrolLeft, e.patrolRight);
+                enemy = new Crawler(this, e.x, e.y, e.patrolLeft, e.patrolRight);
             } else if (e.type === 'drone') {
                 enemy = new PatrolDrone(this, e.x, e.y, e.patrolLeft, e.patrolRight);
             }

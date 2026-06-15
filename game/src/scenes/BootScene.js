@@ -23,7 +23,7 @@ class BootScene extends Phaser.Scene {
         this.generateGateTextures();
         this.generateObstacleTextures();
         this._generateDroneTexture();
-        this._generateWalkerTextures();
+        this._generateCrawlerTextures();
         this._generateLaserTexture();
         this.generateGroundTile();
         this.generateBackgroundTextures();
@@ -41,8 +41,8 @@ class BootScene extends Phaser.Scene {
     }
 
     // ── Helper: draw a simple gear ──
-    _drawGear(g, cx, cy, radius, teeth, color) {
-        g.fillStyle(color);
+    _drawGear(g, cx, cy, radius, teeth, color, alpha = 1) {
+        g.fillStyle(color, alpha);
         g.fillCircle(cx, cy, radius);
         const tw = radius * 0.35;
         const th = radius * 0.25;
@@ -62,34 +62,34 @@ class BootScene extends Phaser.Scene {
         // IDLE
         let g = this.add.graphics();
         this._drawChar(g, 0, 0);
-        g.generateTexture('player-idle', 32, 32);
+        g.generateTexture('player-idle', 32, 40);
         g.destroy();
 
         // RUN (legs apart, arms swinging)
         g = this.add.graphics();
         this._drawChar(g, -1, 2);
-        g.generateTexture('player-run', 32, 32);
+        g.generateTexture('player-run', 32, 40);
         g.destroy();
 
         // JUMP (arms up, legs tucked)
         g = this.add.graphics();
         this._drawChar(g, -2, -1);
-        g.generateTexture('player-jump', 32, 32);
+        g.generateTexture('player-jump', 32, 40);
         g.destroy();
 
         // FALL (arms down, legs spread)
         g = this.add.graphics();
         this._drawChar(g, 1, 1);
-        g.generateTexture('player-fall', 32, 32);
+        g.generateTexture('player-fall', 32, 40);
         g.destroy();
 
         // HURT (red-tinted)
         g = this.add.graphics();
         this._drawChar(g, 0, 0, (gfx) => {
             gfx.fillStyle(0xFF0000, 0.3);
-            gfx.fillRect(0, 0, 32, 32);
+            gfx.fillRect(0, 0, 32, 40);
         });
-        g.generateTexture('player-hurt', 32, 32);
+        g.generateTexture('player-hurt', 32, 40);
         g.destroy();
     }
 
@@ -526,203 +526,90 @@ class BootScene extends Phaser.Scene {
         g.destroy();
     }
 
-    _generateWalkerTextures() {
-        // WALKER WALK (32x32) — steampunk mechanical automaton
-        let g = this.add.graphics();
-        // ── Head (brass dome) ──
-        g.fillStyle(0xCD7F32);
-        g.fillRect(8,  1,  16, 2);
-        g.fillStyle(0xB87333);
-        g.fillCircle(16, 6, 7);
-        // Head rivets
-        g.fillStyle(0xDDDDDD);
-        g.fillRect(10, 3, 1, 1);
-        g.fillRect(21, 3, 1, 1);
-        g.fillRect(15, 1, 1, 1);
-        // ── Goggles (brass) ──
-        g.fillStyle(0xDAA520);
-        g.fillCircle(12, 7, 3);
-        g.fillCircle(20, 7, 3);
-        g.fillStyle(0x87CEEB);
-        g.fillCircle(12, 7, 2);
-        g.fillCircle(20, 7, 2);
-        g.fillStyle(0x8B6914);
-        g.fillRect(9,  7, 14, 1);
-        // Glowing mechanical eyes
-        g.fillStyle(0xFFAA00);
-        g.fillRect(11, 6, 1, 1);
-        g.fillRect(19, 6, 1, 1);
-        // ── Jaw / ventilator grill ──
-        g.fillStyle(0x8B5A2B);
-        g.fillRect(8,  9,  3, 4);
-        g.fillRect(21, 9,  3, 4);
-        g.fillStyle(0x6B4226);
-        g.fillRect(11, 9,  10, 4);
-        // Vent slots
-        g.fillStyle(0x4A2E1A);
-        g.fillRect(12, 10, 2, 1);
-        g.fillRect(15, 10, 2, 1);
-        g.fillRect(18, 10, 2, 1);
-        g.fillRect(12, 12, 2, 1);
-        g.fillRect(15, 12, 2, 1);
-        g.fillRect(18, 12, 2, 1);
-        // ── Neck / joint ──
-        g.fillStyle(0x888888);
-        g.fillRect(14, 13, 4, 2);
-        g.fillStyle(0x666666);
-        g.fillRect(15, 13, 2, 2);
-        // ── Torso (copper body) ──
-        g.fillStyle(0xA0714B);
-        g.fillRect(6,  15, 20, 12);
-        g.fillStyle(0x8B5A2B);
-        g.fillRect(8,  16, 16, 10);
-        // Chest plate
-        g.fillStyle(0xCD7F32);
-        g.fillRect(10, 17, 12, 4);
-        g.fillStyle(0xB87333);
-        g.fillRect(12, 18, 8, 2);
-        // Chest gear
-        g.fillStyle(0xFFD700);
-        g.fillCircle(16, 21, 3);
-        g.fillStyle(0xB8860B);
-        g.fillCircle(16, 21, 2);
-        g.fillStyle(0x8B6914);
-        g.fillCircle(16, 21, 1);
-        // Gears on left side
-        g.fillStyle(0xCD7F32);
-        g.fillCircle(7, 19, 2);
-        g.fillStyle(0xB87333);
-        g.fillCircle(7, 19, 1);
-        // Steam pipe (right side)
-        g.fillStyle(0x6B4226);
-        g.fillRect(24, 16, 3, 8);
-        g.fillStyle(0x8B5A2B);
-        g.fillRect(25, 16, 1, 8);
-        // ── Arms (mechanical) ──
-        g.fillStyle(0x8B5A2B);
-        g.fillRect(2,  16, 4, 3);
-        g.fillRect(26, 16, 4, 3);
-        // Upper arms
-        g.fillStyle(0xA0714B);
-        g.fillRect(3,  19, 2, 5);
-        g.fillRect(27, 19, 2, 5);
-        // Elbow joints
-        g.fillStyle(0x888888);
-        g.fillCircle(4, 24, 2);
-        g.fillCircle(28, 24, 2);
-        // Forearms
-        g.fillStyle(0x8B5A2B);
-        g.fillRect(2,  25, 3, 3);
-        g.fillRect(27, 25, 3, 3);
-        // Pincer claws
-        g.fillStyle(0x666666);
-        g.fillRect(1,  28, 2, 2);
-        g.fillRect(4,  28, 2, 2);
-        g.fillRect(26, 28, 2, 2);
-        g.fillRect(29, 28, 2, 2);
-        // ── Legs (piston/mechanical) ──
-        g.fillStyle(0x6B4226);
-        g.fillRect(10, 27, 4, 2);
-        g.fillRect(18, 27, 4, 2);
-        // Upper legs
-        g.fillStyle(0x8B5A2B);
-        g.fillRect(9,  29, 4, 3);
-        g.fillRect(19, 29, 4, 3);
-        // Knee joints
-        g.fillStyle(0x888888);
-        g.fillCircle(11, 29, 1);
-        g.fillCircle(21, 29, 1);
-        // Lower legs
-        g.fillStyle(0x6B4226);
-        g.fillRect(9,  27, 4, 2);
-        g.fillRect(19, 27, 4, 2);
-        // Metal boots
-        g.fillStyle(0x4A3E2E);
-        g.fillRect(8,  29, 6, 3);
-        g.fillRect(18, 29, 6, 3);
-        g.fillStyle(0x5D4E37);
-        g.fillRect(9,  30, 4, 1);
-        g.fillRect(19, 30, 4, 1);
-        // ── Body rivets ──
-        g.fillStyle(0xBBBBBB);
-        g.fillRect(8,  17, 1, 1);
-        g.fillRect(23, 17, 1, 1);
-        g.fillRect(8,  24, 1, 1);
-        g.fillRect(23, 24, 1, 1);
-        g.generateTexture('walker-walk', 32, 32);
-        g.destroy();
+    _generateCrawlerTextures() {
+        const W = '#222';
+        const S = '#8B4513';
+        const S2 = '#A06830';
+        const R = '#FF2222';
+        const M = '#555';
+        const C = '#CC6600';
+        const G = '#FFD700';
+        const bg = '#1a1a2e';
 
-        // WALKER DEATH
-        g = this.add.graphics();
-        // Head (darkened)
-        g.fillStyle(0x8B6914);
-        g.fillRect(8,  1,  16, 2);
-        g.fillStyle(0x8B5A2B);
-        g.fillCircle(16, 6, 7);
-        g.fillStyle(0x888888);
-        g.fillCircle(12, 7, 3);
-        g.fillCircle(20, 7, 3);
-        g.fillStyle(0x666666);
-        g.fillCircle(12, 7, 2);
-        g.fillCircle(20, 7, 2);
-        g.fillStyle(0x8B6914);
-        g.fillRect(9,  7, 14, 1);
-        // X eyes
-        g.lineStyle(2, 0xFF0000);
-        g.beginPath();
-        g.moveTo(10, 5); g.lineTo(14, 8);
-        g.moveTo(14, 5); g.lineTo(10, 8);
-        g.strokePath();
-        g.beginPath();
-        g.moveTo(18, 5); g.lineTo(22, 8);
-        g.moveTo(22, 5); g.lineTo(18, 8);
-        g.strokePath();
-        g.fillStyle(0x6B4226);
-        g.fillRect(8,  9,  3, 4);
-        g.fillRect(21, 9,  3, 4);
-        g.fillStyle(0x4A2E1A);
-        g.fillRect(11, 9,  10, 4);
-        g.fillStyle(0x666666);
-        g.fillRect(14, 13, 4, 2);
-        // Torso (darkened)
-        g.fillStyle(0x7A4A2B);
-        g.fillRect(6,  15, 20, 12);
-        g.fillStyle(0x6B3A1B);
-        g.fillRect(8,  16, 16, 10);
-        g.fillStyle(0x8B6914);
-        g.fillRect(10, 17, 12, 4);
-        g.fillStyle(0x8B5A2B);
-        g.fillCircle(7, 19, 2);
-        g.fillStyle(0x4A2E1A);
-        g.fillRect(24, 16, 3, 8);
-        // Arms
-        g.fillStyle(0x6B3A1B);
-        g.fillRect(2,  16, 4, 3);
-        g.fillRect(26, 16, 4, 3);
-        g.fillStyle(0x7A4A2B);
-        g.fillRect(3,  19, 2, 5);
-        g.fillRect(27, 19, 2, 5);
-        g.fillStyle(0x666666);
-        g.fillCircle(4, 24, 2);
-        g.fillCircle(28, 24, 2);
-        g.fillStyle(0x6B3A1B);
-        g.fillRect(2,  25, 3, 3);
-        g.fillRect(27, 25, 3, 3);
+        // ── Texture: crawler-walk (32×32) ──
+        const g1 = this.make.graphics({ add: false });
+        // Background
+        g1.fillStyle(Phaser.Display.Color.HexStringToColor(bg).color, 1);
+        g1.fillRect(0, 0, 32, 32);
         // Legs
-        g.fillStyle(0x4A2E1A);
-        g.fillRect(10, 27, 4, 2);
-        g.fillRect(18, 27, 4, 2);
-        g.fillStyle(0x6B3A1B);
-        g.fillRect(9,  29, 4, 3);
-        g.fillRect(19, 29, 4, 3);
-        g.fillStyle(0x3E2A1A);
-        g.fillRect(8,  29, 6, 3);
-        g.fillRect(18, 29, 6, 3);
+        g1.fillStyle(Phaser.Display.Color.HexStringToColor(M).color, 1);
+        g1.fillRect(0, 10, 4, 3);
+        g1.fillRect(1, 13, 3, 4);
+        g1.fillRect(28, 10, 4, 3);
+        g1.fillRect(28, 13, 3, 4);
+        // Body
+        g1.fillStyle(Phaser.Display.Color.HexStringToColor(S).color, 1);
+        g1.fillRect(4, 6, 24, 2);
+        g1.fillRect(2, 8, 28, 6);
+        g1.fillRect(3, 14, 26, 2);
+        g1.fillRect(4, 16, 24, 1);
+        g1.lineStyle(1, Phaser.Display.Color.HexStringToColor(W).color, 1);
+        g1.strokeRect(4, 6, 24, 2);
+        g1.strokeRect(2, 8, 28, 6);
+        g1.strokeRect(3, 14, 26, 2);
+        g1.strokeRect(4, 16, 24, 1);
+        // Highlight
+        g1.fillStyle(Phaser.Display.Color.HexStringToColor(S2).color, 0.3);
+        g1.fillRect(6, 8, 8, 3);
+        g1.fillRect(18, 8, 8, 3);
+        // Eyes
+        g1.fillStyle(Phaser.Display.Color.HexStringToColor(R).color, 1);
+        g1.fillRect(7, 7, 3, 3);
+        g1.fillRect(22, 7, 3, 3);
+        g1.fillStyle(0x000000, 1);
+        g1.fillRect(8, 8, 1, 1);
+        g1.fillRect(23, 8, 1, 1);
+        // Gear
+        this._drawGear(g1, 16, 12, 5, 4, Phaser.Display.Color.HexStringToColor(G).color, 0.6);
+        // Claws
+        g1.fillStyle(Phaser.Display.Color.HexStringToColor(C).color, 1);
+        g1.fillRect(3, 11, 3, 4);
+        g1.fillRect(2, 12, 4, 2);
+        g1.fillRect(26, 11, 3, 4);
+        g1.fillRect(26, 12, 4, 2);
+        g1.lineStyle(1, Phaser.Display.Color.HexStringToColor(W).color, 0.5);
+        g1.strokeRect(3, 11, 3, 4);
+        g1.strokeRect(26, 11, 3, 4);
+        g1.generateTexture('crawler-walk', 32, 32);
+        g1.destroy();
+
+        // ── Death texture: darkened + X eyes ──
+        const g2 = this.make.graphics({ add: false });
+        g2.fillStyle(Phaser.Display.Color.HexStringToColor(bg).color, 1);
+        g2.fillRect(0, 0, 32, 32);
+        // Same body but darkened (use S3)
+        const S3 = '#6B3A1B';
+        g2.fillStyle(Phaser.Display.Color.HexStringToColor(M).color, 0.6);
+        g2.fillRect(0, 10, 4, 3);
+        g2.fillRect(1, 13, 3, 4);
+        g2.fillRect(28, 10, 4, 3);
+        g2.fillRect(28, 13, 3, 4);
+        g2.fillStyle(Phaser.Display.Color.HexStringToColor(S3).color, 1);
+        g2.fillRect(4, 6, 24, 2);
+        g2.fillRect(2, 8, 28, 6);
+        g2.fillRect(3, 14, 26, 2);
+        g2.fillRect(4, 16, 24, 1);
+        // X eyes
+        g2.lineStyle(2, Phaser.Display.Color.HexStringToColor(R).color, 1);
+        g2.lineBetween(7, 7, 10, 10);
+        g2.lineBetween(10, 7, 7, 10);
+        g2.lineBetween(22, 7, 25, 10);
+        g2.lineBetween(25, 7, 22, 10);
         // Dark overlay
-        g.fillStyle(0x000000, 0.4);
-        g.fillRect(0, 0, 32, 32);
-        g.generateTexture('walker-death', 32, 32);
-        g.destroy();
+        g2.fillStyle(0x000000, 0.4);
+        g2.fillRect(0, 0, 32, 32);
+        g2.generateTexture('crawler-death', 32, 32);
+        g2.destroy();
     }
 
     _generateLaserTexture() {
@@ -1071,83 +958,89 @@ class BootScene extends Phaser.Scene {
 
     // ── Character drawing helper (extracted from generatePlayerTextures) ──
     _drawChar(g, armY, legOffset, extra) {
-        // Boots
-        g.fillStyle(0x654321);
-        g.fillRect(9,  24, 5, 6);
-        g.fillRect(18, 24, 5, 6);
-        g.fillStyle(0x7A5A3A, 0.5);
-        g.fillRect(9,  24, 5, 1); // boot highlight
-        g.fillRect(18, 24, 5, 1);
-        // Legs
-        g.fillStyle(0x5C4033);
-        g.fillRect(9,  20, 5, 4 + legOffset);
-        g.fillRect(18, 20, 5, 4 - legOffset);
-        // Body
-        g.fillStyle(0x8B4513);
-        g.fillRect(8,  12, 16, 10);
-        // Body highlight (gradient effect)
-        g.fillStyle(0xA06830, 0.4);
-        g.fillRect(8,  12, 4, 10);
-        // Belt
-        g.fillStyle(0x654321);
-        g.fillRect(8,  18, 16, 2);
-        g.fillStyle(0xFFD700);
-        g.fillRect(14, 18, 4, 2);
-        // Belt buckle shine
-        g.fillStyle(0xFFFFAA, 0.5);
-        g.fillRect(15, 18, 1, 1);
-        // Arms
-        g.fillStyle(0x8B4513);
-        g.fillRect(4,  12 + armY, 4, 10);
-        g.fillRect(24, 12 - armY, 4, 10);
-        // Arm highlight
-        g.fillStyle(0xA06830, 0.3);
-        g.fillRect(4,  12 + armY, 1, 10);
-        g.fillRect(24, 12 - armY, 1, 10);
-        // Hands
-        g.fillStyle(0xFFDBB4);
-        g.fillRect(4,  20 + armY, 4, 3);
-        g.fillRect(24, 20 - armY, 4, 3);
-        // Head
-        g.fillStyle(0xFFDBB4);
-        g.fillCircle(16, 8, 6);
-        // Hat
-        g.fillStyle(0x3E2723);
-        g.fillRect(8,  1, 16, 4);
-        g.fillRect(6,  4, 20, 2);
-        // Hat gradient highlight
-        g.fillStyle(0x5A4033, 0.5);
-        g.fillRect(8,  1, 16, 1);
-        g.fillRect(6,  4, 20, 1);
+        const w = 32, h = 40;
+        // Helper: hex color to Phaser int
+        const hex = (c) => Phaser.Display.Color.HexStringToColor(c).color;
+        const bg = '#1a1a2e';
+        
+        g.clear();
+        g.fillStyle(hex(bg), 1);
+        g.fillRect(0, 0, w, h);
+
+        // ── Hat (rows 1-5, cols 6-25) ──
+        g.fillStyle(hex('#8B4513'), 1);
+        g.fillRect(8, 1, 16, 1);     // hat brim top
+        g.fillRect(6, 2, 20, 1);     // brim
+        g.fillRect(8, 3, 16, 3);     // hat body
+
+        // ── Face (rows 6-10, cols 8-23) ──
+        g.fillStyle(hex('#DDA07A'), 1);  // skin
+        g.fillRect(10, 6, 12, 5);
         // Goggles
-        g.fillStyle(0xFFD700);
-        g.fillCircle(12, 8, 3);
-        g.fillCircle(20, 8, 3);
-        g.fillStyle(0x87CEEB);
-        g.fillCircle(12, 8, 2);
-        g.fillCircle(20, 8, 2);
-        // Goggle shine
-        g.fillStyle(0xFFFFFF, 0.4);
-        g.fillRect(11, 7, 1, 1);
-        g.fillRect(19, 7, 1, 1);
-        g.fillStyle(0x3E2723);
-        g.fillRect(10, 7, 12, 1);
-        // Scarf
-        g.fillStyle(0xCC3333);
-        g.fillRect(8,  10, 16, 3);
-        g.fillRect(24, 11, 4, 4);
-        // Scarf highlight
-        g.fillStyle(0xEE5555, 0.4);
-        g.fillRect(8,  10, 16, 1);
-        // Eyes
-        g.fillStyle(0x000000);
-        g.fillRect(11, 7, 1, 1);
-        g.fillRect(19, 7, 1, 1);
-        // Mouth
-        g.fillStyle(0xCC6666);
-        g.fillRect(14, 11, 4, 1);
-        // Extra features (for hurt state, etc.)
-        if (extra) extra(g);
+        g.fillStyle(hex('#88CCFF'), 1);
+        g.fillRect(9, 7, 5, 3);      // left goggle
+        g.fillRect(18, 7, 5, 3);     // right goggle
+        g.lineStyle(1, hex('#555'), 1);
+        g.strokeRect(9, 7, 5, 3);
+        g.strokeRect(18, 7, 5, 3);
+        // Goggle bridge
+        g.lineStyle(2, hex('#555'), 1);
+        g.lineBetween(14, 8, 18, 8);
+
+        // ── Scarf/Collar (rows 11-12) ──
+        g.fillStyle(hex('#CC4400'), 1);  // scarf
+        g.fillRect(8, 11, 16, 2);
+
+        // ── Jacket body (rows 13-22) ──
+        g.fillStyle(hex('#554433'), 1);  // jacket
+        g.fillRect(8, 13, 16, 10);
+        // Jacket detail: gear emblem at center
+        this._drawGear(g, 16, 18, 5, 4, hex('#FFD700'), 0.5);
+        // Belt (rows 21-22)
+        g.fillStyle(hex('#333'), 1);
+        g.fillRect(8, 22, 16, 2);
+        g.fillStyle(hex('#FFD700'), 1);
+        g.fillRect(15, 22, 2, 2);     // buckle
+
+        // ── Arms (rows 13-22 + armY offset) ──
+        g.fillStyle(hex('#554433'), 1);
+        // Left arm
+        g.fillRect(5, 14 + armY, 4, 7);
+        g.fillStyle(hex('#DDA07A'), 1);  // hand
+        g.fillRect(5, 21 + armY, 4, 2);
+        // Right arm
+        g.fillStyle(hex('#554433'), 1);
+        g.fillRect(23, 14 + armY, 4, 7);
+        g.fillStyle(hex('#DDA07A'), 1);
+        g.fillRect(23, 21 + armY, 4, 2);
+
+        // ── Legs (rows 24-31) ──
+        g.fillStyle(hex('#334466'), 1);  // pants
+        g.fillRect(9, 24 + legOffset, 5, 6);   // left leg
+        g.fillRect(18, 24 + legOffset, 5, 6);  // right leg
+        // Boots (rows 30-35)
+        g.fillStyle(hex('#8B4513'), 1);  // boots
+        g.fillRect(8, 30 + legOffset, 7, 4);   // left boot
+        g.fillRect(17, 30 + legOffset, 7, 4);  // right boot
+        // Boot metal trim
+        g.fillStyle(hex('#666'), 0.8);
+        g.fillRect(8, 30 + legOffset, 7, 1);
+        g.fillRect(17, 30 + legOffset, 7, 1);
+        
+    // Extra: either a drawing callback (e.g. red overlay for hurt)
+    // or a boolean for run frame differentiation
+    if (typeof extra === 'function') {
+        extra(g);
+    } else if (extra) {
+        // Running arm movement
+        g.fillStyle(hex('#554433'), 1);
+        g.fillRect(3, 14 + armY, 3, 6);
+        g.fillRect(25, 14 - armY, 4, 6);
+    }
+
+        // ── Dark bottom fill ──
+        g.fillStyle(hex(bg), 1);
+        g.fillRect(0, 39, w, 1);
     }
 
     // ── Generate individual frame textures from draw callbacks ──
@@ -1170,128 +1063,79 @@ class BootScene extends Phaser.Scene {
         this.anims.create({ key, ...config });
     }
 
-    // ── Walker body drawing with per-frame leg/arm offsets ──
-    _drawWalkerBody(g, legLeftDx, legRightDx, armLeftDx, armRightDx) {
-        // ── Head (brass dome) ──
-        g.fillStyle(0xCD7F32);
-        g.fillRect(8,  1,  16, 2);
-        g.fillStyle(0xB87333);
-        g.fillCircle(16, 6, 7);
-        // Head rivets
-        g.fillStyle(0xDDDDDD);
-        g.fillRect(10, 3, 1, 1);
-        g.fillRect(21, 3, 1, 1);
-        g.fillRect(15, 1, 1, 1);
-        // ── Goggles (brass) ──
-        g.fillStyle(0xDAA520);
-        g.fillCircle(12, 7, 3);
-        g.fillCircle(20, 7, 3);
-        g.fillStyle(0x87CEEB);
-        g.fillCircle(12, 7, 2);
-        g.fillCircle(20, 7, 2);
-        g.fillStyle(0x8B6914);
-        g.fillRect(9,  7, 14, 1);
-        // Glowing mechanical eyes
-        g.fillStyle(0xFFAA00);
-        g.fillRect(11, 6, 1, 1);
-        g.fillRect(19, 6, 1, 1);
-        // ── Jaw / ventilator grill ──
-        g.fillStyle(0x8B5A2B);
-        g.fillRect(8,  9,  3, 4);
-        g.fillRect(21, 9,  3, 4);
-        g.fillStyle(0x6B4226);
-        g.fillRect(11, 9,  10, 4);
-        // Vent slots
-        g.fillStyle(0x4A2E1A);
-        g.fillRect(12, 10, 2, 1);
-        g.fillRect(15, 10, 2, 1);
-        g.fillRect(18, 10, 2, 1);
-        g.fillRect(12, 12, 2, 1);
-        g.fillRect(15, 12, 2, 1);
-        g.fillRect(18, 12, 2, 1);
-        // ── Neck / joint ──
-        g.fillStyle(0x888888);
-        g.fillRect(14, 13, 4, 2);
-        g.fillStyle(0x666666);
-        g.fillRect(15, 13, 2, 2);
-        // ── Torso (copper body) ──
-        g.fillStyle(0xA0714B);
-        g.fillRect(6,  15, 20, 12);
-        g.fillStyle(0x8B5A2B);
-        g.fillRect(8,  16, 16, 10);
-        // Chest plate
-        g.fillStyle(0xCD7F32);
-        g.fillRect(10, 17, 12, 4);
-        g.fillStyle(0xB87333);
-        g.fillRect(12, 18, 8, 2);
-        // Chest gear
-        g.fillStyle(0xFFD700);
-        g.fillCircle(16, 21, 3);
-        g.fillStyle(0xB8860B);
-        g.fillCircle(16, 21, 2);
-        g.fillStyle(0x8B6914);
-        g.fillCircle(16, 21, 1);
-        // Gears on left side
-        g.fillStyle(0xCD7F32);
-        g.fillCircle(7, 19, 2);
-        g.fillStyle(0xB87333);
-        g.fillCircle(7, 19, 1);
-        // Steam pipe (right side)
-        g.fillStyle(0x6B4226);
-        g.fillRect(24, 16, 3, 8);
-        g.fillStyle(0x8B5A2B);
-        g.fillRect(25, 16, 1, 8);
-        // ── Arms (mechanical) ──
-        g.fillStyle(0x8B5A2B);
-        g.fillRect(2 + armLeftDx,  16, 4, 3);
-        g.fillRect(26 + armRightDx, 16, 4, 3);
-        // Upper arms
-        g.fillStyle(0xA0714B);
-        g.fillRect(3 + armLeftDx,  19, 2, 5);
-        g.fillRect(27 + armRightDx, 19, 2, 5);
-        // Elbow joints
-        g.fillStyle(0x888888);
-        g.fillCircle(4 + armLeftDx, 24, 2);
-        g.fillCircle(28 + armRightDx, 24, 2);
-        // Forearms
-        g.fillStyle(0x8B5A2B);
-        g.fillRect(2 + armLeftDx,  25, 3, 3);
-        g.fillRect(27 + armRightDx, 25, 3, 3);
-        // Pincer claws
-        g.fillStyle(0x666666);
-        g.fillRect(1 + armLeftDx,  28, 2, 2);
-        g.fillRect(4 + armLeftDx,  28, 2, 2);
-        g.fillRect(26 + armRightDx, 28, 2, 2);
-        g.fillRect(29 + armRightDx, 28, 2, 2);
-        // ── Legs (piston/mechanical) ──
-        g.fillStyle(0x6B4226);
-        g.fillRect(10 + legLeftDx, 27, 4, 2);
-        g.fillRect(18 + legRightDx, 27, 4, 2);
-        // Upper legs
-        g.fillStyle(0x8B5A2B);
-        g.fillRect(9 + legLeftDx,  29, 4, 3);
-        g.fillRect(19 + legRightDx, 29, 4, 3);
-        // Knee joints
-        g.fillStyle(0x888888);
-        g.fillCircle(11 + legLeftDx, 29, 1);
-        g.fillCircle(21 + legRightDx, 29, 1);
-        // Lower legs
-        g.fillStyle(0x6B4226);
-        g.fillRect(9 + legLeftDx,  27, 4, 2);
-        g.fillRect(19 + legRightDx, 27, 4, 2);
-        // Metal boots
-        g.fillStyle(0x4A3E2E);
-        g.fillRect(8 + legLeftDx,  29, 6, 3);
-        g.fillRect(18 + legRightDx, 29, 6, 3);
-        g.fillStyle(0x5D4E37);
-        g.fillRect(9 + legLeftDx,  30, 4, 1);
-        g.fillRect(19 + legRightDx, 30, 4, 1);
-        // ── Body rivets ──
-        g.fillStyle(0xBBBBBB);
-        g.fillRect(8,  17, 1, 1);
-        g.fillRect(23, 17, 1, 1);
-        g.fillRect(8,  24, 1, 1);
-        g.fillRect(23, 24, 1, 1);
+    // ── Draw crab body for crawler (4-animation frame support) ──
+    _drawCrawlerBody(g, legLeftDx, legRightDx, armLeftDx, armRightDx) {
+        const w = 32, h = 32;
+        const W = '#222';  // outline
+        const S = '#8B4513'; // shell brown
+        const S2 = '#A06830'; // shell highlight
+        const S3 = '#6B3A1B'; // shell dark
+        const R = '#FF2222'; // eye red
+        const M = '#555';     // metal legs
+        const C = '#CC6600';  // claw orange
+        const G = '#FFD700';  // gear gold
+        const bg = '#1a1a2e'; // background
+
+        g.clear();
+        g.fillStyle(Phaser.Display.Color.HexStringToColor(bg).color, 1);
+        g.fillRect(0, 0, w, h);
+
+        // ── Legs (drawn behind body) ──
+        g.fillStyle(Phaser.Display.Color.HexStringToColor(M).color, 1);
+        // Left legs (offset by legLeftDx)
+        g.fillRect(0 + legLeftDx, 10, 4, 3);   // upper left
+        g.fillRect(1 + legLeftDx, 13, 3, 4);   // lower left
+        // Right legs (offset by legRightDx)
+        g.fillRect(28 + legRightDx, 10, 4, 3); // upper right
+        g.fillRect(28 + legRightDx, 13, 3, 4); // lower right
+
+        // ── Shell body (wide oval) ──
+        g.fillStyle(Phaser.Display.Color.HexStringToColor(S).color, 1);
+        // Body rectangle with rounded-ish shape (stepped edges)
+        // Top shell curve: rows 4-5, cols 4-27
+        g.fillRect(4, 6, 24, 2);   // top curve
+        g.fillRect(2, 8, 28, 6);   // upper body
+        g.fillRect(3, 14, 26, 2);  // lower body
+        g.fillRect(4, 16, 24, 1);  // bottom curve
+        // Outline
+        g.lineStyle(1, Phaser.Display.Color.HexStringToColor(W).color, 1);
+        g.strokeRect(4, 6, 24, 2);
+        g.strokeRect(2, 8, 28, 6);
+        g.strokeRect(3, 14, 26, 2);
+        g.strokeRect(4, 16, 24, 1);
+
+        // ── Shell highlight ──
+        g.fillStyle(Phaser.Display.Color.HexStringToColor(S2).color, 0.3);
+        g.fillRect(6, 8, 8, 3);  // left highlight
+        g.fillRect(18, 8, 8, 3); // right highlight
+
+        // ── Red eyes ──
+        g.fillStyle(Phaser.Display.Color.HexStringToColor(R).color, 1);
+        g.fillRect(7, 7, 3, 3);    // left eye
+        g.fillRect(22, 7, 3, 3);   // right eye
+        g.fillStyle(0x000000, 1);
+        g.fillRect(8, 8, 1, 1);    // left pupil
+        g.fillRect(23, 8, 1, 1);   // right pupil
+
+        // ── Gear emblem on shell ──
+        this._drawGear(g, 16, 12, 5, 4, Phaser.Display.Color.HexStringToColor(G).color, 0.6);
+
+        // ── Claws (offset by armLeftDx/armRightDx) ──
+        g.fillStyle(Phaser.Display.Color.HexStringToColor(C).color, 1);
+        // Left claw
+        g.fillRect(3 + armLeftDx, 11, 3, 4);
+        g.fillRect(2 + armLeftDx, 12, 4, 2);
+        // Right claw
+        g.fillRect(26 + armRightDx, 11, 3, 4);
+        g.fillRect(26 + armRightDx, 12, 4, 2);
+        // Claw outline
+        g.lineStyle(1, Phaser.Display.Color.HexStringToColor(W).color, 0.5);
+        g.strokeRect(3 + armLeftDx, 11, 3, 4);
+        g.strokeRect(26 + armRightDx, 11, 3, 4);
+
+        // ── Dark bottom border ──
+        g.fillStyle(Phaser.Display.Color.HexStringToColor(bg).color, 1);
+        g.fillRect(0, 31, w, 1);
     }
 
     // ── Drone frame drawing (0=normal, 1=blur prop) ──
@@ -1406,7 +1250,7 @@ class BootScene extends Phaser.Scene {
     createAnimations() {
         // ── Player Animations ──
         // Idle (2 frames: slight breathing)
-        this._generateAnimationFrames('player-idle-anim', 32, 32, [
+        this._generateAnimationFrames('player-idle-anim', 32, 40, [
             (g) => this._drawChar(g, 0, 0),
             (g) => this._drawChar(g, 0, 1),
         ]);
@@ -1419,7 +1263,7 @@ class BootScene extends Phaser.Scene {
         });
 
         // Run (4 frames: walk cycle)
-        this._generateAnimationFrames('player-run-anim', 32, 32, [
+        this._generateAnimationFrames('player-run-anim', 32, 40, [
             (g) => this._drawChar(g, -1, 2),
             (g) => this._drawChar(g, 0, 0),
             (g) => this._drawChar(g, 1, -2),
@@ -1436,7 +1280,7 @@ class BootScene extends Phaser.Scene {
         });
 
         // Jump (2 frames)
-        this._generateAnimationFrames('player-jump-anim', 32, 32, [
+        this._generateAnimationFrames('player-jump-anim', 32, 40, [
             (g) => this._drawChar(g, -2, -1),
             (g) => this._drawChar(g, -1, 0),
         ]);
@@ -1460,27 +1304,26 @@ class BootScene extends Phaser.Scene {
             frameRate: 1, repeat: -1
         });
 
-        // ── Walker Animations ──
-        // Walk (4 frames with leg/arm offsets)
-        this._generateAnimationFrames('walker-walk-anim', 32, 32, [
-            (g) => this._drawWalkerBody(g, -1, 1, 1, -1),
-            (g) => this._drawWalkerBody(g, 0, 0, 0, 0),
-            (g) => this._drawWalkerBody(g, 1, -1, -1, 1),
-            (g) => this._drawWalkerBody(g, 0, 0, 0, 0),
+        // ── Crawler Animations ──
+        this._generateAnimationFrames('crawler-walk-anim', 32, 32, [
+            (g) => this._drawCrawlerBody(g, -2, 2, 1, -1),
+            (g) => this._drawCrawlerBody(g, 0, 0, 0, 0),
+            (g) => this._drawCrawlerBody(g, 2, -2, -1, 1),
+            (g) => this._drawCrawlerBody(g, 0, 0, 0, 0),
         ]);
-        this._createAnim('walker-walk-anim', {
+        this._createAnim('crawler-walk-anim', {
             frames: [
-                { key: 'walker-walk-anim-0' },
-                { key: 'walker-walk-anim-1' },
-                { key: 'walker-walk-anim-2' },
-                { key: 'walker-walk-anim-3' },
+                { key: 'crawler-walk-anim-0' },
+                { key: 'crawler-walk-anim-1' },
+                { key: 'crawler-walk-anim-2' },
+                { key: 'crawler-walk-anim-3' },
             ],
             frameRate: 6, repeat: -1
         });
 
-        // Death (1 frame — reuse existing 'walker-death' texture)
-        this._createAnim('walker-death-anim', {
-            frames: [{ key: 'walker-death' }],
+        // Crawler death animation
+        this._createAnim('crawler-death-anim', {
+            frames: [{ key: 'crawler-death' }],
             frameRate: 1, repeat: -1
         });
 
@@ -1582,7 +1425,7 @@ class BootScene extends Phaser.Scene {
             ['#222','#222','#222','#222','#222','#222','#222','#222','#222','#222','#222','#222','#222','#222','#222','#222'],
         ], 2);
 
-        // ── Enemy Walker (16x16) — clockwork spider, 4 legs per side, gear eye ──
+        // ── Enemy Crawler (16x16, legacy pixel art, not used by Crawler class) ──
         this.drawPixelArt('enemy-walker', [
             ['#222','#222','#222','#222','#222','#222','#222','#222','#222','#222','#222','#222','#222','#222','#222','#222'],
             ['#222','#333','#222','#222','#222','#333','#222','#222','#222','#222','#333','#222','#222','#222','#333','#222'],

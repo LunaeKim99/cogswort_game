@@ -13,7 +13,8 @@ class Player extends Phaser.Physics.Arcade.Sprite {
         this.facingDirection = 1; // 1 = right, -1 = left
 
         // Hitbox (slightly smaller than sprite)
-        this.body.setSize(20, 28);
+        this.body.setSize(20, 34);
+        this.body.setOffset(6, 6);
         this.body.setCollideWorldBounds(true);
         this.body.setMaxVelocityY(PLAYER_MAX_FALL);
         this.body.setDragX(600);

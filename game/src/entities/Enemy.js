@@ -1,7 +1,7 @@
 // Enemy entity classes
 // ============================================================
 // PatrolDrone - airborne drone with laser scanner
-// Walker - ground patrol robot
+// Crawler - ground patrol crab robot
 
 // ── Laser State Constants ──
 const DRONE_STATE = {
@@ -31,7 +31,8 @@ class PatrolDrone extends Phaser.Physics.Arcade.Sprite {
         // Airborne: no gravity
         this.body.setAllowGravity(false);
         this.body.setCollideWorldBounds(true);
-        this.body.setSize(24, 24);
+        this.body.setSize(22, 20);
+        this.body.setOffset(3, 4);
         this.setScale(1.35);
         this.setDepth(10);
         this.body.setVelocityX(50); // slightly slower than walker
@@ -462,11 +463,11 @@ class PatrolDrone extends Phaser.Physics.Arcade.Sprite {
 }
 
 // ────────────────────────────────────────────────────────────
-// Walker - Ground patrol robot
+// Crawler - Ground patrol crab robot
 // ────────────────────────────────────────────────────────────
-class Walker extends Phaser.Physics.Arcade.Sprite {
+class Crawler extends Phaser.Physics.Arcade.Sprite {
     constructor(scene, x, y, patrolLeft, patrolRight) {
-        super(scene, x, y, 'walker-walk');
+        super(scene, x, y, 'crawler-walk');
 
         scene.add.existing(this);
         scene.physics.add.existing(this);
@@ -479,7 +480,8 @@ class Walker extends Phaser.Physics.Arcade.Sprite {
 
         // Ground-based: gravity affects it
         this.body.setCollideWorldBounds(true);
-        this.body.setSize(24, 24);
+        this.body.setSize(28, 16);
+        this.body.setOffset(2, 8);
         this.setScale(1.35);
         this.setDepth(10);
         this.body.setVelocityX(60);
@@ -495,7 +497,7 @@ class Walker extends Phaser.Physics.Arcade.Sprite {
         }
 
         // ── Animation ──
-        this.play('walker-walk-anim', true);
+        this.play('crawler-walk-anim', true);
 
         // Only patrol when standing on ground/platform
         if (this.body.blocked.down) {
@@ -517,6 +519,6 @@ class Walker extends Phaser.Physics.Arcade.Sprite {
     stomp() {
         this.isDead = true;
         this.body.enable = false;
-        this.play('walker-death-anim');
+        this.play('crawler-death-anim');
     }
 }
