@@ -115,6 +115,24 @@ class HUDScene extends Phaser.Scene {
         this.coinLabel.setScrollFactor(0);
         this.coinLabel.setDepth(200);
 
+        // ── Persistent gear count ──
+        this.gearText = this.add.text(W - 50, HUD.HEART_OFFSET_Y + 8, '\u2699 0', {
+            fontFamily: HUD.FONT_FAMILY,
+            fontSize: '12px',
+            color: '#FFD700',
+            stroke: '#000000',
+            strokeThickness: 2
+        }).setOrigin(1, 0.5).setScrollFactor(0).setDepth(200);
+
+        // ── Persistent coin count ──
+        this.coinCountText = this.add.text(W - 50, HUD.HEART_OFFSET_Y + 26, '\u25B6 0', {
+            fontFamily: HUD.FONT_FAMILY,
+            fontSize: '12px',
+            color: '#FFD700',
+            stroke: '#000000',
+            strokeThickness: 2
+        }).setOrigin(1, 0.5).setScrollFactor(0).setDepth(200);
+
         // ── Coin progress bar ──
         const barX = W / 2 - HUD.PROGRESS_BAR_W / 2;
         const barY = HUD.PROGRESS_BAR_Y;
@@ -186,6 +204,31 @@ class HUDScene extends Phaser.Scene {
                 this._timerUrgencyTween.destroy();
                 this._timerUrgencyTween = null;
                 this.timerText.setAlpha(1);
+            }
+        });
+
+        // ── Listen for gear updates from GameScene ──
+        gameScene.events.on('updateGear', (gear) => {
+            if (this.gearText) {
+                this.gearText.setText('\u2699 ' + gear);
+                // Pop animation
+                this.tweens.add({
+                    targets: this.gearText,
+                    scaleX: 1.3, scaleY: 1.3,
+                    duration: 100, yoyo: true, ease: 'Quad.easeOut'
+                });
+            }
+        });
+
+        // ── Listen for coin count updates from GameScene ──
+        gameScene.events.on('updateCoinsCount', (coins) => {
+            if (this.coinCountText) {
+                this.coinCountText.setText('\u25B6 ' + coins);
+                this.tweens.add({
+                    targets: this.coinCountText,
+                    scaleX: 1.3, scaleY: 1.3,
+                    duration: 100, yoyo: true, ease: 'Quad.easeOut'
+                });
             }
         });
 

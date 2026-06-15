@@ -14,18 +14,32 @@
 |---------|--------|
 | ← → / A D — Move | Left / Right buttons (bottom-left) |
 | ↑ / W / Space — Jump (press again mid-air for double jump) | Jump button (bottom-right) |
+| S — Shield (consumable, extends invincibility) | *(touch jump near merchant opens shop)* |
 | Stomp enemies from above | *(same mechanic)* |
+| Interact with Merchant (↑ near NPC) | *(auto-detect proximity)* |
 
 ### Scoring
-| Action | Points |
-|--------|:------:|
-| Collect a gear | +10 |
-| Stomp an enemy | +20 |
+| Action | Points / Reward |
+|--------|:---------------:|
+| Collect a gear (coin item) | +10 |
+| Stomp an enemy | +20 (+ chance to drop ⚙ gear) |
+| Defeat a boss | +100 per hit + bonus 500/1000/1500 |
 
 You have **3 lives** per run. Touch an enemy from the side or fall into a gap and you lose one. Lose all three — game over.
 
+### Currency & Upgrades
+- **Coins 🪙** — collected in levels, spent at the Merchant for consumables (Extra Life, Shield Flask)
+- **Gears ⚙** — dropped by stomped enemies, rewarded on level completion; spent on permanent upgrades
+- **Upgrades**: Gear Boots (stronger double jump), Wrench Strike (wider stomp), Cogsworth Coat (free shield), Boss Intel (attack warnings)
+- **Shield** — press **S** to activate; grants ~5 seconds of invincibility with blue flash
+
 ### New in the latest version
-- **15 levels** across 3 districts (was 3) — 5 levels per district with progressive difficulty
+- **16-bit pixel art** — every sprite redrawn as hand-crafted pixel maps (player, enemies, bosses, NPCs)
+- **3 Boss battles** — replace level completion on levels 5, 10, 15: Bellows Brute, Clockwork Sentinel, Core Tyrant
+- **NPC Merchant** — appears on levels 4, 9, 14; buy items with coins and gears
+- **Currency system** — dual currencies (coins + gears) with shop, drops, and permanent upgrades
+- **Shield system** — consumable invincibility, purchaseable from Merchant
+- **15 levels** across 3 districts — 5 levels per district with progressive difficulty
 - **PatrolDrone** — airborne enemy with laser cone attack; stompable from above
 - **Walker** — ground patrol mechanical automaton (humanoid steampunk robot)
 - **BuriedSaw** — saw blade that springs up when you get close
@@ -33,7 +47,7 @@ You have **3 lives** per run. Touch an enemy from the side or fall into a gap an
 - **SpikeTrap** — floor spikes that extend/retract on a timer
 - **Level banners** — shows district + sub-level name at start
 - **Pause menu (ESC)** — shows district and level info
-- **Exit gates** — collect all gears to unlock, then reach the gate to clear the level
+- **Exit gates** — reach the gate to clear the level (star rating purely cosmetic)
 - **Moving platforms** — ride platforms that patrol left/right or up/down
 
 ---
@@ -63,7 +77,12 @@ Serve the `game/` directory and open the root URL.
 ## 🕹️ Game Features
 
 - **15 levels** (3 districts × 5 levels) — Bellows District (Easy), Clockwork Quarter (Medium), The Core (Hard)
-- **Procedural pixel art** — all sprites, backgrounds, and UI generated at runtime (zero external images)
+- **3 Boss battles** — Bellows Brute, Clockwork Sentinel, Core Tyrant with unique attack patterns
+- **16-bit pixel art** — every sprite hand-crafted as pixel maps (zero external images)
+- **Dual currency system** — coins (collect in levels) + gears (dropped by enemies, rewarded on completion)
+- **NPC Merchant** — buy consumables and permanent upgrades on shop levels
+- **Upgrade system** — Gear Boots, Wrench Strike, Cogsworth Coat, Boss Intel
+- **Shield system** — consumable invincibility flask (S key)
 - **Steampunk mechanical theme** — brass, copper, gears, rivets, pistons, steam pipes, glowing amber eyes
 - **Smooth platforming** — coyote time, jump buffering, variable jump height, **double jump**
 - **Responsive controls** — keyboard (desktop) + touch buttons (mobile) in one build
@@ -83,23 +102,29 @@ game/
 ├── BUILD.md                 # Detailed build instructions
 ├── src/
 │   ├── config.js            # Phaser game config
-│   ├── constants.js         # Game constants (physics, gameplay)
+│   ├── constants.js         # Game constants (physics, gameplay, shop, bosses)
 │   ├── main.js              # Game initialization
 │   ├── data/
+│   │   ├── SaveManager.js   # Save/load progress (5 slots) with currency + inventory
 │   │   └── levels.js        # Level definitions (15 levels, 3 districts)
-│   │   ├── Player.js        # Player class
-│   │   ├── Enemy.js         # PatrolDrone (airborne+lazer) & Walker (ground mech)
-│   │   ├── Coin.js          # Collectible coin class
+│   ├── entities/
+│   │   ├── Player.js        # Player class (invincibility, bounce, stomp)
+│   │   ├── Enemy.js         # PatrolDrone (airborne+laser) & Walker (ground mech)
+│   │   ├── Coin.js          # Collectible gear item
 │   │   ├── MovingPlatform.js # Moving platform class
-│   │   └── Obstacle.js      # BuriedSaw, SurpriseSaw, SpikeTrap, legacy saw
+│   │   └── Obstacle.js      # BuriedSaw, SurpriseSaw, SpikeTrap
 │   ├── ui/
 │   │   └── TouchControls.js # Virtual buttons for mobile
 │   └── scenes/
-│       ├── BootScene.js     # Generates all textures procedurally
+│       ├── BootScene.js     # Generates all textures (16-bit pixel art)
 │       ├── PreloadScene.js  # Loads audio, shows loading bar
 │       ├── MainMenuScene.js
-│       ├── GameScene.js     # Main gameplay (collisions, scoring, gates)
-│       ├── HUDScene.js      # Score/lives overlay
+│       ├── ModeSelectScene.js
+│       ├── SlotSelectScene.js
+│       ├── LevelSelectScene.js
+│       ├── GameScene.js     # Main gameplay + merchant + gear drops + shield
+│       ├── HUDScene.js      # Score/lives/currency overlay
+│       ├── BossScene.js     # Single-screen boss arenas (3 unique bosses)
 │       ├── LevelCompleteScene.js
 │       ├── GameOverScene.js
 │       └── WinScene.js
@@ -128,23 +153,23 @@ Then in Android Studio: **Run** (or Build → APK).
 
 ## 📜 Level Design
 
-| Level | District - Name | Width | Difficulty | New Features |
-|-------|-----------------|:-----:|:----------:|--------------|
-| 1 | Bellows District - Tutorial | 2400px | Easy | Basic enemies, stomp intro |
-| 2 | Bellows District - The Smelting Floors | 2800px | Easy | PatrolDrone, moving platform |
-| 3 | Bellows District - Conveyor Crossings | 3200px | Easy | Walker, BuriedSaw |
-| 4 | Bellows District - Pipeworks | 3600px | Medium | SurpriseSaw, more gaps |
-| 5 | Bellows District - The Great Furnace | 4000px | Medium | SpikeTrap, mixed enemies |
-| 6 | Clockwork Quarter - Tutorial | 3200px | Medium | Moving platforms, airborne hazards |
-| 7 | Clockwork Quarter - Gear Assembly | 3600px | Medium | Dense enemy patrols |
-| 8 | Clockwork Quarter - Pendulum Pass | 4000px | Medium | Vertical moving platforms |
-| 9 | Clockwork Quarter - Regulator Room | 4400px | Hard | Spike timing puzzles |
-| 10 | Clockwork Quarter - The Mainspring | 4800px | Hard | All enemy types |
-| 11 | The Core - Tutorial | 4000px | Hard | Tight platforms, surprise saws |
-| 12 | The Core - Pressure Valve | 4400px | Hard | Fast drones, spike corridors |
-| 13 | The Core - Boiler Room | 4800px | Hard | Dense obstacles, mixed enemies |
-| 14 | The Core - Governor's Chamber | 5600px | Hard | Precision platforming |
-| 15 | The Core - The Heart of Cogsworth | 6400px | Very Hard | All hazards maxed |
+| Level | District - Name | Width | Difficulty | Type |
+|-------|-----------------|:-----:|:----------:|:----:|
+| 1 | Bellows District - Tutorial | 2400px | Easy | Level |
+| 2 | Bellows District - The Smelting Floors | 3000px | Easy | Level |
+| 3 | Bellows District - Gearworks Alley | 3600px | Easy | Level |
+| 4 | Bellows District - Boiler Pass | 4200px | Medium | 🏪 Shop |
+| 5 | Bellows District - The Great Bell | 4800px | Medium | **BOSS** |
+| 6 | Clockwork Quarter - Tutorial | 3600px | Medium | Level |
+| 7 | Clockwork Quarter - Pendulum Path | 4000px | Medium | Level |
+| 8 | Clockwork Quarter - Spring-Loaded Corridor | 4800px | Medium | Level |
+| 9 | Clockwork Quarter - Ratchet Ridge | 5200px | Hard | 🏪 Shop |
+| 10 | Clockwork Quarter - The Mainspring | 5600px | Hard | **BOSS** |
+| 11 | The Core - Tutorial | 4200px | Hard | Level |
+| 12 | The Core - Brass Depths | 4800px | Hard | Level |
+| 13 | The Core - Plasma Forge | 5600px | Hard | Level |
+| 14 | The Core - Cogspire | 6000px | Hard | 🏪 Shop |
+| 15 | The Core - The Last Wind | 6400px | Very Hard | **BOSS** |
 
 ---
 

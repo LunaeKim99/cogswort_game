@@ -20,6 +20,15 @@ class LevelSelectScene extends Phaser.Scene {
         }
         const unlocked = save ? save.unlockedLevels : [0];
 
+        // Read boss defeated status
+        let bossDefeated = [];
+        for (let i = 0; i < 5; i++) {
+            const s = SaveManager.load(i);
+            if (s && s.bossDefeated) {
+                bossDefeated = bossDefeated.concat(s.bossDefeated);
+            }
+        }
+
         // ── Title ──
         this.add.text(400, 30, '— LEVEL SELECT —', {
             fontSize: '26px', fontFamily: 'monospace', color: '#FFD700', fontStyle: 'bold'
@@ -87,6 +96,49 @@ class LevelSelectScene extends Phaser.Scene {
                 this.add.text(colX + 2, yPos + 10, diffLabel, {
                     fontSize: '9px', fontFamily: 'monospace', color: isUnlocked ? '#888888' : '#444444'
                 }).setOrigin(0, 0.5);
+
+                // ── Boss level indicators ──
+                const bossLevels = [4, 9, 14];
+                if (bossLevels.includes(levelIndex)) {
+                    const isDefeated = bossDefeated.includes(levelIndex);
+                    // BOSS label
+                    this.add.text(colX + 2, yPos + 24, 'BOSS', {
+                        fontSize: '8px', fontFamily: 'monospace', color: isDefeated ? '#FFD700' : '#FF4444',
+                        fontStyle: 'bold'
+                    }).setOrigin(0, 0.5);
+
+                    // Skull or crown icon (8x8 or 8x6 pixel art)
+                    const iconG = this.add.graphics();
+                    const iconX = colX + 80;
+                    const iconY = yPos;
+
+                    if (isDefeated) {
+                        // Gold crown (8x6)
+                        iconG.fillStyle(0xFFD700);
+                        // Crown points
+                        iconG.fillRect(iconX, iconY - 3, 2, 3);
+                        iconG.fillRect(iconX + 3, iconY - 4, 2, 4);
+                        iconG.fillRect(iconX + 6, iconY - 3, 2, 3);
+                        // Crown base
+                        iconG.fillRect(iconX - 1, iconY, 10, 2);
+                        iconG.fillStyle(0xFFAA00);
+                        iconG.fillRect(iconX, iconY + 1, 8, 1);
+                    } else {
+                        // White/gray skull (8x8)
+                        iconG.fillStyle(0xCCCCCC);
+                        // Skull head
+                        iconG.fillRect(iconX + 1, iconY - 3, 6, 5);
+                        // Eyes
+                        iconG.fillStyle(0x000000);
+                        iconG.fillRect(iconX + 2, iconY - 1, 2, 2);
+                        iconG.fillRect(iconX + 5, iconY - 1, 2, 2);
+                        // Teeth
+                        iconG.fillStyle(0xFFFFFF);
+                        iconG.fillRect(iconX + 2, iconY + 2, 1, 1);
+                        iconG.fillRect(iconX + 4, iconY + 2, 1, 1);
+                        iconG.fillRect(iconX + 6, iconY + 2, 1, 1);
+                    }
+                }
 
                 // Make interactive if unlocked
                 if (isUnlocked) {

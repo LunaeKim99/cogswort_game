@@ -7,8 +7,22 @@ All notable changes to Cogsworth: Last Wind are documented here.
 ## [Unreleased]
 
 ### Added
-- Count-up timer in HUD with color-coded pacing (green/yellow/red per district threshold)
-- Debug logging to LevelCompleteScene transitions
+- **16-bit pixel art texture system** — all game textures replaced with hand-crafted pixel maps using `drawPixelArt` helper (player, enemies, coins, hearts, platforms, ground, merchant NPC, 3 bosses)
+- **Currency system** — gears (gear drops from enemy stomps) and coins (collected from levels) with save persistence
+- **NPC Merchant** — appears on levels 4, 9, 14; sells items for coins (Extra Life, Shield Flask) and gears (Gear Boots, Wrench Strike, Cogsworth Coat, Boss Intel)
+- **Shop UI** — modal overlay with brass border, currency bar, tab-based item browsing, buy buttons
+- **Gear drops** — 30% chance per stomp to drop a gear (animated float-up + "+1 ⚙" text)
+- **Upgrade system** — Gear Boots (stronger double jump), Wrench Strike (wider stomp radius), Cogsworth Coat (free starting shield), Boss Intel (attack warnings in boss fights)
+- **Shield system** — consumable shield flasks (S key / touch button), grants extended invincibility (~5s) with blue flash effect
+- **Boss system** — 3 unique boss battles replacing level completion on levels 5, 10, 15:
+  - Bellows Brute (HP 3): charge + stomp shockwave
+  - Clockwork Sentinel (HP 5): hover, descend, bomb drop, laser sweep
+  - Core Tyrant (HP 5): two-phase fight with projectile rain
+  - HP bar with color transitions, boss intel warnings, stomp-on-head weakness
+- **Level select boss indicators** — skull icon for undefeated, gold crown for defeated
+- **Persistent HUD currency display** — gear ⚙ and coin ▶ counters in HUD panel
+- **BossScene** — single-screen arena with fixed camera, elevated platforms, full player controls
+- **SaveManager methods** — `addGear()`, `addCoins()`, `buyItem()`, `useConsumable()`, `markBossDefeated()` with backward-compatible data patching
 
 ### Changed
 - **Floating platform incline redesign** across all 15 levels:
@@ -20,6 +34,8 @@ All notable changes to Cogsworth: Last Wind are documented here.
 - Pause menu buttons fire on `pointerdown` instead of `pointerup` (fixes mobile touch drift)
 - Scene transitions deferred via `delayedCall(0)` to avoid input handler conflicts
 - Death transition uses tween fade-to-black instead of `timeScale` + `delayedCall` (prevents timer stall)
+- Gate reached on boss levels now redirects to BossScene instead of LevelCompleteScene
+- Level completion awards gear (1-3 based on time rank) and collected coins
 
 ### Fixed
 - Pause menu: restart and main menu buttons not working (root cause: `pointerup` + scene ops inside input handler)

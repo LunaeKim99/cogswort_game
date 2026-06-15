@@ -67,3 +67,20 @@ const SPECTACLE = {
     COMBO_MAX_BREAK_TIME: 2000,  // ms before combo resets
     VIGNETTE_ALPHA: 0.25
 };
+
+// ── Merchant / Shop Constants ──
+const MERCHANT_LEVEL_INDICES = [3, 8, 13]; // L4, L9, L14 (0-indexed)
+const MERCHANT_INTERACT_DIST = 80;
+const GEAR_STOMP_DROP_CHANCE = 0.3;
+const BOSS_LEVEL_INDICES = [4, 9, 14];     // L5, L10, L15 (0-indexed)
+const SHOP_ITEMS = [
+    { id: 'extra_life', label: 'Extra Life',     price: 30, currency: 'coin', type: 'consumable', max: 9 },
+    { id: 'shield',     label: 'Shield Flask',   price: 50, currency: 'coin', type: 'consumable', max: 5 },
+    { id: 'gear_boots', label: 'Gear Boots',     price: 2,  currency: 'gear', type: 'upgrade',    max: 1 },
+    { id: 'wrench',     label: 'Wrench Strike',  price: 3,  currency: 'gear', type: 'upgrade',    max: 1 },
+    { id: 'coat',       label: 'Cogsworth Coat', price: 5,  currency: 'gear', type: 'upgrade',    max: 1 },
+    { id: 'boss_intel', label: 'Boss Intel',     price: 1,  currency: 'gear', type: 'utility',    max: 1 },
+];
+
+// ── Shield key binding (S key) ──
+const SHIELD_KEY = 'S';

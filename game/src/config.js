@@ -26,6 +26,7 @@ const gameConfig = {
         HUDScene,
         LevelCompleteScene,
         GameOverScene,
+        BossScene,
         WinScene
     ]
 };

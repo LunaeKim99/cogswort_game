@@ -7,18 +7,28 @@ const DEFAULT_SAVE = {
     score: 0,
     lives: 3,
     unlockedLevels: [0],
+    gear: 0,
+    coins: 0,
+    inventory: {},
+    upgrades: {},
+    bossDefeated: [],
     timestamp: Date.now(),
     version: 1
 };
 
 const SaveManager = {
     // ── Core save/load ──
-    save(slotIndex, levelIndex, score, lives) {
+    save(slotIndex, levelIndex, score, lives, extra) {
         const data = {
             currentLevel: levelIndex,
             score: score || 0,
             lives: lives !== undefined ? lives : 3,
             unlockedLevels: this._computeUnlocked(levelIndex),
+            gear: (extra && extra.gear) || 0,
+            coins: (extra && extra.coins) || 0,
+            inventory: (extra && extra.inventory) || {},
+            upgrades: (extra && extra.upgrades) || {},
+            bossDefeated: (extra && extra.bossDefeated) || [],
             timestamp: Date.now(),
             version: 1
         };
@@ -43,6 +53,16 @@ const SaveManager = {
                 console.warn('[SaveManager] Unknown save version:', data.version, '— discarding');
                 return null;
             }
+            // ── Backward-compatible patch for old saves missing currency/inventory ──
+            let patched = false;
+            if (typeof data.gear !== 'number') { data.gear = 0; patched = true; }
+            if (typeof data.coins !== 'number') { data.coins = 0; patched = true; }
+            if (typeof data.inventory !== 'object' || Array.isArray(data.inventory)) { data.inventory = {}; patched = true; }
+            if (typeof data.upgrades !== 'object' || Array.isArray(data.upgrades)) { data.upgrades = {}; patched = true; }
+            if (!Array.isArray(data.bossDefeated)) { data.bossDefeated = []; patched = true; }
+            if (patched) {
+                try { localStorage.setItem(SAVE_PREFIX + slotIndex, JSON.stringify(data)); } catch(e) {}
+            }
             return data;
         } catch (e) {
             console.warn('Load failed for slot ' + slotIndex + ':', e);
@@ -51,9 +71,9 @@ const SaveManager = {
     },
 
     // ── Autosave — triggered on level start & level complete ──
-    autosave(slotIndex, levelIndex, score, lives) {
+    autosave(slotIndex, levelIndex, score, lives, extra) {
         if (slotIndex === undefined || slotIndex === null) return;
-        this.save(slotIndex, levelIndex, score, lives);
+        this.save(slotIndex, levelIndex, score, lives, extra);
     },
 
     // ── Slot queries ──
@@ -100,6 +120,70 @@ const SaveManager = {
             });
         }
         return slots;
+    },
+
+    // ── Currency methods ──
+    addGear(slotIndex, amount) {
+        const data = this.load(slotIndex);
+        if (!data) return;
+        data.gear = (data.gear || 0) + amount;
+        try { localStorage.setItem(SAVE_PREFIX + slotIndex, JSON.stringify(data)); } catch(e) {}
+    },
+
+    addCoins(slotIndex, amount) {
+        const data = this.load(slotIndex);
+        if (!data) return;
+        data.coins = (data.coins || 0) + amount;
+        try { localStorage.setItem(SAVE_PREFIX + slotIndex, JSON.stringify(data)); } catch(e) {}
+    },
+
+    buyItem(slotIndex, itemId) {
+        const data = this.load(slotIndex);
+        if (!data) return false;
+        const item = SHOP_ITEMS.find(i => i.id === itemId);
+        if (!item) return false;
+        const balance = item.currency === 'gear' ? (data.gear || 0) : (data.coins || 0);
+        if (balance < item.price) return false;
+        // Check constraints
+        if (item.type === 'upgrade' || item.type === 'utility') {
+            if (data.upgrades[itemId]) return false; // already owned
+        } else if (item.type === 'consumable') {
+            const current = data.inventory[itemId] || 0;
+            if (current >= item.max) return false;
+        }
+        // Deduct currency
+        if (item.currency === 'gear') {
+            data.gear = balance - item.price;
+        } else {
+            data.coins = balance - item.price;
+        }
+        // Grant item
+        if (item.type === 'upgrade' || item.type === 'utility') {
+            data.upgrades[itemId] = true;
+        } else {
+            data.inventory[itemId] = (data.inventory[itemId] || 0) + 1;
+        }
+        try { localStorage.setItem(SAVE_PREFIX + slotIndex, JSON.stringify(data)); } catch(e) {}
+        return true;
+    },
+
+    useConsumable(slotIndex, itemId) {
+        const data = this.load(slotIndex);
+        if (!data) return false;
+        if (!data.inventory[itemId] || data.inventory[itemId] <= 0) return false;
+        data.inventory[itemId]--;
+        if (data.inventory[itemId] <= 0) delete data.inventory[itemId];
+        try { localStorage.setItem(SAVE_PREFIX + slotIndex, JSON.stringify(data)); } catch(e) {}
+        return true;
+    },
+
+    markBossDefeated(slotIndex, levelIndex) {
+        const data = this.load(slotIndex);
+        if (!data) return;
+        if (!data.bossDefeated.includes(levelIndex)) {
+            data.bossDefeated.push(levelIndex);
+        }
+        try { localStorage.setItem(SAVE_PREFIX + slotIndex, JSON.stringify(data)); } catch(e) {}
     },
 
     // ── Helpers ──

@@ -9,10 +9,21 @@ class GameScene extends Phaser.Scene {
         this.score = data.score || 0;
         this.lives = data.lives !== undefined ? data.lives : INITIAL_LIVES;
         this.saveSlot = data.saveSlot !== undefined ? data.saveSlot : null;
+        this.currentSlot = this.saveSlot;
     }
 
     create() {
         const levelData = levels[this.currentLevel];
+        this.levelIndex = this.currentLevel;
+        // D2: Apply upgrades
+        const saveData = SaveManager.load(this.currentSlot) || {};
+        const upgrades = saveData.upgrades || {};
+        this._activeDoubleJump = upgrades.gear_boots
+            ? PLAYER_DOUBLE_JUMP * 1.15 : PLAYER_DOUBLE_JUMP;
+        this._shieldCharges = (saveData.inventory && saveData.inventory.shield) || 0;
+        if (upgrades.coat) this._shieldCharges = Math.max(this._shieldCharges, 1);
+        this._hasBossIntel = upgrades.boss_intel || false;
+        this._hasWrenchStrike = upgrades.wrench || false;
         if (!levelData) {
             // Invalid level - go to main menu
             this.scene.start('MainMenuScene');
@@ -104,6 +115,7 @@ class GameScene extends Phaser.Scene {
         this.keyA = this.input.keyboard.addKey('A');
         this.keyD = this.input.keyboard.addKey('D');
         this.keySpace = this.input.keyboard.addKey('SPACE');
+        this.keyShield = this.input.keyboard.addKey(SHIELD_KEY);
 
         // Setup touch controls
         this.touchControls = new TouchControls(this);
@@ -166,6 +178,25 @@ class GameScene extends Phaser.Scene {
 
         // ── Autosave — save progress on level start ──
         SaveManager.autosave(this.saveSlot, this.currentLevel, this.score, this.lives);
+
+        // ── Merchant ──
+        this._merchantSprite = null;
+        this._merchantPrompt = null;
+        this._merchantX = 0;
+        this._merchantNearby = false;
+        this._shopOpen = false;
+        this._shopElements = null;
+        if (MERCHANT_LEVEL_INDICES.includes(this.levelIndex)) {
+            this._spawnMerchant();
+        }
+
+        // ── Shutdown cleanup for merchant ──
+        this.events.on('shutdown', () => {
+            if (this._merchantSprite) { this._merchantSprite.destroy(); this._merchantSprite = null; }
+            if (this._merchantLabel) { this._merchantLabel.destroy(); this._merchantLabel = null; }
+            if (this._merchantPrompt) { this._merchantPrompt.destroy(); this._merchantPrompt = null; }
+            this._closeShop();
+        });
 
         console.log('[GAME] create() completed for level', this.currentLevel, '- Gate at:', this.gate ? this.gate.x + ',' + this.gate.y : 'NO GATE');
     }
@@ -702,7 +733,34 @@ class GameScene extends Phaser.Scene {
     // ── Gate reached ──
     _handleGateReached(player, gate) {
         if (this._levelCompleteTriggered) return;
-        this._levelComplete();
+        const levelData = levels[this.levelIndex];
+        if (BOSS_LEVEL_INDICES.includes(this.levelIndex)) {
+            this._levelCompleteTriggered = true;
+            this.player.freeze();
+            this._playSound('sfx-win');
+            const overlay = this.add.rectangle(
+                GAME_WIDTH / 2, GAME_HEIGHT / 2,
+                GAME_WIDTH, GAME_HEIGHT, 0x000000, 0
+            ).setScrollFactor(0).setDepth(9999);
+            this.tweens.add({
+                targets: overlay,
+                alpha: 1,
+                duration: 800,
+                ease: 'Quad.easeIn',
+                onComplete: () => {
+                    this.scene.stop('HUDScene');
+                    this.scene.start('BossScene', {
+                        slotIndex: this.currentSlot,
+                        districtIndex: levelData.districtIdx,
+                        levelIndex: this.levelIndex,
+                        score: this.score,
+                        lives: this.lives,
+                    });
+                }
+            });
+        } else {
+            this._levelComplete();
+        }
     }
 
     // ── Enemy collision handler (with stomp logic) ──
@@ -716,7 +774,7 @@ class GameScene extends Phaser.Scene {
 
         const playerBottom = player.body.y + player.body.height;
         const enemyCenter = enemy.y;
-        const tolerance = 20;
+        const tolerance = this._hasWrenchStrike ? 26 : 20;
 
         const isFalling = player.body.velocity.y >= -10;
         const isAbove = playerBottom < enemyCenter + tolerance;
@@ -726,6 +784,16 @@ class GameScene extends Phaser.Scene {
             enemy.stomp();
             player.bounce();
             this.score += STOMP_SCORE;
+
+            // Wrench strike: boost stomp radius effects
+            if (this._hasWrenchStrike) {
+                this.cameras.main.shake(150, 0.015);
+            }
+
+            // Gear drop chance
+            if (Math.random() < GEAR_STOMP_DROP_CHANCE && !this._levelCompleteTriggered) {
+                this._spawnGearDrop(enemy.x, enemy.y);
+            }
 
             // Update HUD
             this.events.emit('updateScore', this.score);
@@ -897,6 +965,18 @@ class GameScene extends Phaser.Scene {
         this._playSound('sfx-win');
 
         const nextLevel = this.currentLevel + 1;
+
+        // Gear and coin rewards
+        const coinsCollected = this.totalCoins - (this.coins?.countActive() ?? 0);
+        const elapsed = (this.time.now - this._levelStartTime - this._totalPausedTime) / 1000;
+        const levelData = levels[this.currentLevel];
+        const timeRank = elapsed <= TIME_THRESHOLDS[levelData.districtIdx].fast ? 'fast'
+            : elapsed <= TIME_THRESHOLDS[levelData.districtIdx].good ? 'good' : 'ok';
+        const gearReward = 1 + (timeRank === 'fast' ? 2 : timeRank === 'good' ? 1 : 0);
+        SaveManager.addGear(this.currentSlot, gearReward);
+        SaveManager.addCoins(this.currentSlot, coinsCollected);
+        this._emitCurrencyEvents();
+
         SaveManager.autosave(this.saveSlot, nextLevel, this.score, this.lives);
 
         const overlay = this.add.rectangle(
@@ -978,6 +1058,11 @@ class GameScene extends Phaser.Scene {
     update(time, delta) {
         if (this.player.isDead) return;
         if (this._isPaused) return;
+
+        // ── Update merchant interaction ──
+        if (this._merchantSprite && this._merchantSprite.active) {
+            this._updateMerchant(time, delta);
+        }
 
         // ── Track ground state for coyote time & double jump ──
         const onGround = this.player.body.blocked.down;
@@ -1087,5 +1172,387 @@ class GameScene extends Phaser.Scene {
 
         // ── Check fall death ──
         this._checkFallDeath();
+
+        // ── Shield key (S) ──
+        if (Phaser.Input.Keyboard.JustDown(this.keyShield) && this._shieldCharges > 0 && !this.player.isInvincible && !this.player.isDead && !this._merchantNearby) {
+            this._useShield();
+        }
+    }
+
+    // ────────────────────────────────────────────────────────────
+    // ── Merchant / Shop Methods ──
+    // ────────────────────────────────────────────────────────────
+
+    _spawnMerchant() {
+        const levelData = levels[this.levelIndex];
+        const gx = levelData.gateX || levelData.width - 160;
+        const mx = gx - 180;
+
+        // Place merchant sprite
+        this._merchantSprite = this.physics.add.sprite(mx, GROUND_Y - 24, 'merchant-npc');
+        this._merchantSprite.body.setAllowGravity(false);
+        this._merchantSprite.setImmovable(true);
+        this._merchantSprite.setDepth(5);
+        this._merchantX = mx;
+
+        // Floating "[ SHOP ]" text
+        this._merchantLabel = this.add.text(mx, GROUND_Y - 70, '[ SHOP ]', {
+            fontSize: '10px', fontFamily: 'monospace', color: '#FFD700', fontStyle: 'bold',
+            stroke: '#000000', strokeThickness: 2
+        }).setOrigin(0.5);
+
+        // Blink tween on label
+        this.tweens.add({
+            targets: this._merchantLabel,
+            alpha: 0.3,
+            duration: 800,
+            yoyo: true,
+            repeat: -1,
+            ease: 'Sine.easeInOut'
+        });
+
+        // Interaction prompt (hidden by default)
+        this._merchantPrompt = this.add.text(mx, GROUND_Y - 90, '[ \u2191 ] INTERACT', {
+            fontSize: '9px', fontFamily: 'monospace', color: '#44FF88', fontStyle: 'bold',
+            stroke: '#000000', strokeThickness: 2
+        }).setOrigin(0.5).setAlpha(0);
+
+        this._merchantNearby = false;
+    }
+
+    _updateMerchant() {
+        if (!this._merchantSprite || !this._merchantSprite.active) return;
+        const dist = Phaser.Math.Distance.Between(this.player.x, this.player.y, this._merchantX, GROUND_Y - 24);
+        const nearby = dist < MERCHANT_INTERACT_DIST;
+
+        if (nearby && !this._merchantNearby) {
+            this._merchantNearby = true;
+            this.tweens.add({ targets: this._merchantPrompt, alpha: 1, duration: 150 });
+        } else if (!nearby && this._merchantNearby) {
+            this._merchantNearby = false;
+            this.tweens.add({ targets: this._merchantPrompt, alpha: 0, duration: 150 });
+        }
+
+        // UP key / touch jump interaction
+        const touchJump = this.touchControls.consumeJump();
+        const interactPressed = Phaser.Input.Keyboard.JustDown(this.cursors.up)
+            || Phaser.Input.Keyboard.JustDown(this.keyW)
+            || touchJump;
+
+        if (interactPressed && this._merchantNearby) {
+            // Force consume the jump so it doesn't double-trigger
+            if (touchJump) { /* already consumed */ }
+            this._jumpBufferTime = 0;
+            this._openShop();
+        }
+    }
+
+    _openShop() {
+        if (this._shopOpen) return;
+        this._shopOpen = true;
+
+        // Pause game
+        this.physics.world.pause();
+        this.tweens.pauseAll();
+
+        const cx = GAME_WIDTH / 2;
+        const cy = GAME_HEIGHT / 2;
+        const B = 500;
+
+        // Dark backdrop
+        this._shopBackdrop = this.add.rectangle(cx, cy, GAME_WIDTH, GAME_HEIGHT, 0x000000, 0.8)
+            .setScrollFactor(0).setDepth(B);
+        this._shopBackdrop.setInteractive(); // block clicks through
+
+        // Panel with brass border
+        const panel = this.add.graphics().setScrollFactor(0).setDepth(B + 10);
+        panel.fillStyle(0x1a1a2e, 1);
+        panel.fillRoundedRect(cx - 200, cy - 170, 400, 340, 10);
+        panel.lineStyle(3, 0xCC8800, 1);
+        panel.strokeRoundedRect(cx - 200, cy - 170, 400, 340, 10);
+        panel.lineStyle(1, 0xFFD700, 0.3);
+        panel.strokeRoundedRect(cx - 195, cy - 165, 390, 330, 8);
+
+        // Title
+        this._shopTitle = this.add.text(cx, cy - 155, 'MERCHANT SHOP', {
+            fontSize: '20px', fontFamily: 'monospace', color: '#FFD700', fontStyle: 'bold',
+            stroke: '#000000', strokeThickness: 3
+        }).setOrigin(0.5).setScrollFactor(0).setDepth(B + 20);
+
+        // Currency bar
+        const saveData = SaveManager.load(this.currentSlot) || {};
+        this._shopCoinText = this.add.text(cx - 180, cy - 125, 'COINS: ' + (saveData.coins || 0), {
+            fontSize: '12px', fontFamily: 'monospace', color: '#FFD700'
+        }).setScrollFactor(0).setDepth(B + 20);
+
+        this._shopGearText = this.add.text(cx + 180, cy - 125, 'GEAR: ' + (saveData.gear || 0), {
+            fontSize: '12px', fontFamily: 'monospace', color: '#FFD700'
+        }).setOrigin(1, 0).setScrollFactor(0).setDepth(B + 20);
+
+        // Separator
+        const sep = this.add.graphics().setScrollFactor(0).setDepth(B + 20);
+        sep.lineStyle(1, 0xFFD700, 0.2);
+        sep.lineBetween(cx - 180, cy - 110, cx + 180, cy - 110);
+
+        // Tab labels
+        this._activeShopTab = 'coin';
+        this._shopCoinTab = this.add.text(cx - 80, cy - 100, '[ COIN ITEMS ]', {
+            fontSize: '11px', fontFamily: 'monospace', color: '#FFD700', fontStyle: 'bold',
+            backgroundColor: '#333355', padding: { x: 4, y: 2 }
+        }).setOrigin(0.5).setScrollFactor(0).setDepth(B + 20).setInteractive({ useHandCursor: true });
+
+        this._shopGearTab = this.add.text(cx + 80, cy - 100, '[ GEAR UPGRADES ]', {
+            fontSize: '11px', fontFamily: 'monospace', color: '#888888',
+            padding: { x: 4, y: 2 }
+        }).setOrigin(0.5).setScrollFactor(0).setDepth(B + 20).setInteractive({ useHandCursor: true });
+
+        // Tab switching
+        this._shopCoinTab.on('pointerdown', () => this._refreshShop('coin'));
+        this._shopGearTab.on('pointerdown', () => this._refreshShop('gear'));
+
+        // Item rows container
+        this._shopItemsContainer = this.add.container(0, 0).setDepth(B + 30);
+
+        // Close button
+        this._shopCloseBtn = this.add.text(cx + 185, cy - 160, 'X', {
+            fontSize: '18px', fontFamily: 'monospace', color: '#FF6666', fontStyle: 'bold',
+            stroke: '#000000', strokeThickness: 2
+        }).setOrigin(0.5).setScrollFactor(0).setDepth(B + 30).setInteractive({ useHandCursor: true });
+        this._shopCloseBtn.on('pointerdown', () => this._closeShop());
+
+        // Tab tip
+        this._shopTip = this.add.text(cx, cy + 155, 'Click tabs above to switch', {
+            fontSize: '9px', fontFamily: 'monospace', color: '#666666'
+        }).setOrigin(0.5).setScrollFactor(0).setDepth(B + 20);
+
+        // Store elements for cleanup
+        this._shopElements = [this._shopBackdrop, panel, this._shopTitle, this._shopCoinText,
+            this._shopGearText, sep, this._shopCoinTab, this._shopGearTab, this._shopCloseBtn,
+            this._shopTip, this._shopItemsContainer];
+
+        // Draw initial items
+        this._refreshShop('coin');
+    }
+
+    _refreshShop(tab) {
+        this._activeShopTab = tab;
+
+        // Update tab visuals
+        if (this._shopCoinTab) {
+            this._shopCoinTab.setColor(tab === 'coin' ? '#FFD700' : '#888888');
+            this._shopCoinTab.setBackgroundColor(tab === 'coin' ? '#333355' : '#222233');
+        }
+        if (this._shopGearTab) {
+            this._shopGearTab.setColor(tab === 'gear' ? '#FFD700' : '#888888');
+            this._shopGearTab.setBackgroundColor(tab === 'gear' ? '#333355' : '#222233');
+        }
+
+        // Clear old items
+        if (this._shopItemsContainer) {
+            this._shopItemsContainer.removeAll(true);
+        }
+
+        const saveData = SaveManager.load(this.currentSlot) || {};
+        const cx = GAME_WIDTH / 2;
+        const cy = GAME_HEIGHT / 2;
+        const B = 500;
+
+        // Filter items by currency tab
+        const items = SHOP_ITEMS.filter(item => item.currency === tab);
+
+        items.forEach((item, i) => {
+            const rowY = cy - 75 + i * 50;
+            const balance = item.currency === 'gear' ? (saveData.gear || 0) : (saveData.coins || 0);
+            const affordable = balance >= item.price;
+            const owned = item.type === 'upgrade' || item.type === 'utility'
+                ? !!(saveData.upgrades && saveData.upgrades[item.id])
+                : (saveData.inventory && saveData.inventory[item.id]) || 0;
+            const canBuy = item.type === 'consumable' ? owned < item.max : !owned;
+
+            // Item label
+            const label = this.add.text(cx - 170, rowY, item.label, {
+                fontSize: '13px', fontFamily: 'monospace', color: canBuy ? '#FFFFFF' : '#555555'
+            }).setOrigin(0, 0.5).setScrollFactor(0).setDepth(B + 40);
+
+            // Owned count
+            const ownedStr = item.type === 'consumable' ? (owned + '/' + item.max)
+                : owned ? 'OWNED' : '';
+            if (ownedStr) {
+                this.add.text(cx - 20, rowY, ownedStr, {
+                    fontSize: '11px', fontFamily: 'monospace', color: owned ? '#44FF88' : '#666666'
+                }).setOrigin(0, 0.5).setScrollFactor(0).setDepth(B + 40);
+            }
+
+            // Price
+            this.add.text(cx + 50, rowY, (item.currency === 'gear' ? '\u2699' : '\u25B6') + ' ' + item.price, {
+                fontSize: '12px', fontFamily: 'monospace', color: '#FFD700'
+            }).setOrigin(0, 0.5).setScrollFactor(0).setDepth(B + 40);
+
+            // Buy button
+            const btnBg = this.add.rectangle(cx + 120, rowY, 70, 28,
+                affordable && canBuy ? 0x226622 : 0x444444,
+                affordable && canBuy ? 0.9 : 0.5
+            ).setScrollFactor(0).setDepth(B + 40)
+            .setStrokeStyle(1, affordable && canBuy ? 0x44AA44 : 0x666666);
+
+            const btnText = this.add.text(cx + 120, rowY, 'BUY', {
+                fontSize: '11px', fontFamily: 'monospace', color: affordable && canBuy ? '#FFFFFF' : '#666666',
+                fontStyle: 'bold'
+            }).setOrigin(0.5).setScrollFactor(0).setDepth(B + 41);
+
+            if (affordable && canBuy) {
+                btnBg.setInteractive({ useHandCursor: true });
+                btnBg.on('pointerover', () => {
+                    btnBg.setFillStyle(0x338833);
+                    btnBg.setStrokeStyle(1, 0x66CC66);
+                });
+                btnBg.on('pointerout', () => {
+                    btnBg.setFillStyle(0x226622);
+                    btnBg.setStrokeStyle(1, 0x44AA44);
+                });
+                btnBg.on('pointerdown', () => {
+                    const success = SaveManager.buyItem(this.currentSlot, item.id);
+                    if (success) {
+                        this._playSound('sfx-tap');
+                        // Refresh data
+                        const newData = SaveManager.load(this.currentSlot) || {};
+                        if (this._shopCoinText) this._shopCoinText.setText('COINS: ' + (newData.coins || 0));
+                        if (this._shopGearText) this._shopGearText.setText('GEAR: ' + (newData.gear || 0));
+                        this._refreshShop(this._activeShopTab);
+                        // Apply upgrade immediately
+                        if (item.type === 'upgrade' || item.type === 'utility') {
+                            this._applyUpgrade(item.id);
+                        }
+                    }
+                });
+            }
+
+            // Add to container for cleanup
+            this._shopItemsContainer.add([label, btnBg, btnText]);
+        });
+    }
+
+    _applyUpgrade(upgradeId) {
+        switch (upgradeId) {
+            case 'gear_boots':
+                this._activeDoubleJump = PLAYER_DOUBLE_JUMP * 1.15;
+                this._showFloatingText(this.player.x, this.player.y - 30, 'GEAR BOOTS!', '#FFD700');
+                break;
+            case 'wrench':
+                this._hasWrenchStrike = true;
+                this._showFloatingText(this.player.x, this.player.y - 30, 'WRENCH STRIKE!', '#FFD700');
+                break;
+            case 'coat':
+                this._shieldCharges = Math.max(this._shieldCharges, 1);
+                this._showFloatingText(this.player.x, this.player.y - 30, 'COGSWORTH COAT!', '#FFD700');
+                break;
+            case 'boss_intel':
+                this._hasBossIntel = true;
+                this._showFloatingText(this.player.x, this.player.y - 30, 'BOSS INTEL!', '#FFD700');
+                break;
+        }
+    }
+
+    _closeShop() {
+        if (!this._shopOpen) return;
+        this._shopOpen = false;
+
+        // Destroy all shop elements
+        if (this._shopElements) {
+            this._shopElements.forEach(el => {
+                if (el && el.destroy) el.destroy();
+            });
+            this._shopElements = null;
+        }
+        this._shopItemsContainer = null;
+        this._shopBackdrop = null;
+        this._shopTitle = null;
+        this._shopCoinText = null;
+        this._shopGearText = null;
+        this._shopCoinTab = null;
+        this._shopGearTab = null;
+        this._shopCloseBtn = null;
+        this._shopTip = null;
+
+        // Resume game
+        this.physics.world.resume();
+        this.tweens.resumeAll();
+    }
+
+    // ────────────────────────────────────────────────────────────
+    // ── Gear Drops & Shield ──
+    // ────────────────────────────────────────────────────────────
+
+    _spawnGearDrop(x, y) {
+        const gearIcon = this.add.image(x, y, 'coin').setDepth(50).setScale(0.7);
+        gearIcon.setTint(0xFFD700);
+
+        // Float up and fade
+        this.tweens.add({
+            targets: gearIcon,
+            y: y - 40,
+            alpha: 0,
+            duration: 700,
+            ease: 'Quad.easeOut',
+            onComplete: () => {
+                gearIcon.destroy();
+                SaveManager.addGear(this.currentSlot, 1);
+                this._emitCurrencyEvents();
+            }
+        });
+
+        // Floating text
+        this._showFloatingText(x, y - 10, '+1 \u2699', '#FFD700');
+    }
+
+    _useShield() {
+        if (this._shieldCharges <= 0 || this.player.isInvincible) return;
+        this._shieldCharges--;
+
+        const saveData = SaveManager.load(this.currentSlot) || {};
+        if (!(saveData.upgrades && saveData.upgrades.coat)) {
+            SaveManager.useConsumable(this.currentSlot, 'shield');
+        }
+
+        this.player.makeInvincible();
+        // Extend invincibility for shield
+        if (this.player._flashTween) {
+            this.player._flashTween.destroy();
+        }
+        this.player.isInvincible = true;
+        this.player._flashTween = this.tweens.add({
+            targets: this.player,
+            alpha: { from: 1, to: 0.3 },
+            duration: 150,
+            yoyo: true,
+            repeat: 16, // ~5 seconds (150*2*17 = 5100ms)
+            onComplete: () => {
+                this.player.isInvincible = false;
+                this.player.alpha = 1;
+            }
+        });
+
+        // Blue flash
+        const flash = this.add.rectangle(this.player.x, this.player.y, 32, 32, 0x4444FF, 0.5)
+            .setDepth(100);
+        this.tweens.add({
+            targets: flash,
+            alpha: 0,
+            duration: 300,
+            onComplete: () => flash.destroy()
+        });
+
+        this._playSound('sfx-tap');
+        this._showFloatingText(this.player.x, this.player.y - 30, 'SHIELD!', '#44BBFF');
+    }
+
+    _emitCurrencyEvents() {
+        const data = SaveManager.load(this.currentSlot) || {};
+        this.events.emit('updateGear', data.gear || 0);
+        this.events.emit('updateCoins', {
+            collected: data.coins || 0,
+            total: this.totalCoins
+        });
+        this.events.emit('updateCoinsCount', data.coins || 0);
     }
 }
